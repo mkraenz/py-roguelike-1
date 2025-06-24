@@ -1,0 +1,20 @@
+[project]
+name = "py-roguelike-tutorial"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Mirco Kraenz",email = "software@kraenz.eu"}
+]
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "tcod>=19.0.0",
+]
+
+[tool.poetry]
+packages = [{include = "py_roguelike_tutorial", from = "src"}]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
