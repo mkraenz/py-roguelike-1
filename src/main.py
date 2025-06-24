@@ -1,25 +1,34 @@
-import sys
-
 import tcod
 
-from py_roguelike_tutorial.actions import EscapeAction, MoveAction
-from py_roguelike_tutorial.input_handers import InputMap
+from py_roguelike_tutorial.engine import Engine
+from py_roguelike_tutorial.entity import Entity
+from py_roguelike_tutorial.game_map import GameMap
+from py_roguelike_tutorial.input_handlers import EventHandler
 
 
 def main():
     screen_width = 80
     screen_height = 50
 
-    player_x: int = screen_width // 2
-    player_y: int = screen_height // 2
+    map_width = 80
+    map_height = 45
 
-    event_handler = InputMap()
+    event_handler = EventHandler()
 
     tileset = tcod.tileset.load_tilesheet(
         "assets/dejavu10x10_gs_tc.png",
         32,
         8,
         tcod.tileset.CHARMAP_TCOD,
+    )
+
+    player = Entity(screen_width // 2, screen_height // 2, "@", (255, 255, 255))
+    npc = Entity(screen_width // 2 - 5, screen_height // 2, "N", (255, 255, 0))
+    entities = {npc, player}
+
+    game_map = GameMap(map_width, map_height)
+    engine = Engine(
+        entities=entities, event_handler=event_handler, game_map=game_map, player=player
     )
 
     with tcod.context.new(
@@ -31,29 +40,9 @@ def main():
     ) as context:
         root_console = tcod.console.Console(screen_width, screen_height, order="F")
         while True:
-            ## game loop start
-            root_console.print(player_x, player_y, "@")
-            context.present(
-                root_console
-            )  ## present = draw = redraw = commit and apply changes
-
-            root_console.clear()
-
-            for event in tcod.event.wait():
-                action = event_handler.dispatch(event)
-                if action is None:
-                    continue
-
-                match action:
-                    case MoveAction():
-                        player_x += action.dx
-                        player_y += action.dy
-                    case EscapeAction():
-                        sys.exit()
-                    case _:
-                        pass
-
-                root_console.clear()
+            engine.render(root_console, context)
+            events = tcod.event.wait()
+            engine.handle_events(events)
 
 
 if __name__ == "__main__":

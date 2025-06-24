@@ -5,7 +5,7 @@ from tcod.event import Quit
 from py_roguelike_tutorial.actions import Action, EscapeAction, MoveAction
 
 
-class InputMap(EventDispatch[Action]):
+class EventHandler(EventDispatch[Action]):
     def ev_quit(self, event: Quit) -> Action | None:
         raise SystemExit()
 
