@@ -2,8 +2,8 @@ import tcod
 
 from py_roguelike_tutorial.engine import Engine
 from py_roguelike_tutorial.entity import Entity
-from py_roguelike_tutorial.game_map import GameMap
 from py_roguelike_tutorial.input_handlers import EventHandler
+from py_roguelike_tutorial.procgen import generate_dungeon
 
 
 def main():
@@ -26,7 +26,7 @@ def main():
     npc = Entity(screen_width // 2 - 5, screen_height // 2, "N", (255, 255, 0))
     entities = {npc, player}
 
-    game_map = GameMap(map_width, map_height)
+    game_map = generate_dungeon(map_width, map_height)
     engine = Engine(
         entities=entities, event_handler=event_handler, game_map=game_map, player=player
     )

@@ -7,12 +7,7 @@ from py_roguelike_tutorial import tile_types
 class GameMap:
     def __init__(self, width: int, height: int) -> None:
         self.width, self.height = width, height
-        self.tiles = np.full((width, height), fill_value=tile_types.floor, order="F")
-
-        self.add_walls()
-
-    def add_walls(self):
-        self.tiles[30:33, 22] = tile_types.wall
+        self.tiles = np.full((width, height), fill_value=tile_types.wall, order="F")
 
     def in_bounds(self, x: int, y: int) -> bool:
         """Is the coordinate within the map boundary?"""
