@@ -7,13 +7,13 @@ from py_roguelike_tutorial.types import Coord
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.engine import Engine
-    from py_roguelike_tutorial.entity import Entity
+    from py_roguelike_tutorial.entity import Entity, Actor
 
 
 class Action:
     """Command pattern. Named Action to stick with the tutorial notion."""
 
-    def __init__(self, entity: Entity):
+    def __init__(self, entity: Actor):
         self.entity = entity
 
     @property
@@ -26,7 +26,7 @@ class Action:
 
 class WaitAction(Action):
     def perform(self) -> None:
-        print(f"{self.entity.name} waits")
+        pass
 
 
 class EscapeAction(Action):
@@ -35,7 +35,7 @@ class EscapeAction(Action):
 
 
 class DirectedAction(Action):
-    def __init__(self, entity: Entity, dx: int, dy: int):
+    def __init__(self, entity: Actor, dx: int, dy: int):
         super().__init__(entity)
         self.dx = dx
         self.dy = dy
@@ -49,13 +49,25 @@ class DirectedAction(Action):
     def blocking_entity(self) -> Entity | None:
         return self.engine.game_map.get_blocking_entity_at(*self.dest_xy)
 
+    @property
+    def target_actor(self) -> Actor | None:
+        """Returns the target actor at the destination."""
+        return self.engine.game_map.get_actor_at_location(*self.dest_xy)
+
 
 class MeleeAction(DirectedAction):
     def perform(self) -> None:
-        target = self.blocking_entity
+        target = self.target_actor
         if not target:
             return
-        print(f"{self.entity.name} hits {target.name}")
+
+        damage = self.entity.fighter.power - target.fighter.defense
+        attack_desc = f"{self.entity.name} hits {target.name}"
+        if damage > 0:
+            print(f"{attack_desc} for {damage} HP,")
+            target.fighter.hp -= damage
+        else:
+            print(f"{attack_desc} but does not damage.")
 
 
 class MoveAction(DirectedAction):
@@ -72,6 +84,6 @@ class MoveAction(DirectedAction):
 
 class BumpAction(DirectedAction):
     def perform(self) -> None:
-        if self.blocking_entity:
+        if self.target_actor:
             return MeleeAction(self.entity, self.dx, self.dy).perform()
         return MoveAction(self.entity, self.dx, self.dy).perform()

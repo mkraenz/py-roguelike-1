@@ -15,6 +15,29 @@ from py_roguelike_tutorial.actions import (
 if TYPE_CHECKING:
     from py_roguelike_tutorial.engine import Engine
 
+_MOVE_KEYS = {
+    # numpad
+    Key.KP_1: (-1, 1),
+    Key.KP_2: (0, 1),
+    Key.KP_3: (1, 1),
+    Key.KP_4: (-1, 0),
+    Key.KP_6: (1, 0),
+    Key.KP_7: (-1, -1),
+    Key.KP_8: (0, -1),
+    Key.KP_9: (1, -1),
+    # wasd
+    Key.Z: (-1, 1),
+    Key.S: (0, 1),
+    Key.C: (1, 1),
+    Key.A: (-1, 0),
+    Key.D: (1, 0),
+    Key.Q: (-1, -1),
+    Key.W: (0, -1),
+    Key.E: (1, -1),
+}
+
+_WAIT_KEYS = {Key.KP_5, Key.PERIOD, Key.SPACE}
+
 
 class EventHandler(EventDispatch[Action]):
     def __init__(self, engine: Engine):
@@ -30,25 +53,13 @@ class EventHandler(EventDispatch[Action]):
     def ev_keydown(self, event: KeyDown) -> Action | None:
         key = event.sym
         player = self.engine.player
+
+        if key in _MOVE_KEYS:
+            dx, dy = _MOVE_KEYS[key]
+            return BumpAction(player, dx, dy)
+        if key in _WAIT_KEYS:
+            return WaitAction(player)
         match key:
-            case Key.W | Key.KP_8:
-                return BumpAction(player, 0, -1)
-            case Key.S | Key.KP_2:
-                return BumpAction(player, 0, 1)
-            case Key.A | Key.KP_4:
-                return BumpAction(player, -1, 0)
-            case Key.D | Key.KP_6:
-                return BumpAction(player, 1, 0)
-            case Key.Q | Key.KP_7:
-                return BumpAction(player, -1, -1)
-            case Key.E | Key.KP_9:
-                return BumpAction(player, 1, -1)
-            case Key.Z | Key.KP_1:
-                return BumpAction(player, -1, 1)
-            case Key.C | Key.KP_3:
-                return BumpAction(player, 1, 1)
-            case Key.PERIOD | Key.KP_5:
-                return WaitAction(player)
             case Key.ESCAPE:
                 return EscapeAction(player)
             case _:

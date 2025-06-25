@@ -8,10 +8,12 @@ from py_roguelike_tutorial.procgen import generate_dungeon
 
 
 def main():
-    window_width = 1600
-    window_height = 900
+    monitor_width = 1920
+    window_width = monitor_width // 2
+    window_height = 1080
     screen_width = 80
     screen_height = 50
+    window_x = monitor_width // 2
 
     map_width = 80
     map_height = 45
@@ -48,6 +50,8 @@ def main():
         vsync=True,
         width=window_width,
         height=window_height,
+        x=window_x,
+        y=0,
     ) as context:
         root_console = tcod.console.Console(screen_width, screen_height, order="F")
         while True:
