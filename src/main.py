@@ -11,6 +11,8 @@ def place_player(player: Entity, room: Room):
 
 
 def main():
+    window_width = 1600
+    window_height = 900
     screen_width = 80
     screen_height = 50
 
@@ -53,6 +55,8 @@ def main():
         tileset=tileset,
         title="Miros Pythyfyl Roguelike",
         vsync=True,
+        width=window_width,
+        height=window_height,
     ) as context:
         root_console = tcod.console.Console(screen_width, screen_height, order="F")
         while True:
