@@ -3,6 +3,7 @@ import copy
 from typing import Type, TYPE_CHECKING
 
 from py_roguelike_tutorial.components.fighter import Fighter
+from py_roguelike_tutorial.render_order import RenderOrder
 from py_roguelike_tutorial.types import Coord, Rgb
 from py_roguelike_tutorial.colors import Color
 
@@ -28,6 +29,7 @@ class Entity:
         name: str,
         blocks_movement: bool = False,
         game_map: GameMap | None = None,
+        render_order: RenderOrder = RenderOrder.CORPSE,
     ) -> None:
         self.x = x
         self.y = y
@@ -35,6 +37,7 @@ class Entity:
         self.color = color
         self.name = name
         self.blocks_movement = blocks_movement
+        self.render_order = render_order
         if game_map:
             self.game_map = game_map
             game_map.entities.add(self)
@@ -94,7 +97,13 @@ class Actor(Entity):
         fighter: Fighter,
     ):
         super().__init__(
-            x=x, y=y, char=char, color=color, name=name, blocks_movement=True
+            x=x,
+            y=y,
+            char=char,
+            color=color,
+            name=name,
+            blocks_movement=True,
+            render_order=RenderOrder.ACTOR,
         )
         self.ai: BaseAI | None = ai_cls(self)
         self.fighter = fighter
@@ -111,3 +120,4 @@ class Actor(Entity):
         self.blocks_movement = False
         self.ai = None
         self.name = f"remains of {self.name}"
+        self.render_order = RenderOrder.CORPSE

@@ -49,8 +49,11 @@ class GameMap:
             choicelist=[self.tiles["light"], self.tiles["dark"]],
             default=tile_types.SHROUD,
         )
+        sorted_entities = sorted(
+            self.visible_entities, key=lambda x: x.render_order.value
+        )
 
-        for entity in self.visible_entities:
+        for entity in sorted_entities:
             # only visible NPCs are drawn
             console.print(entity.x, entity.y, entity.char, fg=entity.color)
 

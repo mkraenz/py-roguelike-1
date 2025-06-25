@@ -4,9 +4,18 @@ from tcod.map import compute_fov
 
 from py_roguelike_tutorial.entity import Actor
 from py_roguelike_tutorial.game_map import GameMap
-from py_roguelike_tutorial.input_handlers import EventHandler
+from py_roguelike_tutorial.input_handlers import EventHandler, MainGameEventHandler
 
 _FOV_RADIUS = 8
+
+YOU_DIED = '''M""MMMM""M MMP"""""YMM M""MMMMM""M M""""""'YMM M""M MM""""""""`M M""""""'YMM 
+M. `MM' .M M' .mmm. `M M  MMMMM  M M  mmmm. `M M  M MM  mmmmmmmM M  mmmm. `M 
+MM.    .MM M  MMMMM  M M  MMMMM  M M  MMMMM  M M  M M`      MMMM M  MMMMM  M 
+MMMb  dMMM M  MMMMM  M M  MMMMM  M M  MMMMM  M M  M MM  MMMMMMMM M  MMMMM  M 
+MMMM  MMMM M. `MMM' .M M  `MMM'  M M  MMMM' .M M  M MM  MMMMMMMM M  MMMM' .M 
+MMMM  MMMM MMb     dMM Mb       dM M       .MM M  M MM        .M M       .MM 
+MMMMMMMMMM MMMMMMMMMMM MMMMMMMMMMM MMMMMMMMMMM MMMM MMMMMMMMMMMM MMMMMMMMMMM 
+'''
 
 
 class Engine:
@@ -17,11 +26,20 @@ class Engine:
         *,
         player: Actor,
     ) -> None:
-        self.event_handler: EventHandler = EventHandler(self)
+        self.event_handler: EventHandler = MainGameEventHandler(self)
         self.player = player
 
     def render(self, console: Console, context: Context) -> None:
         self.game_map.render(console)
+        hp = f"HP: {self.player.fighter.hp}/{self.player.fighter.max_hp}"
+
+        console.print(x=1, y=47, text=hp)
+        if not self.player.is_alive:
+            console.print(
+                x=console.width // 2 - 76 // 2,
+                y=console.height // 2 - 7 // 2 - 1,
+                text=YOU_DIED,
+            )
 
         context.present(console)
         console.clear()

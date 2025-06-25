@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from tcod.event import EventDispatch, KeyDown, wait
+from tcod.event import EventDispatch, KeyDown, wait, T
 from tcod.event import KeySym as Key
 from tcod.event import Quit
 
@@ -47,10 +47,11 @@ class EventHandler(EventDispatch[Action]):
     def ev_quit(self, event: Quit) -> Action | None:
         raise SystemExit()
 
-    """
-    Like Godot's Input Map
-    """
+    def handle_events(self) -> None:
+        raise NotImplementedError()
 
+
+class MainGameEventHandler(EventHandler):
     def ev_keydown(self, event: KeyDown) -> Action | None:
         key = event.sym
         player = self.engine.player
@@ -76,3 +77,21 @@ class EventHandler(EventDispatch[Action]):
             action.perform()
             self.engine.handle_npc_turns()
             self.engine.update_fov()
+
+
+class GameOverEventHandler(EventHandler):
+    def handle_events(self) -> None:
+        for event in wait():
+            action = self.dispatch(event)
+            if action is None:
+                continue
+            action.perform()
+
+    def ev_keydown(self, event: KeyDown, /) -> Action | None:
+        key = event.sym
+        player = self.engine.player
+        match key:
+            case Key.ESCAPE:
+                return EscapeAction(player)
+            case _:
+                return None
