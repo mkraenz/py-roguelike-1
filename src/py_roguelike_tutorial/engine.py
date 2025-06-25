@@ -1,3 +1,4 @@
+import random
 from typing import Any, Iterable, Set
 
 from tcod.console import Console
@@ -16,12 +17,10 @@ class Engine:
     def __init__(
         self,
         *,
-        entities: Set[Entity],
         event_handler: EventHandler,
         player: Entity,
         game_map: GameMap,
     ) -> None:
-        self.entities = entities
         self.event_handler = event_handler
         self.player = player
         self.game_map = game_map
@@ -33,14 +32,11 @@ class Engine:
             if action is None:
                 continue
             action.perform(self, self.player)
+            self.handle_npc_turns()
             self.update_fov()
 
     def render(self, console: Console, context: Context) -> None:
         self.game_map.render(console)
-        for entity in self.entities:
-            # only visible NPCs are drawn
-            if self.game_map.visible[entity.pos]:
-                console.print(entity.x, entity.y, entity.char, fg=entity.color)
 
         context.present(console)
         console.clear()
@@ -54,3 +50,16 @@ class Engine:
         )
         # if a tile is visible, it should also be explored
         self.game_map.explored[:] |= self.game_map.visible
+
+    def handle_npc_turns(self) -> None:
+        for entity in self.game_map.entities - {self.player}:
+            print(f"{entity.name} wonders when it will get a real turn.")
+            dx = random.randint(-1, 1)
+            dy = random.randint(-1, 1)
+            next_x, next_y = entity.x + dx, entity.y + dy
+            if (
+                self.game_map.in_bounds(next_x, next_y)
+                and self.game_map.tiles["walkable"][next_x, next_y]
+                and not self.game_map.get_blocking_entity_at(next_x, next_y)
+            ):
+                entity.move(dx, dy)

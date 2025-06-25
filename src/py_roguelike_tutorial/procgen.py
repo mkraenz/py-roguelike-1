@@ -5,6 +5,7 @@ from tcod.los import bresenham
 
 from py_roguelike_tutorial import tile_types
 from py_roguelike_tutorial.entity import Entity
+from py_roguelike_tutorial.entity_factory import orc_prefab, troll_prefab
 from py_roguelike_tutorial.game_map import GameMap
 from py_roguelike_tutorial.types import Coord
 
@@ -50,8 +51,10 @@ def generate_dungeon(
     room_max_size: int,
     map_width: int,
     map_height: int,
-) -> Tuple[GameMap, List[RectangularRoom]]:
-    dungeon = GameMap(map_width, map_height)
+    max_monsters_per_room: int,
+    player: Entity,
+) -> GameMap:
+    dungeon = GameMap(map_width, map_height, entities=[player])
 
     rooms: List[RectangularRoom] = []
 
@@ -70,9 +73,15 @@ def generate_dungeon(
         if len(rooms) != 0:
             for coord in tunnel_between_room_centers(room, rooms[-1]):
                 dungeon.tiles[coord] = tile_types.floor
+
+        place_entities(room, dungeon, max_monsters_per_room)
+
         rooms.append(room)
 
-    return dungeon, rooms
+    # place player
+    player.x, player.y = rooms[0].center
+
+    return dungeon
 
 
 def tunnel_between_room_centers(room1: Room, room2: Room) -> Iterator[Coord]:
@@ -83,9 +92,24 @@ def tunnel_between(start: Coord, end: Coord) -> Iterator[Coord]:
     """Return an L-shaped tunnel between these points."""
     x1, y1 = start
     x2, y2 = end
-    # move horizontally then vertically or vice-versa
+    # move horizontally then vertically or vice versa
     corner_x, corner_y = (x2, y1) if random.random() < 0.5 else (x1, y2)
     for x, y in bresenham(start=(x1, y1), end=(corner_x, corner_y)).tolist():
         yield x, y
     for x, y in bresenham(start=(corner_x, corner_y), end=(x2, y2)).tolist():
         yield x, y
+
+
+def place_entities(room: RectangularRoom, game_map: GameMap, max_monsters: int) -> None:
+    num_of_monsters = random.randint(0, max_monsters)
+    for i in range(num_of_monsters):
+        x = random.randint(room.x1 + 1, room.x2 - 1)  # +-1 to avoid walls
+        y = random.randint(room.y1 + 1, room.y2 - 1)
+        place_taken = any(
+            x == entity.x and y == entity.y for entity in game_map.entities
+        )
+        if not place_taken:
+            if random.random() < 0.8:
+                orc_prefab.spawn(game_map, x, y)
+            else:
+                troll_prefab.spawn(game_map, x, y)

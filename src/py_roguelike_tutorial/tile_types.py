@@ -4,6 +4,8 @@ import numpy as np
 
 from py_roguelike_tutorial.types import Rgb
 
+from py_roguelike_tutorial.colors import Color
+
 _Graphic = Tuple[int, Rgb, Rgb]
 
 graphic_dt = np.dtype(
@@ -34,21 +36,18 @@ def new_tile(
     return np.array((walkable, transparent, dark, light), dtype=tile_dt)
 
 
-_WHITE = (255, 255, 255)
-_BLACK = (0, 0, 0)
-
 # SHROUD represents unexplored, unseen tiles
-SHROUD = np.array((ord(" "), _WHITE, _BLACK), dtype=graphic_dt)
+SHROUD = np.array((ord(" "), Color.WHITE, Color.BLACK), dtype=graphic_dt)
 
 floor = new_tile(
     walkable=True,
     transparent=True,
-    dark=(ord(" "), _WHITE, (50, 50, 150)),
-    light=(ord(" "), _WHITE, (200, 180, 50)),
+    dark=(ord(" "), Color.WHITE, (50, 50, 150)),
+    light=(ord(" "), Color.WHITE, (200, 180, 50)),
 )
 wall = new_tile(
     walkable=False,
     transparent=False,
-    dark=(ord(" "), _WHITE, (0, 0, 100)),
-    light=(ord(" "), _WHITE, (130, 110, 50)),
+    dark=(ord(" "), Color.WHITE, (0, 0, 100)),
+    light=(ord(" "), Color.WHITE, (130, 110, 50)),
 )

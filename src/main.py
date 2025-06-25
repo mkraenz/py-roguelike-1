@@ -1,13 +1,12 @@
+import copy
+
 import tcod
 
 from py_roguelike_tutorial.engine import Engine
 from py_roguelike_tutorial.entity import Entity
+from py_roguelike_tutorial.entity_factory import player_prefab
 from py_roguelike_tutorial.input_handlers import EventHandler
-from py_roguelike_tutorial.procgen import Room, generate_dungeon
-
-
-def place_player(player: Entity, room: Room):
-    player.x, player.y = room.center
+from py_roguelike_tutorial.procgen import generate_dungeon
 
 
 def main():
@@ -18,36 +17,33 @@ def main():
 
     map_width = 80
     map_height = 45
-
     room_max_size = 10
     room_min_size = 6
     max_rooms = 30
+    max_monsters_per_room = 2
 
     event_handler = EventHandler()
 
     tileset = tcod.tileset.load_tilesheet(
         "assets/dejavu10x10_gs_tc.png",
         32,
-        8,
+    8,
         tcod.tileset.CHARMAP_TCOD,
     )
 
-    player = Entity(screen_width // 2, screen_height // 2, "@", (255, 255, 255))
-    npc = Entity(screen_width // 2 - 5, screen_height // 2, "N", (255, 255, 0))
-    entities = {npc, player}
+    player = copy.deepcopy(player_prefab)
 
-    game_map, rooms = generate_dungeon(
+    game_map = generate_dungeon(
         map_width=map_width,
         map_height=map_height,
         max_rooms=max_rooms,
         room_max_size=room_max_size,
         room_min_size=room_min_size,
+        player=player,
+        max_monsters_per_room=max_monsters_per_room,
     )
-    place_player(player, rooms[0])
 
-    engine = Engine(
-        entities=entities, event_handler=event_handler, game_map=game_map, player=player
-    )
+    engine = Engine(event_handler=event_handler, game_map=game_map, player=player)
 
     with tcod.context.new(
         columns=screen_width,
