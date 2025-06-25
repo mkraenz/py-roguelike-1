@@ -3,9 +3,7 @@ import copy
 import tcod
 
 from py_roguelike_tutorial.engine import Engine
-from py_roguelike_tutorial.entity import Entity
-from py_roguelike_tutorial.entity_factory import player_prefab
-from py_roguelike_tutorial.input_handlers import EventHandler
+from py_roguelike_tutorial.entity_factory import EntityFactory
 from py_roguelike_tutorial.procgen import generate_dungeon
 
 
@@ -22,28 +20,25 @@ def main():
     max_rooms = 30
     max_monsters_per_room = 2
 
-    event_handler = EventHandler()
-
     tileset = tcod.tileset.load_tilesheet(
         "assets/dejavu10x10_gs_tc.png",
         32,
-    8,
+        8,
         tcod.tileset.CHARMAP_TCOD,
     )
 
-    player = copy.deepcopy(player_prefab)
-
-    game_map = generate_dungeon(
+    player = copy.deepcopy(EntityFactory.player_prefab)
+    engine = Engine(player=player)
+    engine.game_map = generate_dungeon(
         map_width=map_width,
         map_height=map_height,
         max_rooms=max_rooms,
         room_max_size=room_max_size,
         room_min_size=room_min_size,
-        player=player,
         max_monsters_per_room=max_monsters_per_room,
+        engine=engine,
     )
-
-    engine = Engine(event_handler=event_handler, game_map=game_map, player=player)
+    engine.update_fov()
 
     with tcod.context.new(
         columns=screen_width,
@@ -57,8 +52,7 @@ def main():
         root_console = tcod.console.Console(screen_width, screen_height, order="F")
         while True:
             engine.render(root_console, context)
-            events = tcod.event.wait()
-            engine.handle_events(events)
+            engine.event_handler.handle_events()
 
 
 if __name__ == "__main__":

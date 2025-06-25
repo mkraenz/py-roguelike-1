@@ -4,8 +4,9 @@ from typing import Iterator, List, Protocol, Tuple
 from tcod.los import bresenham
 
 from py_roguelike_tutorial import tile_types
+from py_roguelike_tutorial.engine import Engine
 from py_roguelike_tutorial.entity import Entity
-from py_roguelike_tutorial.entity_factory import orc_prefab, troll_prefab
+from py_roguelike_tutorial.entity_factory import EntityFactory
 from py_roguelike_tutorial.game_map import GameMap
 from py_roguelike_tutorial.types import Coord
 
@@ -52,9 +53,12 @@ def generate_dungeon(
     map_width: int,
     map_height: int,
     max_monsters_per_room: int,
-    player: Entity,
+    engine: Engine,
 ) -> GameMap:
-    dungeon = GameMap(map_width, map_height, entities=[player])
+    player = engine.player
+    dungeon = GameMap(
+        width=map_width, height=map_height, entities=[player], engine=engine
+    )
 
     rooms: List[RectangularRoom] = []
 
@@ -78,8 +82,7 @@ def generate_dungeon(
 
         rooms.append(room)
 
-    # place player
-    player.x, player.y = rooms[0].center
+    player.place(*rooms[0].center, dungeon)
 
     return dungeon
 
@@ -110,6 +113,6 @@ def place_entities(room: RectangularRoom, game_map: GameMap, max_monsters: int) 
         )
         if not place_taken:
             if random.random() < 0.8:
-                orc_prefab.spawn(game_map, x, y)
+                EntityFactory.orc_prefab.spawn(game_map, x, y)
             else:
-                troll_prefab.spawn(game_map, x, y)
+                EntityFactory.troll_prefab.spawn(game_map, x, y)

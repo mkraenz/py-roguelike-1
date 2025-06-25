@@ -6,11 +6,15 @@ from tcod.console import Console
 from py_roguelike_tutorial import tile_types
 
 if TYPE_CHECKING:
+    from py_roguelike_tutorial.engine import Engine
     from py_roguelike_tutorial.entity import Entity
 
 
 class GameMap:
-    def __init__(self, width: int, height: int, entities: Iterable[Entity]) -> None:
+    def __init__(
+        self, *, engine: Engine, width: int, height: int, entities: Iterable[Entity]
+    ) -> None:
+        self.engine = engine
         self.width, self.height = width, height
         self.tiles = np.full((width, height), fill_value=tile_types.wall, order="F")
 

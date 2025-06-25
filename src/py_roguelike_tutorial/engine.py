@@ -14,26 +14,15 @@ _FOV_RADIUS = 8
 
 
 class Engine:
+    game_map: GameMap
+
     def __init__(
         self,
         *,
-        event_handler: EventHandler,
         player: Entity,
-        game_map: GameMap,
     ) -> None:
-        self.event_handler = event_handler
+        self.event_handler: EventHandler = EventHandler(self)
         self.player = player
-        self.game_map = game_map
-        self.update_fov()
-
-    def handle_events(self, events: Iterable[Any]) -> None:
-        for event in events:
-            action = self.event_handler.dispatch(event)
-            if action is None:
-                continue
-            action.perform(self, self.player)
-            self.handle_npc_turns()
-            self.update_fov()
 
     def render(self, console: Console, context: Context) -> None:
         self.game_map.render(console)
