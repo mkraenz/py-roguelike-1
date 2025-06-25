@@ -1,14 +1,10 @@
-import random
-from typing import Any, Iterable, Set
-
 from tcod.console import Console
 from tcod.context import Context
 from tcod.map import compute_fov
 
-from py_roguelike_tutorial.entity import Entity
+from py_roguelike_tutorial.entity import Actor
 from py_roguelike_tutorial.game_map import GameMap
 from py_roguelike_tutorial.input_handlers import EventHandler
-
 
 _FOV_RADIUS = 8
 
@@ -19,7 +15,7 @@ class Engine:
     def __init__(
         self,
         *,
-        player: Entity,
+        player: Actor,
     ) -> None:
         self.event_handler: EventHandler = EventHandler(self)
         self.player = player
@@ -41,14 +37,6 @@ class Engine:
         self.game_map.explored[:] |= self.game_map.visible
 
     def handle_npc_turns(self) -> None:
-        for entity in self.game_map.entities - {self.player}:
-            print(f"{entity.name} wonders when it will get a real turn.")
-            dx = random.randint(-1, 1)
-            dy = random.randint(-1, 1)
-            next_x, next_y = entity.x + dx, entity.y + dy
-            if (
-                self.game_map.in_bounds(next_x, next_y)
-                and self.game_map.tiles["walkable"][next_x, next_y]
-                and not self.game_map.get_blocking_entity_at(next_x, next_y)
-            ):
-                entity.move(dx, dy)
+        for entity in set(self.game_map.actors) - {self.player}:
+            if entity.ai:
+                entity.ai.perform()

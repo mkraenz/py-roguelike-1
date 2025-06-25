@@ -1,9 +1,10 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Iterable
+from typing import TYPE_CHECKING, Iterable, Iterator
 import numpy as np
 from tcod.console import Console
 
 from py_roguelike_tutorial import tile_types
+from py_roguelike_tutorial.entity import Actor
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.engine import Engine
@@ -22,6 +23,21 @@ class GameMap:
         self.explored = np.full((width, height), fill_value=False, order="F")
 
         self.entities = set(entities)
+
+    @property
+    def actors(self) -> Iterator[Actor]:
+        """Iterator of alive actors."""
+        yield from (
+            entity
+            for entity in self.entities
+            if isinstance(entity, Actor) and entity.is_alive
+        )
+
+    def get_actor_at_location(self, x: int, y: int) -> Actor | None:
+        for entity in self.actors:
+            if entity.x == x and entity.y == y:
+                return entity
+        return None
 
     def in_bounds(self, x: int, y: int) -> bool:
         """Is the coordinate within the map boundary?"""

@@ -13,12 +13,12 @@ if TYPE_CHECKING:
 class Action:
     """Command pattern. Named Action to stick with the tutorial notion."""
 
-    def __init__(self, actor: Entity):
-        self.actor = actor
+    def __init__(self, entity: Entity):
+        self.entity = entity
 
     @property
     def engine(self) -> Engine:
-        return self.actor.game_map.engine
+        return self.entity.game_map.engine
 
     def perform(self) -> None:
         raise NotImplementedError("subclasses must implement perform")
@@ -26,7 +26,7 @@ class Action:
 
 class WaitAction(Action):
     def perform(self) -> None:
-        print(f"{self.actor.name} waits")
+        print(f"{self.entity.name} waits")
 
 
 class EscapeAction(Action):
@@ -35,15 +35,15 @@ class EscapeAction(Action):
 
 
 class DirectedAction(Action):
-    def __init__(self, actor: Entity, dx: int, dy: int):
-        super().__init__(actor)
+    def __init__(self, entity: Entity, dx: int, dy: int):
+        super().__init__(entity)
         self.dx = dx
         self.dy = dy
 
     @property
     def dest_xy(self) -> Coord:
         """The destination coordinates."""
-        return self.actor.x + self.dx, self.actor.y + self.dy
+        return self.entity.x + self.dx, self.entity.y + self.dy
 
     @property
     def blocking_entity(self) -> Entity | None:
@@ -55,7 +55,7 @@ class MeleeAction(DirectedAction):
         target = self.blocking_entity
         if not target:
             return
-        print(f"{self.actor.name} hits {target.name}")
+        print(f"{self.entity.name} hits {target.name}")
 
 
 class MoveAction(DirectedAction):
@@ -67,11 +67,11 @@ class MoveAction(DirectedAction):
             return
         if self.engine.game_map.get_blocking_entity_at(dest_x, dest_y):
             return
-        self.actor.move(self.dx, self.dy)
+        self.entity.move(self.dx, self.dy)
 
 
 class BumpAction(DirectedAction):
     def perform(self) -> None:
         if self.blocking_entity:
-            return MeleeAction(self.actor, self.dx, self.dy).perform()
-        return MoveAction(self.actor, self.dx, self.dy).perform()
+            return MeleeAction(self.entity, self.dx, self.dy).perform()
+        return MoveAction(self.entity, self.dx, self.dy).perform()
