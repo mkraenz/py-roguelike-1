@@ -1,4 +1,4 @@
-from py_roguelike_tutorial.types import Rgb
+from py_roguelike_tutorial.types import Coord, Rgb
 
 
 class Entity:
@@ -15,3 +15,7 @@ class Entity:
     def move(self, dx: int, dy: int) -> None:
         self.x += dx
         self.y += dy
+
+    @property
+    def pos(self) -> Coord:
+        return self.x, self.y
