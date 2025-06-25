@@ -5,7 +5,6 @@ from tcod.los import bresenham
 
 from py_roguelike_tutorial import tile_types
 from py_roguelike_tutorial.engine import Engine
-from py_roguelike_tutorial.entity import Entity
 from py_roguelike_tutorial.entity_factory import EntityFactory
 from py_roguelike_tutorial.game_map import GameMap
 from py_roguelike_tutorial.types import Coord

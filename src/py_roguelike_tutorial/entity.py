@@ -98,8 +98,16 @@ class Actor(Entity):
         )
         self.ai: BaseAI | None = ai_cls(self)
         self.fighter = fighter
+        self.fighter.entity = self
 
     @property
     def is_alive(self) -> bool:
         """Returns true as long as the actor can perform actions"""
         return bool(self.ai)
+
+    def die(self):
+        self.char = "%"
+        self.color = Color.GUARDMANS_RED
+        self.blocks_movement = False
+        self.ai = None
+        self.name = f"remains of {self.name}"

@@ -1,7 +1,7 @@
 from py_roguelike_tutorial.colors import Color
 from py_roguelike_tutorial.components.ai import HostileEnemy
 from py_roguelike_tutorial.components.fighter import Fighter
-from py_roguelike_tutorial.entity import Entity, Actor
+from py_roguelike_tutorial.entity import Actor
 
 
 class EntityFactory:

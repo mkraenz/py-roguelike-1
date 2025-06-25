@@ -13,7 +13,7 @@ def main():
     window_height = 1080
     screen_width = 80
     screen_height = 50
-    window_x = monitor_width // 2
+    window_x = monitor_width // 2 - 10
 
     map_width = 80
     map_height = 45

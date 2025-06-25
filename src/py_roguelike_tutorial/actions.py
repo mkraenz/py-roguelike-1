@@ -63,8 +63,9 @@ class MeleeAction(DirectedAction):
 
         damage = self.entity.fighter.power - target.fighter.defense
         attack_desc = f"{self.entity.name} hits {target.name}"
+
         if damage > 0:
-            print(f"{attack_desc} for {damage} HP,")
+            print(f"{attack_desc} for {damage} HP. {target.fighter.hp}HP left.")
             target.fighter.hp -= damage
         else:
             print(f"{attack_desc} but does not damage.")

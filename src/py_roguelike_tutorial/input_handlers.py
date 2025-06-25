@@ -1,5 +1,6 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING, Iterable, Any
+
+from typing import TYPE_CHECKING
 
 from tcod.event import EventDispatch, KeyDown, wait
 from tcod.event import KeySym as Key
