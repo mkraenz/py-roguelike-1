@@ -3,12 +3,13 @@ from __future__ import annotations
 import sys
 from typing import TYPE_CHECKING
 
+from py_roguelike_tutorial import exceptions
 from py_roguelike_tutorial.colors import Theme
 from py_roguelike_tutorial.types import Coord
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.engine import Engine
-    from py_roguelike_tutorial.entity import Entity, Actor
+    from py_roguelike_tutorial.entity import Entity, Actor, Item
 
 
 class Action:
@@ -19,7 +20,7 @@ class Action:
 
     @property
     def engine(self) -> Engine:
-        return self.entity.game_map.engine
+        return self.entity.parent.engine
 
     def perform(self) -> None:
         raise NotImplementedError("subclasses must implement perform")
@@ -68,7 +69,7 @@ class MeleeAction(DirectedAction):
     def perform(self) -> None:
         target = self.target_actor
         if not target:
-            return
+            raise exceptions.Impossible("Nothing to attack.")
 
         damage = self.entity.fighter.power - target.fighter.defense
 
@@ -90,11 +91,11 @@ class MoveAction(DirectedAction):
     def perform(self) -> None:
         dest_x, dest_y = self.dest_xy
         if not self.engine.game_map.in_bounds(dest_x, dest_y):
-            return
+            raise exceptions.Impossible("The way is blocked.")
         if not self.engine.game_map.tiles["walkable"][dest_x, dest_y]:
-            return
+            raise exceptions.Impossible("The way is blocked.")
         if self.engine.game_map.get_blocking_entity_at(dest_x, dest_y):
-            return
+            raise exceptions.Impossible("The way is blocked.")
         self.entity.move(self.dx, self.dy)
 
 
@@ -103,3 +104,38 @@ class BumpAction(DirectedAction):
         if self.target_actor:
             return MeleeAction(self.entity, self.dx, self.dy).perform()
         return MoveAction(self.entity, self.dx, self.dy).perform()
+
+
+class UseItemAction(Action):
+    def __init__(self, entity: Actor, item: Item, target_xy: Coord | None = None):
+        super().__init__(entity)
+        self.item = item
+        self.target_xy = target_xy if target_xy else (entity.x, entity.y)
+
+    @property
+    def target_actor(self) -> Actor | None:
+        return self.engine.game_map.get_actor_at_location(*self.target_xy)
+
+    def perform(self) -> None:
+        self.item.consumable.activate(self)
+
+
+class PickupAction(Action):
+    """Pick up an item and add it to the inventory, if there is enough space."""
+
+    @property
+    def target_item(self) -> Item | None:
+        return self.engine.game_map.get_item_at_location(*self.entity.pos)
+
+    def perform(self) -> None:
+        item = self.target_item
+        if not item:
+            raise exceptions.Impossible("There is nothing here to pick up.")
+        if not self.entity.inventory.has_capacity(1):
+            raise exceptions.Impossible("Your backpack is full.")
+
+        self.entity.inventory.add(item)
+        self.engine.game_map.entities.remove(item)
+
+        txt = f"You pick up the {item.name}."
+        self.engine.message_log.add(txt)

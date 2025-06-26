@@ -4,7 +4,7 @@ import numpy as np
 from tcod.console import Console
 
 from py_roguelike_tutorial import tile_types
-from py_roguelike_tutorial.entity import Actor
+from py_roguelike_tutorial.entity import Actor, Item
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.engine import Engine
@@ -25,6 +25,10 @@ class GameMap:
         self.entities = set(entities)
 
     @property
+    def game_map(self) -> GameMap:
+        return self
+
+    @property
     def actors(self) -> Iterator[Actor]:
         """Iterator of alive actors."""
         yield from (
@@ -32,6 +36,10 @@ class GameMap:
             for entity in self.entities
             if isinstance(entity, Actor) and entity.is_alive
         )
+
+    @property
+    def items(self) -> Iterator[Item]:
+        yield from (entity for entity in self.entities if isinstance(entity, Item))
 
     def get_actor_at_location(self, x: int, y: int) -> Actor | None:
         for entity in self.actors:
@@ -66,3 +74,8 @@ class GameMap:
             if entity.blocks_movement and entity.pos == (x, y):
                 return entity
         return None
+
+    def get_item_at_location(self, x: int, y: int) -> Item | None:
+        for entity in self.items:
+            if entity.pos == (x, y):
+                return entity

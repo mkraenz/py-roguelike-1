@@ -1,5 +1,3 @@
-from typing import Tuple
+Rgb = tuple[int, int, int]
 
-Rgb = Tuple[int, int, int]
-
-Coord = Tuple[int, int]
+Coord = tuple[int, int]

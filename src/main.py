@@ -1,6 +1,8 @@
 import copy
+import traceback
 
 import tcod
+from tcod.event import wait
 
 from py_roguelike_tutorial.colors import Theme
 from py_roguelike_tutorial.engine import Engine
@@ -22,6 +24,7 @@ def main():
     room_min_size = 6
     max_rooms = 30
     max_monsters_per_room = 2
+    max_items_per_room = 2
 
     tileset = tcod.tileset.load_tilesheet(
         "assets/dejavu10x10_gs_tc.png",
@@ -39,6 +42,7 @@ def main():
         room_max_size=room_max_size,
         room_min_size=room_min_size,
         max_monsters_per_room=max_monsters_per_room,
+        max_items_per_room=max_items_per_room,
         engine=engine,
     )
     engine.update_fov()
@@ -60,7 +64,13 @@ def main():
             root_console.clear()
             engine.event_handler.on_render(console=root_console)
             context.present(root_console)
-            engine.event_handler.handle_events(context)
+            try:
+                for event in wait():
+                    context.convert_event(event)
+                    engine.event_handler.handle_events(event)
+            except Exception:
+                traceback.print_exc()
+                engine.message_log.add(text=traceback.format_exc(), fg=Theme.error)
 
 
 if __name__ == "__main__":

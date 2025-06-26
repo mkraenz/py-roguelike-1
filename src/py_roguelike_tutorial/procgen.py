@@ -1,5 +1,5 @@
 import random
-from typing import Iterator, List, Protocol, Tuple
+from typing import Iterator, List, Protocol
 
 from tcod.los import bresenham
 
@@ -30,7 +30,7 @@ class RectangularRoom:
         return center_x, center_y
 
     @property
-    def inner(self) -> Tuple[slice, slice]:
+    def inner(self) -> tuple[slice, slice]:
         """Return the inner area of this room as a 2D array index."""
         # +1's are for at least one row of walls between rooms with adjacent x's
         return slice(self.x1 + 1, self.x2), slice(self.y1 + 1, self.y2)
@@ -52,6 +52,7 @@ def generate_dungeon(
     map_width: int,
     map_height: int,
     max_monsters_per_room: int,
+    max_items_per_room: int,
     engine: Engine,
 ) -> GameMap:
     player = engine.player
@@ -59,7 +60,7 @@ def generate_dungeon(
         width=map_width, height=map_height, entities=[player], engine=engine
     )
 
-    rooms: List[RectangularRoom] = []
+    rooms: list[RectangularRoom] = []
 
     for _ in range(max_rooms):
         room_w = random.randint(room_min_size, room_max_size)
@@ -78,6 +79,7 @@ def generate_dungeon(
                 dungeon.tiles[coord] = tile_types.floor
 
         place_entities(room, dungeon, max_monsters_per_room)
+        place_items(room, dungeon, max_items_per_room)
 
         rooms.append(room)
 
@@ -100,6 +102,15 @@ def tunnel_between(start: Coord, end: Coord) -> Iterator[Coord]:
         yield x, y
     for x, y in bresenham(start=(corner_x, corner_y), end=(x2, y2)).tolist():
         yield x, y
+
+
+def place_items(room: RectangularRoom, game_map: GameMap, max_items: int) -> None:
+    num_of_items = random.randint(0, max_items)
+    for i in range(num_of_items):
+        x = random.randint(room.x1 + 1, room.x2 - 1)
+        y = random.randint(room.y1 + 1, room.y2 - 1)
+        if not any(entity.x == x and entity.y == y for entity in game_map.entities):
+            EntityFactory.health_potion_prefab.spawn(game_map, x, y)
 
 
 def place_entities(room: RectangularRoom, game_map: GameMap, max_monsters: int) -> None:

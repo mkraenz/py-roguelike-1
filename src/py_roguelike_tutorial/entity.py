@@ -1,15 +1,18 @@
 from __future__ import annotations
+
 import copy
 from typing import Type, TYPE_CHECKING
 
-from py_roguelike_tutorial.components.fighter import Fighter
+from py_roguelike_tutorial.colors import Color
 from py_roguelike_tutorial.render_order import RenderOrder
 from py_roguelike_tutorial.types import Coord, Rgb
-from py_roguelike_tutorial.colors import Color
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.components.ai import BaseAI
     from py_roguelike_tutorial.game_map import GameMap
+    from py_roguelike_tutorial.components.fighter import Fighter
+    from py_roguelike_tutorial.components.inventory import Inventory
+    from py_roguelike_tutorial.consumable import Consumable
 
 
 class Entity:
@@ -17,7 +20,7 @@ class Entity:
     Generic object to represent players, enemies, items, etc
     """
 
-    game_map: GameMap
+    parent: GameMap
 
     def __init__(
         self,
@@ -28,7 +31,7 @@ class Entity:
         color: Rgb = Color.BLACK,
         name: str,
         blocks_movement: bool = False,
-        game_map: GameMap | None = None,
+        parent: GameMap | None = None,
         render_order: RenderOrder = RenderOrder.CORPSE,
     ) -> None:
         self.x = x
@@ -38,9 +41,14 @@ class Entity:
         self.name = name
         self.blocks_movement = blocks_movement
         self.render_order = render_order
-        if game_map:
-            self.game_map = game_map
-            game_map.entities.add(self)
+        if parent:
+            self.parent = parent
+            parent.entities.add(self)
+
+    @property
+    def game_map(self) -> GameMap:
+        # this is not type safe...
+        return self.parent.game_map
 
     def spawn(self, game_map: GameMap, x: int, y: int):
         """Returns a clone of this entity that has been added to the map.
@@ -49,7 +57,7 @@ class Entity:
         clone = copy.deepcopy(self)
         clone.x = x
         clone.y = y
-        clone.game_map = game_map
+        clone.parent = game_map
         game_map.entities.add(clone)
         return clone
 
@@ -57,9 +65,10 @@ class Entity:
         """Places the entity at a new location. Handles movement across maps."""
         self.x, self.y = x, y
         if game_map:
-            if hasattr(self, "game_map"):
-                self.game_map.entities.remove(self)
-            self.game_map = game_map
+            if hasattr(self, "parent"):
+                if self.parent is self.game_map:
+                    self.game_map.entities.remove(self)
+            self.parent = game_map
             game_map.entities.add(self)
 
     def move(self, dx: int, dy: int) -> None:
@@ -95,6 +104,7 @@ class Actor(Entity):
         name: str,
         ai_cls: Type[BaseAI],
         fighter: Fighter,
+        inventory: Inventory,
     ):
         super().__init__(
             x=x,
@@ -107,7 +117,9 @@ class Actor(Entity):
         )
         self.ai: BaseAI | None = ai_cls(self)
         self.fighter = fighter
-        self.fighter.entity = self
+        self.fighter.parent = self
+        self.inventory = inventory
+        self.inventory.parent = self
 
     @property
     def is_alive(self) -> bool:
@@ -121,3 +133,29 @@ class Actor(Entity):
         self.ai = None
         self.name = f"remains of {self.name}"
         self.render_order = RenderOrder.CORPSE
+
+
+class Item(Entity):
+    parent: GameMap | Inventory # type: ignore [reportIncompatibleVariableOverride]
+    
+    def __init__(
+        self,
+        *,
+        x: int = 0,
+        y: int = 0,
+        char: str = "?",
+        color: Rgb = Color.WHITE,
+        name="<Unnamed Item>",
+        consumable: Consumable,
+    ):
+        super().__init__(
+            x=x,
+            y=y,
+            char=char,
+            color=color,
+            name=name,
+            blocks_movement=False,
+            render_order=RenderOrder.ITEM,
+        )
+        self.consumable = consumable
+        self.consumable.parent = self

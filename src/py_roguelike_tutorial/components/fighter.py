@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 
 class Fighter(BaseComponent):
-    entity: Actor  # type: ignore [reportIncompatibleVariableOverride]
+    parent: Actor  # type: ignore [reportIncompatibleVariableOverride]
 
     def __init__(self, hp: int, defense: int, power: int):
         self.max_hp = hp
@@ -29,10 +29,21 @@ class Fighter(BaseComponent):
             self.die()
 
     def die(self) -> None:
-        player_died = self.engine.player is self.entity
-        death_msg = "You died!" if player_died else f"{self.entity.name} has died!"
+        player_died = self.engine.player is self.parent
+        death_msg = "You died!" if player_died else f"{self.parent.name} has died!"
         log_color = Theme.player_dies if player_died else Theme.enemy_dies
-        self.entity.die()
+        self.parent.die()
         self.engine.message_log.add(death_msg, fg=log_color)
         if player_died:
             self.engine.event_handler = GameOverEventHandler(self.engine)
+
+    def heal(self, amount: int) -> int:
+        """Heals by the given amount and returns the amount recovered."""
+        theoretical_new_hp = self.hp + amount
+        new_hp_value = theoretical_new_hp if theoretical_new_hp <= self.max_hp else self.max_hp
+        amount_recovered = new_hp_value - self.hp
+        self.hp = new_hp_value
+        return amount_recovered
+
+    def take_damage(self, amount: int) -> None:
+        self.hp -= amount

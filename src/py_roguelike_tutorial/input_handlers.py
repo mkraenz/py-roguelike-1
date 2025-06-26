@@ -2,17 +2,19 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-import tcod.context
-from tcod.event import EventDispatch, KeyDown, wait, T
+from tcod.event import EventDispatch, KeyDown
 from tcod.event import KeySym as Key
 from tcod.event import Quit
 
+from py_roguelike_tutorial import exceptions
 from py_roguelike_tutorial.actions import (
     Action,
     EscapeAction,
     BumpAction,
     WaitAction,
+    PickupAction,
 )
+from py_roguelike_tutorial.colors import Theme
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.engine import Engine
@@ -55,10 +57,24 @@ class EventHandler(EventDispatch[Action]):
     def ev_quit(self, event: Quit) -> Action | None:
         raise SystemExit()
 
-    def handle_events(self, context: tcod.context.Context) -> None:
-        for event in wait():
-            context.convert_event(event)
-            self.dispatch(event)
+    def handle_events(self, event: tcod.event.Event) -> None:
+        self.handle_action(self.dispatch(event))
+
+    def handle_action(self, action: Action | None) -> bool:
+        """Handle actions returned from event methods.
+
+        Returns True if the action will advance a turn."""
+        if action is None:
+            return False
+        try:
+            action.perform()
+        except exceptions.Impossible as exc:
+            self.engine.message_log.add(text=exc.args[0], fg=Theme.impossible)
+            return False
+
+        self.engine.handle_npc_turns()
+        self.engine.update_fov()
+        return True
 
     def on_render(self, console: tcod.console.Console) -> None:
         self.engine.render(console)
@@ -86,28 +102,13 @@ class MainGameEventHandler(EventHandler):
                     self.engine, MainGameEventHandler
                 )
                 return
+            case Key.G:
+                return PickupAction(player)
             case _:
                 return None
 
-    def handle_events(self, context: tcod.context.Context) -> None:
-        for event in wait():
-            context.convert_event(event)
-            action = self.dispatch(event)
-            if action is None:
-                continue
-            action.perform()
-            self.engine.handle_npc_turns()
-            self.engine.update_fov()
-
 
 class GameOverEventHandler(EventHandler):
-    def handle_events(self, context: tcod.context.Context) -> None:
-        for event in wait():
-            context.convert_event(event)
-            action = self.dispatch(event)
-            if action is None:
-                continue
-            action.perform()
 
     def ev_keydown(self, event: KeyDown, /) -> Action | None:
         key = event.sym

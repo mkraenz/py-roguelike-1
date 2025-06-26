@@ -7,10 +7,15 @@ class Color:
     GREEN = (0x0, 0x60, 0x0)
     RED_DARK_SIENNA = (0x40, 0x10, 0x10)
     GREY_88 = (0xE0, 0xE0, 0xE0)
+    GREY = (0x80, 0x80, 0x80)
     PINK_YOUR = (0xFF, 0xC0, 0xC0)
     RED_FIREBRICK1 = (0xFF, 0x30, 0x30)
     ORANGE_VIBRANT_WARM = (0xFF, 0xA0, 0x30)
     AZURE_LIGHT_WASHED = (0x20, 0xA0, 0xFF)
+    YELLOW_1 = (0xFF, 0xFF, 0x00)
+    RED_CORAL = (0xFF, 0x40, 0x40)
+    GREEN = (0x00, 0xFF, 0x00)
+    VIOLET = (0x80, 0x00, 0xFF)
 
 
 class Theme:
@@ -18,7 +23,6 @@ class Theme:
     enemy_attacks = Color.PINK_YOUR
     player_dies = Color.RED_FIREBRICK1
     enemy_dies = Color.ORANGE_VIBRANT_WARM
-    # GUI
     welcome_text = Color.AZURE_LIGHT_WASHED
     hp_bar_text = Color.WHITE
     hp_bar_filled = Color.GREEN
@@ -26,3 +30,7 @@ class Theme:
     you_died_text = Color.RED_FIREBRICK1
     log_message = Color.WHITE
     hover_over_entity_names = Color.WHITE
+    invalid = Color.YELLOW_1
+    impossible = Color.GREY
+    error = Color.RED_CORAL
+    health_recovered = Color.GREEN

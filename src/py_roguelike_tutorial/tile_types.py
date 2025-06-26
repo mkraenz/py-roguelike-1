@@ -1,12 +1,9 @@
-from typing import Tuple
-
 import numpy as np
 
+from py_roguelike_tutorial.colors import Color
 from py_roguelike_tutorial.types import Rgb
 
-from py_roguelike_tutorial.colors import Color
-
-_Graphic = Tuple[int, Rgb, Rgb]
+_Graphic = tuple[int, Rgb, Rgb]
 
 graphic_dt = np.dtype(
     [

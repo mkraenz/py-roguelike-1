@@ -1,6 +1,9 @@
+from csv import excel
+
 from tcod.console import Console
 from tcod.map import compute_fov
 
+from py_roguelike_tutorial import exceptions
 from py_roguelike_tutorial.colors import Theme
 from py_roguelike_tutorial.entity import Actor
 from py_roguelike_tutorial.game_map import GameMap
@@ -51,4 +54,7 @@ class Engine:
     def handle_npc_turns(self) -> None:
         for entity in set(self.game_map.actors) - {self.player}:
             if entity.ai:
-                entity.ai.perform()
+                try:
+                    entity.ai.perform()
+                except exceptions.Impossible:
+                    pass # ignore impossible actions performed by the AI

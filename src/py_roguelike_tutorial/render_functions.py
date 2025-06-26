@@ -1,12 +1,14 @@
 from __future__ import annotations
+
+from functools import reduce
 from typing import TYPE_CHECKING
 
 from py_roguelike_tutorial.colors import Theme
 
 if TYPE_CHECKING:
     from tcod.console import Console
-    from engine import Engine
-    from game_map import GameMap
+    from py_roguelike_tutorial.game_map import GameMap
+    from py_roguelike_tutorial.engine import Engine
 
 
 def render_hp_bar(
@@ -32,11 +34,31 @@ def get_entity_names_at(world_x: int, world_y: int, game_map: GameMap) -> str:
         or not game_map.visible[world_x, world_y]
     ):
         return ""
-    names = ", ".join(
+    entity_names = [
         entity.name
         for entity in game_map.visible_entities
         if entity.x == world_x and entity.y == world_y
-    )
+    ]
+
+    def count_names(acc: dict[str, int], name: str) -> dict[str, int]:
+        if name in acc:
+            acc[name] += 1
+            return acc
+        acc[name] = 1
+        return acc
+
+    names_with_count_dict = reduce(count_names, entity_names, {})
+
+    def format_name(name: str, count: int) -> str:
+        if count <= 1:
+            return name
+        return f"{count}x {name}"
+
+    names_with_count = [
+        format_name(name, count) for name, count in names_with_count_dict.items()
+    ]
+
+    names = ", ".join(names_with_count)
     return names.capitalize()
 
 
@@ -59,7 +81,8 @@ MMMM  MMMM MMb     dMM Mb       dM M       .MM M  M MM        .M M       .MM
 MMMMMMMMMM MMMMMMMMMMM MMMMMMMMMMM MMMMMMMMMMM MMMM MMMMMMMMMMMM MMMMMMMMMMM 
 '''
 
-def render_you_died(console:Console):
+
+def render_you_died(console: Console):
     console.print(
         x=console.width // 2 - 76 // 2,
         y=console.height // 2 - 7 // 2 - 1,
