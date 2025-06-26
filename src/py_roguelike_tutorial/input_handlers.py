@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import tcod.context
 from tcod.event import EventDispatch, KeyDown, wait, T
 from tcod.event import KeySym as Key
 from tcod.event import Quit
@@ -47,8 +48,17 @@ class EventHandler(EventDispatch[Action]):
     def ev_quit(self, event: Quit) -> Action | None:
         raise SystemExit()
 
-    def handle_events(self) -> None:
-        raise NotImplementedError()
+    def handle_events(self, context: tcod.context.Context) -> None:
+        for event in wait():
+            context.convert_event(event)
+            self.dispatch(event)
+
+    def on_render(self, console: tcod.console.Console) -> None:
+        self.engine.render(console)
+
+    def ev_mousemotion(self, event: tcod.event.MouseMotion, /) -> T | None:
+        if self.engine.game_map.in_bounds(int(event.tile.x), int(event.tile.y)):
+            self.engine.mouse_location = int(event.tile.x), int(event.tile.y)
 
 
 class MainGameEventHandler(EventHandler):
@@ -67,10 +77,9 @@ class MainGameEventHandler(EventHandler):
             case _:
                 return None
 
-    def handle_events(
-        self,
-    ) -> None:
+    def handle_events(self, context: tcod.context.Context) -> None:
         for event in wait():
+            context.convert_event(event)
             action = self.dispatch(event)
             if action is None:
                 continue
@@ -80,8 +89,9 @@ class MainGameEventHandler(EventHandler):
 
 
 class GameOverEventHandler(EventHandler):
-    def handle_events(self) -> None:
+    def handle_events(self, context: tcod.context.Context) -> None:
         for event in wait():
+            context.convert_event(event)
             action = self.dispatch(event)
             if action is None:
                 continue

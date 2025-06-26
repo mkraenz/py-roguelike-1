@@ -25,3 +25,4 @@ class Theme:
     hp_bar_empty = Color.RED_DARK_SIENNA
     you_died_text = Color.RED_FIREBRICK1
     log_message = Color.WHITE
+    hover_over_entity_names = Color.WHITE

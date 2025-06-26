@@ -1,3 +1,4 @@
+from pycparser.plyparser import Coord
 from tcod.console import Console
 from tcod.context import Context
 from tcod.map import compute_fov
@@ -7,7 +8,7 @@ from py_roguelike_tutorial.entity import Actor
 from py_roguelike_tutorial.game_map import GameMap
 from py_roguelike_tutorial.input_handlers import EventHandler, MainGameEventHandler
 from py_roguelike_tutorial.message_log import MessageLog
-from py_roguelike_tutorial.render_functions import render_hp_bar
+from py_roguelike_tutorial.render_functions import render_hp_bar, render_names_at
 
 _FOV_RADIUS = 8
 
@@ -31,9 +32,10 @@ class Engine:
     ) -> None:
         self.event_handler: EventHandler = MainGameEventHandler(self)
         self.message_log = MessageLog()
+        self.mouse_location: Coord = (0, 0)
         self.player = player
 
-    def render(self, console: Console, context: Context) -> None:
+    def render(self, console: Console) -> None:
         self.game_map.render(console)
         self.message_log.render(console=console, x=21, y=45, width=40, height=5)
         stats = self.player.fighter
@@ -45,9 +47,8 @@ class Engine:
                 text=YOU_DIED,
                 fg=Theme.you_died_text,
             )
+        render_names_at(console=console, console_x=21, console_y=44, engine=self)
 
-        context.present(console)
-        console.clear()
 
     def update_fov(self) -> None:
         """Recompute the visible area based on player's field of view."""
