@@ -1,6 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
+from py_roguelike_tutorial.colors import Theme
 from py_roguelike_tutorial.components.base_components import BaseComponent
 from py_roguelike_tutorial.input_handlers import GameOverEventHandler
 
@@ -30,7 +31,8 @@ class Fighter(BaseComponent):
     def die(self) -> None:
         player_died = self.engine.player is self.entity
         death_msg = "You died!" if player_died else f"{self.entity.name} has died!"
+        log_color = Theme.player_dies if player_died else Theme.enemy_dies
         self.entity.die()
-        print(death_msg)
+        self.engine.message_log.add(death_msg, fg=log_color)
         if player_died:
             self.engine.event_handler = GameOverEventHandler(self.engine)

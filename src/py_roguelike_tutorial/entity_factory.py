@@ -21,7 +21,7 @@ class EntityFactory:
     )
     troll_prefab = Actor(
         char="T",
-        color=Color.DEEP_COOL_GREEN,
+        color=Color.GREEN_DEEP_COOL,
         name="Troll",
         ai_cls=HostileEnemy,
         fighter=Fighter(hp=16, defense=1, power=4),

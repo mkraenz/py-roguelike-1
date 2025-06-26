@@ -2,9 +2,12 @@ from tcod.console import Console
 from tcod.context import Context
 from tcod.map import compute_fov
 
+from py_roguelike_tutorial.colors import Theme
 from py_roguelike_tutorial.entity import Actor
 from py_roguelike_tutorial.game_map import GameMap
 from py_roguelike_tutorial.input_handlers import EventHandler, MainGameEventHandler
+from py_roguelike_tutorial.message_log import MessageLog
+from py_roguelike_tutorial.render_functions import render_hp_bar
 
 _FOV_RADIUS = 8
 
@@ -27,18 +30,20 @@ class Engine:
         player: Actor,
     ) -> None:
         self.event_handler: EventHandler = MainGameEventHandler(self)
+        self.message_log = MessageLog()
         self.player = player
 
     def render(self, console: Console, context: Context) -> None:
         self.game_map.render(console)
-        hp = f"HP: {self.player.fighter.hp}/{self.player.fighter.max_hp}"
-
-        console.print(x=1, y=47, text=hp)
+        self.message_log.render(console=console, x=21, y=45, width=40, height=5)
+        stats = self.player.fighter
+        render_hp_bar(console, stats.hp, stats.max_hp, 20)
         if not self.player.is_alive:
             console.print(
                 x=console.width // 2 - 76 // 2,
                 y=console.height // 2 - 7 // 2 - 1,
                 text=YOU_DIED,
+                fg=Theme.you_died_text,
             )
 
         context.present(console)

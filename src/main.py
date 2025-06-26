@@ -2,6 +2,7 @@ import copy
 
 import tcod
 
+from py_roguelike_tutorial.colors import Theme
 from py_roguelike_tutorial.engine import Engine
 from py_roguelike_tutorial.entity_factory import EntityFactory
 from py_roguelike_tutorial.procgen import generate_dungeon
@@ -16,7 +17,7 @@ def main():
     window_x = monitor_width // 2 - 10
 
     map_width = 80
-    map_height = 45
+    map_height = 43
     room_max_size = 10
     room_min_size = 6
     max_rooms = 30
@@ -41,6 +42,7 @@ def main():
         engine=engine,
     )
     engine.update_fov()
+    engine.message_log.add(text="Welcome, adventurer.", fg=Theme.welcome_text)
 
     with tcod.context.new(
         columns=screen_width,

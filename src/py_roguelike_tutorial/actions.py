@@ -3,6 +3,7 @@ from __future__ import annotations
 import sys
 from typing import TYPE_CHECKING
 
+from py_roguelike_tutorial.colors import Theme
 from py_roguelike_tutorial.types import Coord
 
 if TYPE_CHECKING:
@@ -54,6 +55,14 @@ class DirectedAction(Action):
         """Returns the target actor at the destination."""
         return self.engine.game_map.get_actor_at_location(*self.dest_xy)
 
+    @property
+    def player_is_actor(self) -> bool:
+        return self.engine.player == self.entity
+
+    @property
+    def player_is_target(self) -> bool:
+        return self.engine.player == self.target_actor
+
 
 class MeleeAction(DirectedAction):
     def perform(self) -> None:
@@ -62,13 +71,18 @@ class MeleeAction(DirectedAction):
             return
 
         damage = self.entity.fighter.power - target.fighter.defense
-        attack_desc = f"{self.entity.name} hits {target.name}"
 
+        attack_desc = f"{self.entity.name} hits {target.name}"
+        log_color = (
+            Theme.player_attacks if self.player_is_actor else Theme.enemy_attacks
+        )
         if damage > 0:
-            print(f"{attack_desc} for {damage} HP. {target.fighter.hp}HP left.")
             target.fighter.hp -= damage
+            txt = f"{attack_desc} for {damage} HP. {target.fighter.hp}HP left."
+            self.engine.message_log.add(txt, fg=log_color)
         else:
-            print(f"{attack_desc} but does not damage.")
+            txt = f"{attack_desc} but does not damage."
+            self.engine.message_log.add(txt, fg=log_color)
 
 
 class MoveAction(DirectedAction):

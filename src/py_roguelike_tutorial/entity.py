@@ -116,7 +116,7 @@ class Actor(Entity):
 
     def die(self):
         self.char = "%"
-        self.color = Color.GUARDMANS_RED
+        self.color = Color.RED_GUARDMANS
         self.blocks_movement = False
         self.ai = None
         self.name = f"remains of {self.name}"
