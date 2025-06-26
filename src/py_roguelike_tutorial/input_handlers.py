@@ -40,6 +40,13 @@ _MOVE_KEYS = {
 
 _WAIT_KEYS = {Key.KP_5, Key.PERIOD, Key.SPACE}
 
+_CURSOR_Y_KEYS = {
+    Key.UP: -1,
+    Key.DOWN: 1,
+    Key.PAGEUP: -10,
+    Key.PAGEDOWN: 10,
+}
+
 
 class EventHandler(EventDispatch[Action]):
     def __init__(self, engine: Engine):
@@ -56,7 +63,7 @@ class EventHandler(EventDispatch[Action]):
     def on_render(self, console: tcod.console.Console) -> None:
         self.engine.render(console)
 
-    def ev_mousemotion(self, event: tcod.event.MouseMotion, /) -> T | None:
+    def ev_mousemotion(self, event: tcod.event.MouseMotion, /) -> None:
         if self.engine.game_map.in_bounds(int(event.tile.x), int(event.tile.y)):
             self.engine.mouse_location = int(event.tile.x), int(event.tile.y)
 
@@ -66,14 +73,19 @@ class MainGameEventHandler(EventHandler):
         key = event.sym
         player = self.engine.player
 
-        if key in _MOVE_KEYS:
-            dx, dy = _MOVE_KEYS[key]
-            return BumpAction(player, dx, dy)
-        if key in _WAIT_KEYS:
-            return WaitAction(player)
         match key:
+            case _ if key in _MOVE_KEYS:
+                dx, dy = _MOVE_KEYS[key]
+                return BumpAction(player, dx, dy)
+            case _ if key in _WAIT_KEYS:
+                return WaitAction(player)
             case Key.ESCAPE:
                 return EscapeAction(player)
+            case Key.V:
+                self.engine.event_handler = LogHistoryViewer(
+                    self.engine, MainGameEventHandler
+                )
+                return
             case _:
                 return None
 
@@ -103,5 +115,68 @@ class GameOverEventHandler(EventHandler):
         match key:
             case Key.ESCAPE:
                 return EscapeAction(player)
+            case Key.V:
+                self.engine.event_handler = LogHistoryViewer(
+                    self.engine, GameOverEventHandler
+                )
+                return
             case _:
                 return None
+
+
+class LogHistoryViewer(EventHandler):
+    """Print the history on a larger window which can be scrolled."""
+
+    def __init__(self, engine: Engine, on_back_cls):
+        super().__init__(engine)
+        self.log_length = len(engine.message_log.messages)
+        self.cursor = self.log_length - 1
+        self.on_back_cls = on_back_cls
+
+    def on_render(self, console: tcod.console.Console) -> None:
+        super().on_render(console)  # draw main state as background
+
+        log_console = tcod.console.Console(console.width - 6, console.height - 6)
+        log_console.draw_frame(
+            0, 0, log_console.width, log_console.height
+        )  # screen border
+        heading = "┤Message history├"
+        log_console.print_box(
+            x=0,
+            y=0,
+            width=log_console.width,
+            height=1,
+            alignment=tcod.tcod.constants.CENTER,
+            string=heading,
+        )
+
+        self.engine.message_log.render_messages(
+            log_console,
+            x=1,
+            y=1,
+            width=log_console.width - 2,
+            height=log_console.height - 2,
+            messages=self.engine.message_log.messages[: self.cursor + 1],
+        )
+        log_console.blit(console, 3, 3)
+
+    def ev_keydown(self, event: tcod.event.KeyDown, /) -> None:
+        end = self.log_length - 1
+        match event.sym:
+            case _ if event.sym in _CURSOR_Y_KEYS:
+                adjust = _CURSOR_Y_KEYS[event.sym]
+                match adjust:
+                    case _ if adjust < 0 and self.cursor == 0:
+                        # we wrap around to the bottom if we are at the top and continue going upwards
+                        self.cursor = end
+                    case _ if adjust > 0 and self.cursor == end:
+                        # conversely, we wrap around to the top if we are at the bottom and continue going downwards
+                        self.cursor = 0
+                    case _:
+                        self.cursor = max(0, min(self.cursor + adjust, end))
+            case Key.HOME:
+                self.cursor = 0  # move to first message
+            case Key.END:
+                self.cursor = end  # move to last message
+            case _:  # if no key matches, return to the main game
+                self.engine.event_handler = self.on_back_cls(self.engine)

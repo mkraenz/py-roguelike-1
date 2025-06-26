@@ -48,3 +48,21 @@ def render_names_at(
     console.print(
         x=console_x, y=console_y, text=names, fg=Theme.hover_over_entity_names
     )
+
+
+YOU_DIED = '''M""MMMM""M MMP"""""YMM M""MMMMM""M M""""""'YMM M""M MM""""""""`M M""""""'YMM 
+M. `MM' .M M' .mmm. `M M  MMMMM  M M  mmmm. `M M  M MM  mmmmmmmM M  mmmm. `M 
+MM.    .MM M  MMMMM  M M  MMMMM  M M  MMMMM  M M  M M`      MMMM M  MMMMM  M 
+MMMb  dMMM M  MMMMM  M M  MMMMM  M M  MMMMM  M M  M MM  MMMMMMMM M  MMMMM  M 
+MMMM  MMMM M. `MMM' .M M  `MMM'  M M  MMMM' .M M  M MM  MMMMMMMM M  MMMM' .M 
+MMMM  MMMM MMb     dMM Mb       dM M       .MM M  M MM        .M M       .MM 
+MMMMMMMMMM MMMMMMMMMMM MMMMMMMMMMM MMMMMMMMMMM MMMM MMMMMMMMMMMM MMMMMMMMMMM 
+'''
+
+def render_you_died(console:Console):
+    console.print(
+        x=console.width // 2 - 76 // 2,
+        y=console.height // 2 - 7 // 2 - 1,
+        text=YOU_DIED,
+        fg=Theme.you_died_text,
+    )

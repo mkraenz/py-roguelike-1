@@ -1,6 +1,4 @@
-from pycparser.plyparser import Coord
 from tcod.console import Console
-from tcod.context import Context
 from tcod.map import compute_fov
 
 from py_roguelike_tutorial.colors import Theme
@@ -8,18 +6,14 @@ from py_roguelike_tutorial.entity import Actor
 from py_roguelike_tutorial.game_map import GameMap
 from py_roguelike_tutorial.input_handlers import EventHandler, MainGameEventHandler
 from py_roguelike_tutorial.message_log import MessageLog
-from py_roguelike_tutorial.render_functions import render_hp_bar, render_names_at
+from py_roguelike_tutorial.render_functions import (
+    render_hp_bar,
+    render_names_at,
+    render_you_died,
+)
+from py_roguelike_tutorial.types import Coord
 
 _FOV_RADIUS = 8
-
-YOU_DIED = '''M""MMMM""M MMP"""""YMM M""MMMMM""M M""""""'YMM M""M MM""""""""`M M""""""'YMM 
-M. `MM' .M M' .mmm. `M M  MMMMM  M M  mmmm. `M M  M MM  mmmmmmmM M  mmmm. `M 
-MM.    .MM M  MMMMM  M M  MMMMM  M M  MMMMM  M M  M M`      MMMM M  MMMMM  M 
-MMMb  dMMM M  MMMMM  M M  MMMMM  M M  MMMMM  M M  M MM  MMMMMMMM M  MMMMM  M 
-MMMM  MMMM M. `MMM' .M M  `MMM'  M M  MMMM' .M M  M MM  MMMMMMMM M  MMMM' .M 
-MMMM  MMMM MMb     dMM Mb       dM M       .MM M  M MM        .M M       .MM 
-MMMMMMMMMM MMMMMMMMMMM MMMMMMMMMMM MMMMMMMMMMM MMMM MMMMMMMMMMMM MMMMMMMMMMM 
-'''
 
 
 class Engine:
@@ -41,14 +35,8 @@ class Engine:
         stats = self.player.fighter
         render_hp_bar(console, stats.hp, stats.max_hp, 20)
         if not self.player.is_alive:
-            console.print(
-                x=console.width // 2 - 76 // 2,
-                y=console.height // 2 - 7 // 2 - 1,
-                text=YOU_DIED,
-                fg=Theme.you_died_text,
-            )
+            render_you_died(console)
         render_names_at(console=console, console_x=21, console_y=44, engine=self)
-
 
     def update_fov(self) -> None:
         """Recompute the visible area based on player's field of view."""

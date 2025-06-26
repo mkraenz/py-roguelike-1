@@ -77,9 +77,10 @@ class MeleeAction(DirectedAction):
             Theme.player_attacks if self.player_is_actor else Theme.enemy_attacks
         )
         if damage > 0:
-            target.fighter.hp -= damage
-            txt = f"{attack_desc} for {damage} HP. {target.fighter.hp}HP left."
+            next_hp = target.fighter.hp - damage
+            txt = f"{attack_desc} for {damage} HP. {next_hp} HP left."
             self.engine.message_log.add(txt, fg=log_color)
+            target.fighter.hp = next_hp
         else:
             txt = f"{attack_desc} but does not damage."
             self.engine.message_log.add(txt, fg=log_color)
