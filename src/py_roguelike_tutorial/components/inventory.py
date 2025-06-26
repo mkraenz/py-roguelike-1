@@ -17,22 +17,28 @@ class Inventory(BaseComponent):
 
     def __init__(self, capacity: int):
         self._capacity = capacity
-        self._items: list[Item] = []
+        self.items: list[Item] = []
 
     def drop(self, item: Item) -> None:
         """Removes the item from the inventory and drops it at the parents location."""
-        self._items.remove(item)
+        self.items.remove(item)
         item.place(self.parent.x, self.parent.y)
         txt = f"You dropped the {item.name}."
         self.engine.message_log.add(text=txt)
 
     @property
     def len(self):
-        return len(self._items)
+        return len(self.items)
 
     def has_capacity(self, items_to_add: int) -> bool:
         return self._capacity - self.len >= items_to_add
 
     def add(self, item: Item):
-        self._items.append(item)
+        self.items.append(item)
         item.parent = self
+
+    def get(self, index: int) -> Item | None:
+        return self.items[index] if index < len(self.items) else None
+
+    def remove(self, item: Item) -> None:
+        self.items.remove(item)

@@ -106,7 +106,7 @@ class BumpAction(DirectedAction):
         return MoveAction(self.entity, self.dx, self.dy).perform()
 
 
-class UseItemAction(Action):
+class ItemAction(Action):
     def __init__(self, entity: Actor, item: Item, target_xy: Coord | None = None):
         super().__init__(entity)
         self.item = item
@@ -139,3 +139,9 @@ class PickupAction(Action):
 
         txt = f"You pick up the {item.name}."
         self.engine.message_log.add(txt)
+
+
+class DropItemAction(ItemAction):
+    def perform(self):
+        self.entity.inventory.drop(self.item)
+

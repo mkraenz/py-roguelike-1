@@ -120,6 +120,7 @@ class Actor(Entity):
         self.fighter.parent = self
         self.inventory = inventory
         self.inventory.parent = self
+        
 
     @property
     def is_alive(self) -> bool:
