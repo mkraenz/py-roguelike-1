@@ -27,8 +27,9 @@ class Consumable(BaseComponent):
         """Remove the used consumable from its containing inventory."""
         item = self.parent
         inventory = item.parent
-        if isinstance(inventory, Inventory ):
+        if isinstance(inventory, Inventory):
             inventory.remove(item)
+
 
 class HealingConsumable(Consumable):
     def __init__(self, amount: int):
@@ -44,3 +45,33 @@ class HealingConsumable(Consumable):
             self.consume()
         else:
             raise Impossible("You are at full health already.")
+
+
+class LightningDamageConsumable(Consumable):
+    """Lightning attacks automatically pick the closest target within range."""
+
+    def __init__(self, damage: int, max_range: int):
+        self.max_range = max_range
+        self.damage = damage
+
+    def activate(self, ctx: ItemAction) -> None: # type: ignore [reportIncompatibleMethodOverride]
+        consumer = ctx.entity
+        target = self._closest_enemy_in_range(consumer)
+
+        if not target:
+            raise Impossible("No enemy is close enough to strike.")
+
+        txt = f"A lightning bolt stikes the {target.name} with a loud thunder for {self.damage} damage."
+        self.engine.message_log.add(txt)
+        target.fighter.take_damage(self.damage)
+        self.consume()
+
+    def _closest_enemy_in_range(self, consumer: Actor) -> Actor | None:
+        target: Actor | None = None
+        closest_distance = self.max_range + 1
+        for actor in self.engine.game_map.visible_actors:
+            distance = consumer.dist_euclidean(actor)
+            if distance < closest_distance:
+                closest_distance = distance
+                target = actor
+        return target
