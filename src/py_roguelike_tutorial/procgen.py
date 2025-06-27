@@ -135,7 +135,6 @@ def place_items(room: RectangularRoom, game_map: GameMap, max_items: int) -> Non
         x = random.randint(room.x1 + 1, room.x2 - 1)
         y = random.randint(room.y1 + 1, room.y2 - 1)
         if not any(entity.x == x and entity.y == y for entity in game_map.entities):
-            item_type_chance = random.random()
             location = (game_map, x, y)
             entity = roll_on_table(ITEM_TABLE)
             entity.spawn(*location)

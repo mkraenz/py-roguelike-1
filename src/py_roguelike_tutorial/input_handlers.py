@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Callable, Type
 
 import tcod
 from tcod.constants import CENTER
-from tcod.event import KeySym as Key, Quit, EventDispatch, KeyDown, Modifier
+from tcod.event import KeySym as Key, Quit, EventDispatch, KeyDown, Modifier, T
 from tcod.console import Console
 
 from py_roguelike_tutorial import exceptions
@@ -41,7 +41,7 @@ _MOVE_KEYS = {
     # wasd
     Key.Z: (-1, 1),
     Key.S: (0, 1),
-    Key.C: (1, 1),
+    Key.X: (1, 1),
     Key.A: (-1, 0),
     Key.D: (1, 0),
     Key.Q: (-1, -1),
@@ -168,6 +168,8 @@ class MainGameEventHandler(EventHandler):
                 return InventoryActivateHandler(self.engine)
             case Key.P:
                 return InventoryDropHandler(self.engine)
+            case Key.C:
+                return CharacterSheetEventHandler(self.engine)
             case Key.G:
                 return PickupAction(player)
             case Key.K:
@@ -276,6 +278,51 @@ class LevelUpEventHandler(EventHandler):
     ) -> ActionOrHandler | None:
         """Forbid exiting the menu on mouse click."""
         return None
+
+
+class CharacterSheetEventHandler(EventHandler):
+    def on_render(self, console: Console) -> None:
+        heading = "┤Character Details├"
+        super().on_render(console)  # draw main state as background
+
+        child_console = Console(console.width - 6, console.height - 6)
+        child_console.draw_frame(
+            0, 0, child_console.width, child_console.height
+        )  # screen border
+        child_console.print(
+            x=0,
+            y=0,
+            width=child_console.width,
+            height=1,
+            alignment=tcod.tcod.constants.CENTER,
+            text=heading,
+        )
+
+        def draw_text(text: str, y_offset: int):
+            width = 36
+            child_console.print(
+                x=child_console.width // 2,
+                y=child_console.height // 2 + y_offset,
+                text=text.ljust(width),
+                alignment=CENTER,
+            )
+
+        p = self.player
+        texts = (
+            f"Health:     {p.fighter.hp}/{p.fighter.max_hp} HP",
+            "",
+            "" f"Level:      {p.level.current_level}",
+            f"Experience: {p.level.current_xp}/{p.level.xp_to_next_level} EXP",
+            "",
+            "" f"Strength:   {p.fighter.power}",
+            f"Agility:    {p.fighter.defense}",
+        )
+        for i, text in enumerate(texts):
+            draw_text(text, -4 + i)
+        child_console.blit(console, 3, 3)
+
+    def ev_keydown(self, event: tcod.event.KeyDown, /) -> ActionOrHandler | None:
+        return MainGameEventHandler(self.engine)
 
 
 class LogHistoryViewer(EventHandler):

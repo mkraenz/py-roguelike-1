@@ -19,7 +19,7 @@ class EntityFactory:
         ai_cls=HostileEnemy,
         fighter=Fighter(hp=30, defense=2, power=5),
         inventory=Inventory(26),  # 26 bc of English alphabet
-        level=Level(level_up_base=2, level_up_factor=10),
+        level=Level(level_up_base=200, level_up_factor=150),
     )
     # enemies
     orc_prefab = Actor(
