@@ -11,6 +11,7 @@ from py_roguelike_tutorial.exceptions import Impossible
 from py_roguelike_tutorial.input_handlers import (
     SingleRangedAttackHandler,
     AreaRangedAttackHandler,
+    ActionOrHandler,
 )
 
 if TYPE_CHECKING:
@@ -20,7 +21,7 @@ if TYPE_CHECKING:
 class Consumable(BaseComponent):
     parent: Item  # type: ignore [reportIncompatibleVariableOverride]
 
-    def get_action(self, consumer: Actor) -> Action | None:
+    def get_action(self, consumer: Actor) -> ActionOrHandler | None:
         """Return the action for this item."""
         return ItemAction(consumer, self.parent)
 
@@ -88,13 +89,12 @@ class ConfusionConsumable(Consumable):
     def __init__(self, turns: int):
         self.turns = turns
 
-    def get_action(self, consumer: Actor) -> Action | None:
+    def get_action(self, consumer: Actor) -> SingleRangedAttackHandler:
         self.engine.message_log.add("Select a target location.", Theme.needs_target)
-        self.engine.event_handler = SingleRangedAttackHandler(
+        return SingleRangedAttackHandler(
             self.engine,
             callback=lambda coord: ItemAction(consumer, self.parent, coord),
         )
-        return None
 
     def activate(self, ctx: ItemAction) -> None:  # type: ignore [reportIncompatibleMethodOverride]
         consumer = ctx.entity
@@ -125,9 +125,9 @@ class FireballDamageConsumable(Consumable):
         self.damage = damage
         self.radius = radius
 
-    def get_action(self, consumer: Actor) -> Action | None:
+    def get_action(self, consumer: Actor) -> AreaRangedAttackHandler | None:
         self.engine.message_log.add("Select a target location.", Theme.needs_target)
-        self.engine.event_handler = AreaRangedAttackHandler(
+        return AreaRangedAttackHandler(
             self.engine,
             radius=self.radius,
             callback=lambda xy: ItemAction(consumer, self.parent, xy),

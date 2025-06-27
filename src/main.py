@@ -4,9 +4,15 @@ import traceback
 import tcod
 from tcod.event import wait
 
+from py_roguelike_tutorial import exceptions
 from py_roguelike_tutorial.colors import Theme
 from py_roguelike_tutorial.engine import Engine
 from py_roguelike_tutorial.entity_factory import EntityFactory
+from py_roguelike_tutorial.input_handlers import (
+    BaseEventHandler,
+    MainGameEventHandler,
+    EventHandler,
+)
 from py_roguelike_tutorial.procgen import generate_dungeon
 
 
@@ -53,6 +59,7 @@ def main():
     )
     engine.update_fov()
     engine.message_log.add(text="Welcome, adventurer.", fg=Theme.welcome_text)
+    handler: BaseEventHandler = MainGameEventHandler(engine)
 
     with tcod.context.new(
         columns=screen_width,
@@ -66,18 +73,30 @@ def main():
         y=0,
     ) as context:
         root_console = tcod.console.Console(screen_width, screen_height, order="F")
-        while True:
-            root_console.clear()
-            engine.event_handler.on_render(console=root_console)
-            context.present(root_console)
-            try:
-                for event in wait():
-                    # TODO i guess i should use the converted event and pass that to the event handler
-                    context.convert_event(event)
-                    engine.event_handler.handle_events(event)
-            except Exception:
-                traceback.print_exc()
-                engine.message_log.add(text=traceback.format_exc(), fg=Theme.error)
+        try:
+            while True:
+                root_console.clear()
+                handler.on_render(console=root_console)
+                context.present(root_console)
+                try:
+                    for event in wait():
+                        # TODO i guess i should use the converted event and pass that to the event handler
+                        context.convert_event(event)
+                        handler = handler.handle_events(event)
+                except Exception:  # ingame exceptions
+                    traceback.print_exc()
+                    if isinstance(handler, EventHandler):
+                        handler.engine.message_log.add(
+                            traceback.format_exc(), fg=Theme.error
+                        )
+        except exceptions.QuitWithoutSaving:
+            raise
+        except SystemExit:
+            # TODO: add save functionality here
+            raise
+        except BaseException:  # save on any unexpeceted exception
+            # TODO: add save functionality here
+            raise
 
 
 if __name__ == "__main__":

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import sys
 from typing import TYPE_CHECKING, Callable
 
 import tcod
 from tcod.event import KeySym as Key, Quit, EventDispatch, KeyDown, Modifier
+from tcod.console import Console
 
 from py_roguelike_tutorial import exceptions
 from py_roguelike_tutorial.actions import (
@@ -65,8 +67,31 @@ _CONFIRM_KEYS = {
     Key.KP_ENTER,
 }
 
+type ActionOrHandler = Action | BaseEventHandler
+"""An event handler return type which can trigger an action or switch active event handlers.
 
-class EventHandler(EventDispatch[Action]):
+If a handler is returned, then it will become the active event handler for future events.
+If an action is returned, then it will be attempted and if it is valid, 
+then MainGameEventHandler will become the active handler
+"""
+
+
+class BaseEventHandler(EventDispatch[ActionOrHandler]):
+    def handle_events(self, event: tcod.event.Event) -> BaseEventHandler:
+        state = self.dispatch(event)
+        if isinstance(state, BaseEventHandler):
+            return state
+        assert not isinstance(state, Action), f"{self!r} cannot handle actions."
+        return self
+
+    def on_render(self, console: Console) -> None:
+        raise NotImplementedError("Must be implemented in subclass.")
+
+    def ev_quit(self, event: tcod.event.Quit, /):
+        sys.exit()
+
+
+class EventHandler(BaseEventHandler):
     def __init__(self, engine: Engine):
         self.engine = engine
 
@@ -74,11 +99,22 @@ class EventHandler(EventDispatch[Action]):
     def player(self):
         return self.engine.player
 
-    def ev_quit(self, event: Quit) -> Action | None:
+    def ev_quit(self, event: Quit):
         raise SystemExit()
 
-    def handle_events(self, event: tcod.event.Event) -> None:
-        self.handle_action(self.dispatch(event))
+    def handle_events(self, event: tcod.event.Event) -> BaseEventHandler:
+        """Handle events for input handlers with an engine."""
+        action_or_state = self.dispatch(event)
+        if not action_or_state:
+            return self
+        if isinstance(action_or_state, BaseEventHandler):
+            return action_or_state
+        #
+        if self.handle_action(action_or_state):
+            if not self.player.is_alive:
+                return GameOverEventHandler(self.engine)
+            return MainGameEventHandler(self.engine)
+        return self
 
     def handle_action(self, action: Action | None) -> bool:
         """Handle actions returned from event methods.
@@ -96,7 +132,7 @@ class EventHandler(EventDispatch[Action]):
         self.engine.update_fov()
         return True
 
-    def on_render(self, console: tcod.console.Console) -> None:
+    def on_render(self, console: Console) -> None:
         self.engine.render(console)
 
     def ev_mousemotion(self, event: tcod.event.MouseMotion, /) -> None:
@@ -105,7 +141,7 @@ class EventHandler(EventDispatch[Action]):
 
 
 class MainGameEventHandler(EventHandler):
-    def ev_keydown(self, event: KeyDown) -> Action | None:
+    def ev_keydown(self, event: KeyDown) -> ActionOrHandler | None:
         key = event.sym
         player = self.player
 
@@ -118,38 +154,29 @@ class MainGameEventHandler(EventHandler):
             case Key.ESCAPE:
                 return EscapeAction(player)
             case Key.V:
-                self.engine.event_handler = LogHistoryViewer(
-                    self.engine, MainGameEventHandler
-                )
-                return None
+                return LogHistoryViewer(self.engine, MainGameEventHandler)
             case Key.I:
-                self.engine.event_handler = InventoryActivateHandler(self.engine)
-                return None
+                return InventoryActivateHandler(self.engine)
             case Key.P:
-                self.engine.event_handler = InventoryDropHandler(self.engine)
-                return None
+                return InventoryDropHandler(self.engine)
             case Key.G:
                 return PickupAction(player)
             case Key.K:
-                self.engine.event_handler = LookAroundHandler(self.engine)
-                return None
+                return LookAroundHandler(self.engine)
             case _:
                 return None
 
 
 class GameOverEventHandler(EventHandler):
 
-    def ev_keydown(self, event: KeyDown, /) -> Action | None:
+    def ev_keydown(self, event: KeyDown, /) -> ActionOrHandler | None:
         key = event.sym
         player = self.player
         match key:
             case Key.ESCAPE:
                 return EscapeAction(player)
             case Key.V:
-                self.engine.event_handler = LogHistoryViewer(
-                    self.engine, GameOverEventHandler
-                )
-                return None
+                return LogHistoryViewer(self.engine, GameOverEventHandler)
             case _:
                 return None
 
@@ -163,10 +190,10 @@ class LogHistoryViewer(EventHandler):
         self.cursor = self.log_length - 1
         self.on_back_cls = on_back_cls
 
-    def on_render(self, console: tcod.console.Console) -> None:
+    def on_render(self, console: Console) -> None:
         super().on_render(console)  # draw main state as background
 
-        log_console = tcod.console.Console(console.width - 6, console.height - 6)
+        log_console = Console(console.width - 6, console.height - 6)
         log_console.draw_frame(
             0, 0, log_console.width, log_console.height
         )  # screen border
@@ -190,7 +217,7 @@ class LogHistoryViewer(EventHandler):
         )
         log_console.blit(console, 3, 3)
 
-    def ev_keydown(self, event: tcod.event.KeyDown, /) -> None:
+    def ev_keydown(self, event: tcod.event.KeyDown, /) -> ActionOrHandler | None:
         end = self.log_length - 1
         match event.sym:
             case _ if event.sym in _CURSOR_Y_KEYS:
@@ -209,19 +236,14 @@ class LogHistoryViewer(EventHandler):
             case Key.END:
                 self.cursor = end  # move to last message
             case _:  # if no key matches, return to the main game
-                self.engine.event_handler = self.on_back_cls(self.engine)
+                return self.on_back_cls(self.engine)
+        return None
 
 
 class AskUserEventHandler(EventHandler):
     """Handles user input for actions that require some special input."""
 
-    def handle_action(self, action: Action | None) -> bool:
-        if super().handle_action(action):
-            self.engine.event_handler = MainGameEventHandler(self.engine)
-            return False
-        return False
-
-    def ev_keydown(self, event: tcod.event.KeyDown, /) -> Action | None:
+    def ev_keydown(self, event: tcod.event.KeyDown, /) -> ActionOrHandler | None:
         """By default, any unhandled key cancels the menu."""
         key = event.sym
         match key:
@@ -230,17 +252,18 @@ class AskUserEventHandler(EventHandler):
             case _:
                 return self.on_exit()
 
-    def ev_mousebuttondown(self, event: tcod.event.MouseButtonDown, /) -> Action | None:
+    def ev_mousebuttondown(
+        self, event: tcod.event.MouseButtonDown, /
+    ) -> ActionOrHandler | None:
         """By default, any mouse click exists the menu."""
-        return self.on_exit()
+        return MainGameEventHandler(self.engine)
 
-    def on_exit(self) -> Action | None:
+    def on_exit(self) -> ActionOrHandler | None:
         """Called when the user is trying to exit or cancel an action.
 
         By default this returns to the main event handler.
         """
-        self.engine.event_handler = MainGameEventHandler(self.engine)
-        return None
+        return MainGameEventHandler(self.engine)
 
 
 class InventoryEventHandler(AskUserEventHandler):
@@ -248,7 +271,7 @@ class InventoryEventHandler(AskUserEventHandler):
 
     TITLE = "<missing title>"
 
-    def on_render(self, console: tcod.console.Console) -> None:
+    def on_render(self, console: Console) -> None:
         super().on_render(console)
         player = self.player
         carried_items = player.inventory.len
@@ -283,7 +306,7 @@ class InventoryEventHandler(AskUserEventHandler):
         else:
             console.print(x=x, y=y + 1, width=width, height=height, text="(Empty)")
 
-    def ev_keydown(self, event: tcod.event.KeyDown, /) -> Action | None:
+    def ev_keydown(self, event: tcod.event.KeyDown, /) -> ActionOrHandler | None:
         player = self.player
         key = event.sym
         index = key - Key.A
@@ -297,7 +320,7 @@ class InventoryEventHandler(AskUserEventHandler):
             return self.on_item_selected(selected_item)
         return super().ev_keydown(event)
 
-    def on_item_selected(self, selected_item: Item) -> Action | None:
+    def on_item_selected(self, selected_item: Item) -> ActionOrHandler | None:
         """Called when the user selects an item."""
         raise NotImplementedError("Must be implemented by subclass.")
 
@@ -305,14 +328,14 @@ class InventoryEventHandler(AskUserEventHandler):
 class InventoryActivateHandler(InventoryEventHandler):
     TITLE = "Select an item to use"
 
-    def on_item_selected(self, selected_item: Item) -> Action | None:
+    def on_item_selected(self, selected_item: Item) -> ActionOrHandler | None:
         return selected_item.consumable.get_action(self.player)
 
 
 class InventoryDropHandler(InventoryEventHandler):
     TITLE = "Select an item to drop"
 
-    def on_item_selected(self, selected_item: Item) -> Action | None:
+    def on_item_selected(self, selected_item: Item) -> ActionOrHandler | None:
         return DropItemAction(self.player, selected_item)
 
 
@@ -324,14 +347,14 @@ class SelectIndexHandler(AskUserEventHandler):
         super().__init__(engine)
         engine.mouse_location = self.player.x, self.player.y
 
-    def on_render(self, console: tcod.console.Console) -> None:
+    def on_render(self, console: Console) -> None:
         """Highlight the tile under the cursor."""
         super().on_render(console)
         x, y = self.engine.mouse_location
         console.rgb["bg"][x, y] = Color.WHITE
         console.rgb["fg"][x, y] = Color.BLACK
 
-    def ev_keydown(self, event: tcod.event.KeyDown, /) -> Action | None:
+    def ev_keydown(self, event: tcod.event.KeyDown, /) -> ActionOrHandler | None:
         """Check for key movement or confirmation keys."""
         key = event.sym
         x, y = self.engine.mouse_location
@@ -359,14 +382,16 @@ class SelectIndexHandler(AskUserEventHandler):
             case _:
                 return super().ev_keydown(event)
 
-    def ev_mousebuttondown(self, event: tcod.event.MouseButtonDown, /) -> Action | None:
+    def ev_mousebuttondown(
+        self, event: tcod.event.MouseButtonDown, /
+    ) -> ActionOrHandler | None:
         """Left click confirms a selection."""
         if self.engine.game_map.in_bounds(int(event.tile.x), int(event.tile.y)):
             if event.button == 1:
                 return self.on_index_selected(int(event.tile.x), int(event.tile.y))
         return super().ev_mousebuttondown(event)
 
-    def on_index_selected(self, x: int, y: int):
+    def on_index_selected(self, x: int, y: int) -> ActionOrHandler | None:
         """Called when a tile index is selected."""
         raise NotImplementedError("Must be implemented by subclass.")
 
@@ -374,8 +399,8 @@ class SelectIndexHandler(AskUserEventHandler):
 class LookAroundHandler(SelectIndexHandler):
     """Let's the player look around with the keyboard."""
 
-    def on_index_selected(self, x: int, y: int) -> Action | None:
-        self.engine.event_handler = MainGameEventHandler(self.engine)
+    def on_index_selected(self, x: int, y: int) -> ActionOrHandler | None:
+        return MainGameEventHandler(self.engine)
 
 
 class SingleRangedAttackHandler(SelectIndexHandler):
@@ -399,17 +424,17 @@ class AreaRangedAttackHandler(SelectIndexHandler):
         self.callback = callback
         self.radius = radius
 
-    def on_render(self, console: tcod.console.Console) -> None:
+    def on_render(self, console: Console) -> None:
         """Highlight the area around the cursor"""
         super().on_render(console)
 
         cursor_x, cursor_y = self.engine.mouse_location
         # enemies on the border will not be included in the radius
         console.draw_frame(
-            x=cursor_x - self.radius -1,
-            y=cursor_y - self.radius -1,
-            width=(self.radius +1) * 2 +1,
-            height=(self.radius +1) * 2 +1,
+            x=cursor_x - self.radius - 1,
+            y=cursor_y - self.radius - 1,
+            width=(self.radius + 1) * 2 + 1,
+            height=(self.radius + 1) * 2 + 1,
             fg=Theme.cursor_aoe,
             clear=False,
         )

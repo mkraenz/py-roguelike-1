@@ -34,13 +34,13 @@ class Fighter(BaseComponent):
         log_color = Theme.player_dies if player_died else Theme.enemy_dies
         self.parent.die()
         self.engine.message_log.add(death_msg, fg=log_color)
-        if player_died:
-            self.engine.event_handler = GameOverEventHandler(self.engine)
 
     def heal(self, amount: int) -> int:
         """Heals by the given amount and returns the amount recovered."""
         theoretical_new_hp = self.hp + amount
-        new_hp_value = theoretical_new_hp if theoretical_new_hp <= self.max_hp else self.max_hp
+        new_hp_value = (
+            theoretical_new_hp if theoretical_new_hp <= self.max_hp else self.max_hp
+        )
         amount_recovered = new_hp_value - self.hp
         self.hp = new_hp_value
         return amount_recovered

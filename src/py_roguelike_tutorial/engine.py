@@ -1,13 +1,9 @@
-from csv import excel
-
 from tcod.console import Console
 from tcod.map import compute_fov
 
 from py_roguelike_tutorial import exceptions
-from py_roguelike_tutorial.colors import Theme
 from py_roguelike_tutorial.entity import Actor
 from py_roguelike_tutorial.game_map import GameMap
-from py_roguelike_tutorial.input_handlers import EventHandler, MainGameEventHandler
 from py_roguelike_tutorial.message_log import MessageLog
 from py_roguelike_tutorial.render_functions import (
     render_hp_bar,
@@ -27,7 +23,6 @@ class Engine:
         *,
         player: Actor,
     ) -> None:
-        self.event_handler: EventHandler = MainGameEventHandler(self)
         self.message_log = MessageLog()
         self.mouse_location: Coord = (0, 0)
         self.player = player
@@ -57,4 +52,4 @@ class Engine:
                 try:
                     entity.ai.perform()
                 except exceptions.Impossible:
-                    pass # ignore impossible actions performed by the AI
+                    pass  # ignore impossible actions performed by the AI
