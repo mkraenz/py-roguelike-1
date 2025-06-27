@@ -1,11 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 import tcod
-from tcod.event import EventDispatch, KeyDown, T
-from tcod.event import KeySym as Key
-from tcod.event import Quit
+from tcod.event import KeySym as Key, Quit, EventDispatch, KeyDown, Modifier
 
 from py_roguelike_tutorial import exceptions
 from py_roguelike_tutorial.actions import (
@@ -14,10 +12,10 @@ from py_roguelike_tutorial.actions import (
     BumpAction,
     WaitAction,
     PickupAction,
-    ItemAction,
     DropItemAction,
 )
 from py_roguelike_tutorial.colors import Theme, Color
+from py_roguelike_tutorial.types import Coord
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.engine import Engine
@@ -60,6 +58,11 @@ _MODIFIER_KEYS = {
     Key.RCTRL,
     Key.LALT,
     Key.RALT,
+}
+
+_CONFIRM_KEYS = {
+    Key.RETURN,
+    Key.KP_ENTER,
 }
 
 
@@ -127,6 +130,9 @@ class MainGameEventHandler(EventHandler):
                 return None
             case Key.G:
                 return PickupAction(player)
+            case Key.K:
+                self.engine.event_handler = LookAroundHandler(self.engine)
+                return None
             case _:
                 return None
 
@@ -143,7 +149,7 @@ class GameOverEventHandler(EventHandler):
                 self.engine.event_handler = LogHistoryViewer(
                     self.engine, GameOverEventHandler
                 )
-                return
+                return None
             case _:
                 return None
 
@@ -308,3 +314,76 @@ class InventoryDropHandler(InventoryEventHandler):
 
     def on_item_selected(self, selected_item: Item) -> Action | None:
         return DropItemAction(self.player, selected_item)
+
+
+class SelectIndexHandler(AskUserEventHandler):
+    """Asks the user for an index on the map."""
+
+    def __init__(self, engine: Engine):
+        """Sets the cursor to the player on construction."""
+        super().__init__(engine)
+        engine.mouse_location = self.player.x, self.player.y
+
+    def on_render(self, console: tcod.console.Console) -> None:
+        """Highlight the tile under the cursor."""
+        super().on_render(console)
+        x, y = self.engine.mouse_location
+        console.tiles_rgb["bg"][x, y] = Color.WHITE
+        console.tiles_rgb["fg"][x, y] = Color.BLACK
+
+    def ev_keydown(self, event: tcod.event.KeyDown, /) -> Action | None:
+        """Check for key movement or confirmation keys."""
+        key = event.sym
+        x, y = self.engine.mouse_location
+        match key:
+            case _ if key in _MOVE_KEYS:
+                # holding modifier keys will speed up movement, e.g. 5 tiles at a time when holding shift.
+                modifier = 1
+                if event.mod & (Modifier.LSHIFT | Modifier.RSHIFT):
+                    modifier *= 5
+                if event.mod & (Modifier.LCTRL | Modifier.RCTRL):
+                    modifier *= 10
+                if event.mod & (Modifier.LALT | Modifier.RALT):
+                    modifier *= 20
+
+                dx, dy = _MOVE_KEYS[key]
+                x += dx * modifier
+                y += dy * modifier
+                # cursor should not leave the map, thus clamp
+                x = max(0, min(x, self.engine.game_map.width - 1))
+                y = max(0, min(y, self.engine.game_map.height - 1))
+                self.engine.mouse_location = x, y
+                return None
+            case _ if key in _CONFIRM_KEYS:
+                return self.on_index_selected(x, y)
+            case _:
+                return super().ev_keydown(event)
+
+    def ev_mousebuttondown(self, event: tcod.event.MouseButtonDown, /) -> Action | None:
+        """Left click confirms a selection."""
+        if self.engine.game_map.in_bounds(int(event.tile.x), int(event.tile.y)):
+            if event.button == 1:
+                return self.on_index_selected(int(event.tile.x), int(event.tile.y))
+        return super().ev_mousebuttondown(event)
+
+    def on_index_selected(self, x: int, y: int):
+        """Called when a tile index is selected."""
+        raise NotImplementedError("Must be implemented by subclass.")
+
+
+class LookAroundHandler(SelectIndexHandler):
+    """Let's the player look around with the keyboard."""
+
+    def on_index_selected(self, x: int, y: int) -> Action | None:
+        self.engine.event_handler = MainGameEventHandler(self.engine)
+
+
+class SingleRangedAttackHandler(SelectIndexHandler):
+    """Targets a single enemy."""
+
+    def __init__(self, engine: Engine, callback: Callable[[Coord], Action | None]):
+        super().__init__(engine)
+        self.callback = callback
+
+    def on_index_selected(self, x: int, y: int) -> Action | None:
+        return self.callback((x, y))

@@ -2,7 +2,7 @@ from py_roguelike_tutorial.colors import Color
 from py_roguelike_tutorial.components.ai import HostileEnemy
 from py_roguelike_tutorial.components.fighter import Fighter
 from py_roguelike_tutorial.components.inventory import Inventory
-from py_roguelike_tutorial.consumable import HealingConsumable
+from py_roguelike_tutorial.components import consumable
 from py_roguelike_tutorial.entity import Actor, Item
 
 
@@ -13,7 +13,7 @@ class EntityFactory:
         name="Player",
         ai_cls=HostileEnemy,
         fighter=Fighter(hp=30, defense=2, power=5),
-        inventory=Inventory(26), # 26 bc of English alphabet
+        inventory=Inventory(26),  # 26 bc of English alphabet
     )
     # enemies
     orc_prefab = Actor(
@@ -38,5 +38,17 @@ class EntityFactory:
         char="!",
         color=Color.VIOLET,
         name="Health Potion",
-        consumable=HealingConsumable(amount=4),
+        consumable=consumable.HealingConsumable(amount=4),
+    )
+    lightning_scroll_prefab = Item(
+        char="~",
+        color=Color.BLUE,
+        name="Lightning Scroll",
+        consumable=consumable.LightningDamageConsumable(damage=20, max_range=5),
+    )
+    confusion_scroll_prefab = Item(
+        char="~",
+        color=Color.PINK_INSANITY,
+        name="Confusion Scroll",
+        consumable=consumable.ConfusionConsumable(turns=10),
     )

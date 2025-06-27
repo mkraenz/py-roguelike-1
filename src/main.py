@@ -66,6 +66,7 @@ def main():
             context.present(root_console)
             try:
                 for event in wait():
+                    # TODO i guess i should use the converted event and pass that to the event handler
                     context.convert_event(event)
                     engine.event_handler.handle_events(event)
             except Exception:

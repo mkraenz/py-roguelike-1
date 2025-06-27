@@ -1,3 +1,14 @@
+from py_roguelike_tutorial.types import Rgb
+
+
+def hex_to_rgb(hex_color: str) -> Rgb:
+    if not hex_color.startswith("#"):
+        raise AssertionError("hex_color must start with #")
+    if not len(hex_color) == 7:
+        raise AssertionError("hex_color must have 7 characters")
+    return int(hex_color[1:3], 16), int(hex_color[3:5], 16), int(hex_color[5:7], 16)
+
+
 class Color:
     WHITE = (255, 255, 255)
     BLACK = (0, 0, 0)
@@ -12,10 +23,13 @@ class Color:
     RED_FIREBRICK1 = (0xFF, 0x30, 0x30)
     ORANGE_VIBRANT_WARM = (0xFF, 0xA0, 0x30)
     AZURE_LIGHT_WASHED = (0x20, 0xA0, 0xFF)
-    YELLOW_1 = (0xFF, 0xFF, 0x00)
+    YELLOW = (0xFF, 0xFF, 0x00)
     RED_CORAL = (0xFF, 0x40, 0x40)
     GREEN = (0x00, 0xFF, 0x00)
+    BLUE = hex_to_rgb("#0000ff")
     VIOLET = (0x80, 0x00, 0xFF)
+    RED = hex_to_rgb("#ff00ff")
+    PINK_INSANITY = hex_to_rgb("#cf3fff")
 
 
 class Theme:
@@ -30,7 +44,13 @@ class Theme:
     you_died_text = Color.RED_FIREBRICK1
     log_message = Color.WHITE
     hover_over_entity_names = Color.WHITE
-    invalid = Color.YELLOW_1
+    invalid = Color.YELLOW
     impossible = Color.GREY
     error = Color.RED_CORAL
     health_recovered = Color.GREEN
+    needs_target = hex_to_rgb("#3fffff")
+    status_effect_applied = hex_to_rgb("#3fff3f")
+
+
+if __name__ == "__main__":
+    print(Theme.status_effect_applied)

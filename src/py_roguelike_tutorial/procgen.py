@@ -110,7 +110,14 @@ def place_items(room: RectangularRoom, game_map: GameMap, max_items: int) -> Non
         x = random.randint(room.x1 + 1, room.x2 - 1)
         y = random.randint(room.y1 + 1, room.y2 - 1)
         if not any(entity.x == x and entity.y == y for entity in game_map.entities):
-            EntityFactory.health_potion_prefab.spawn(game_map, x, y)
+            item_type_chance = random.random()
+            location = (game_map, x, y)
+            if item_type_chance < 0.7:
+                EntityFactory.health_potion_prefab.spawn(*location)
+            elif item_type_chance < 0.9:
+                EntityFactory.confusion_scroll_prefab.spawn(*location)
+            else:
+                EntityFactory.lightning_scroll_prefab.spawn(*location)
 
 
 def place_entities(room: RectangularRoom, game_map: GameMap, max_monsters: int) -> None:

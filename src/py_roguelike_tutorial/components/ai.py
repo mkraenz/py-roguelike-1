@@ -1,11 +1,19 @@
 from __future__ import annotations
 
+import random
 from typing import TYPE_CHECKING
 
 import numpy as np
 import tcod
 
-from py_roguelike_tutorial.actions import Action, MeleeAction, MoveAction, WaitAction
+from py_roguelike_tutorial.actions import (
+    Action,
+    MeleeAction,
+    MoveAction,
+    WaitAction,
+    BumpAction,
+)
+from py_roguelike_tutorial.constants import INTERCARDINAL_DIRECTIONS
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.entity import Actor
@@ -53,3 +61,31 @@ class HostileEnemy(BaseAI):
             return MoveAction(self.entity, step_dx, step_dy).perform()
 
         return WaitAction(self.entity).perform()
+
+
+class ConfusedEnemy(BaseAI):
+    """
+    A confused enemy will stumble around aimlessly for a given number of turns, then recover to its previous AI.
+    If an actor occupies the tile the confused enemy moves into it will attack.
+    """
+
+    def __init__(self, entity: Actor, previous_ai: BaseAI | None, turns_remaining: int):
+        super().__init__(entity)
+        self.turns_remaining = turns_remaining
+        self.previous_ai = previous_ai
+
+    def perform(self) -> None:
+        if self.turns_remaining <= 0:
+            self.restore_previous_ai()
+        else:
+            self.move_randomly()
+
+    def restore_previous_ai(self):
+        txt = f"{self.entity.name} comes to their senses."
+        self.engine.message_log.add(txt)
+        self.entity.ai = self.previous_ai
+
+    def move_randomly(self):
+        dir_x, dir_y = random.choice(INTERCARDINAL_DIRECTIONS)
+        self.turns_remaining -= 1
+        return BumpAction(self.entity, dir_x, dir_y).perform()

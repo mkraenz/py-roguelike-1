@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import math
 from typing import Type, TYPE_CHECKING
 
 from py_roguelike_tutorial.colors import Color
@@ -12,7 +13,7 @@ if TYPE_CHECKING:
     from py_roguelike_tutorial.game_map import GameMap
     from py_roguelike_tutorial.components.fighter import Fighter
     from py_roguelike_tutorial.components.inventory import Inventory
-    from py_roguelike_tutorial.consumable import Consumable
+    from py_roguelike_tutorial.components.consumable import Consumable
 
 
 class Entity:
@@ -83,9 +84,15 @@ class Entity:
         """The position difference from `from_` to this entity"""
         return self.x - from_.x, self.y - from_.y
 
-    def dist_chebyshev(self, from_: "Entity") -> int:
-        dx, dy = self.diff_position(from_)
+    def dist_chebyshev(self, to: "Entity") -> int:
+        dx, dy = self.diff_position(to)
         return max(abs(dx), abs(dy))
+
+    def dist_euclidean(self, to: "Entity") -> float:
+        return self.dist_euclidean_pos(*to.pos)
+
+    def dist_euclidean_pos(self, x: int, y: int) -> float:
+        return math.sqrt((x - self.x) ** 2 + (y - self.y) ** 2)
 
 
 class Actor(Entity):
@@ -120,7 +127,6 @@ class Actor(Entity):
         self.fighter.parent = self
         self.inventory = inventory
         self.inventory.parent = self
-        
 
     @property
     def is_alive(self) -> bool:
@@ -137,8 +143,8 @@ class Actor(Entity):
 
 
 class Item(Entity):
-    parent: GameMap | Inventory # type: ignore [reportIncompatibleVariableOverride]
-    
+    parent: GameMap | Inventory  # type: ignore [reportIncompatibleVariableOverride]
+
     def __init__(
         self,
         *,

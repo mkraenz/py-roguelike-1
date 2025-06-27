@@ -4,9 +4,11 @@ from typing import TYPE_CHECKING
 
 from py_roguelike_tutorial.actions import Action, ItemAction
 from py_roguelike_tutorial.colors import Theme
+from py_roguelike_tutorial.components.ai import ConfusedEnemy
 from py_roguelike_tutorial.components.base_components import BaseComponent
 from py_roguelike_tutorial.components.inventory import Inventory
 from py_roguelike_tutorial.exceptions import Impossible
+from py_roguelike_tutorial.input_handlers import SingleRangedAttackHandler
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.entity import Actor, Item
@@ -54,7 +56,7 @@ class LightningDamageConsumable(Consumable):
         self.max_range = max_range
         self.damage = damage
 
-    def activate(self, ctx: ItemAction) -> None: # type: ignore [reportIncompatibleMethodOverride]
+    def activate(self, ctx: ItemAction) -> None:  # type: ignore [reportIncompatibleMethodOverride]
         consumer = ctx.entity
         target = self._closest_enemy_in_range(consumer)
 
@@ -70,8 +72,42 @@ class LightningDamageConsumable(Consumable):
         target: Actor | None = None
         closest_distance = self.max_range + 1
         for actor in self.engine.game_map.visible_actors:
+            if actor is consumer:
+                continue
             distance = consumer.dist_euclidean(actor)
             if distance < closest_distance:
                 closest_distance = distance
                 target = actor
         return target
+
+
+class ConfusionConsumable(Consumable):
+    def __init__(self, turns: int):
+        self.turns = turns
+
+    def get_action(self, consumer: Actor) -> Action | None:
+        self.engine.message_log.add("Select a target location.", Theme.needs_target)
+        self.engine.event_handler = SingleRangedAttackHandler(
+            self.engine,
+            callback=lambda coord: ItemAction(consumer, self.parent, coord),
+        )
+        return None
+
+    def activate(self, ctx: ItemAction) -> None:  # type: ignore [reportIncompatibleMethodOverride]
+        consumer = ctx.entity
+        target = ctx.target_actor
+
+        if not self.engine.game_map.visible[ctx.target_xy]:
+            self.engine.message_log.add("Cannot select area you cannot see.")
+            return
+        if not target:
+            self.engine.message_log.add("You must select an enemy to target.")
+            return
+        if target is consumer:
+            self.engine.message_log.add("You cannot target yourself.")
+            return
+
+        txt = f"{target.name} starts to stumble around aimlessly."
+        self.engine.message_log.add(txt, fg=Theme.status_effect_applied)
+        target.ai = ConfusedEnemy(entity=target, previous_ai=target.ai, turns_remaining=self.turns)
+        self.consume()

@@ -39,7 +39,7 @@ def get_entity_names_at(world_x: int, world_y: int, game_map: GameMap) -> str:
         for entity in game_map.visible_entities
         if entity.x == world_x and entity.y == world_y
     ]
-
+    
     def count_names(acc: dict[str, int], name: str) -> dict[str, int]:
         if name in acc:
             acc[name] += 1

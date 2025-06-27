@@ -38,6 +38,12 @@ class GameMap:
         )
 
     @property
+    def visible_actors(self) -> Iterator[Actor]:
+        yield from (
+            entity for entity in self.actors if self.visible[entity.x, entity.y]
+        )
+
+    @property
     def items(self) -> Iterator[Item]:
         yield from (entity for entity in self.entities if isinstance(entity, Item))
 
