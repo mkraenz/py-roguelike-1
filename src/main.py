@@ -4,7 +4,7 @@ import traceback
 import tcod
 from tcod.event import wait
 
-from py_roguelike_tutorial import exceptions
+from py_roguelike_tutorial import exceptions, setup_game
 from py_roguelike_tutorial.colors import Theme
 from py_roguelike_tutorial.engine import Engine
 from py_roguelike_tutorial.entity_factory import EntityFactory
@@ -24,13 +24,6 @@ def main():
     screen_height = 50
     window_x = monitor_width // 2 - 10
 
-    map_width = 80
-    map_height = 43
-    room_max_size = 10
-    room_min_size = 6
-    max_rooms = 30
-    max_monsters_per_room = 2
-    max_items_per_room = 2
 
     tileset = tcod.tileset.load_tilesheet(
         "assets/dejavu10x10_gs_tc.png",
@@ -39,27 +32,8 @@ def main():
         tcod.tileset.CHARMAP_TCOD,
     )
 
-    player = copy.deepcopy(EntityFactory.player_prefab)
-    fb1 = copy.deepcopy(EntityFactory.fireball_scroll_prefab)
-    fb2 = copy.deepcopy(EntityFactory.fireball_scroll_prefab)
-    fb3 = copy.deepcopy(EntityFactory.fireball_scroll_prefab)
-    fb4 = copy.deepcopy(EntityFactory.fireball_scroll_prefab)
-    player.inventory.add_many((fb1, fb2, fb3, fb4))
 
-    engine = Engine(player=player)
-    engine.game_map = generate_dungeon(
-        map_width=map_width,
-        map_height=map_height,
-        max_rooms=max_rooms,
-        room_max_size=room_max_size,
-        room_min_size=room_min_size,
-        max_monsters_per_room=max_monsters_per_room,
-        max_items_per_room=max_items_per_room,
-        engine=engine,
-    )
-    engine.update_fov()
-    engine.message_log.add(text="Welcome, adventurer.", fg=Theme.welcome_text)
-    handler: BaseEventHandler = MainGameEventHandler(engine)
+    handler: BaseEventHandler = setup_game.MainMenu()
 
     with tcod.context.new(
         columns=screen_width,

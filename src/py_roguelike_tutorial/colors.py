@@ -56,6 +56,7 @@ class Theme:
     cursor_aoe = Color.RED
     menu_title = Color.YELLOW_LIGHT
     menu_text = Color.WHITE
+    menu_background = Color.BLACK
 
 
 if __name__ == "__main__":
