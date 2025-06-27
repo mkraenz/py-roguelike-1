@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING
 
 from py_roguelike_tutorial import exceptions
 from py_roguelike_tutorial.colors import Theme
+from py_roguelike_tutorial.exceptions import Impossible
 from py_roguelike_tutorial.types import Coord
 
 if TYPE_CHECKING:
@@ -145,3 +146,11 @@ class DropItemAction(ItemAction):
     def perform(self):
         self.entity.inventory.drop(self.item)
 
+
+class TakeStairsAction(Action):
+    def perform(self) -> None:
+        """Take the stairs, if any exist at the entity's location."""
+        if self.entity.pos != self.engine.game_map.downstairs_location:
+            raise Impossible("There are no stairs here.")
+        self.engine.game_world.generate_floor()
+        self.engine.message_log.add("You descend the staircase.", fg=Theme.descend)

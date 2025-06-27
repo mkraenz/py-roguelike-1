@@ -4,6 +4,7 @@ from functools import reduce
 from typing import TYPE_CHECKING
 
 from py_roguelike_tutorial.colors import Theme
+from py_roguelike_tutorial.types import Coord
 
 if TYPE_CHECKING:
     from tcod.console import Console
@@ -39,7 +40,7 @@ def get_entity_names_at(world_x: int, world_y: int, game_map: GameMap) -> str:
         for entity in game_map.visible_entities
         if entity.x == world_x and entity.y == world_y
     ]
-    
+
     def count_names(acc: dict[str, int], name: str) -> dict[str, int]:
         if name in acc:
             acc[name] += 1
@@ -62,14 +63,10 @@ def get_entity_names_at(world_x: int, world_y: int, game_map: GameMap) -> str:
     return names.capitalize()
 
 
-def render_names_at(
-    console: Console, console_x: int, console_y: int, engine: Engine
-) -> None:
+def render_names_at(console: Console, x: int, y: int, engine: Engine) -> None:
     mouse_x, mouse_y = engine.mouse_location
     names = get_entity_names_at(mouse_x, mouse_y, engine.game_map)
-    console.print(
-        x=console_x, y=console_y, text=names, fg=Theme.hover_over_entity_names
-    )
+    console.print(x=x, y=y, text=names, fg=Theme.hover_over_entity_names)
 
 
 YOU_DIED = '''M""MMMM""M MMP"""""YMM M""MMMMM""M M""""""'YMM M""M MM""""""""`M M""""""'YMM 
@@ -88,4 +85,13 @@ def render_you_died(console: Console):
         y=console.height // 2 - 7 // 2 - 1,
         text=YOU_DIED,
         fg=Theme.you_died_text,
+    )
+
+
+def render_dungeon_level(console: Console, dungeon_level: int, x: int, y: int) -> None:
+    text = f"Floor: {dungeon_level}BF"
+    console.print(
+        x=x,
+        y=y,
+        text=text,
     )

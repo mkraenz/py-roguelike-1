@@ -1,10 +1,13 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING, Iterable, Iterator
+
 import numpy as np
 from tcod.console import Console
 
 from py_roguelike_tutorial import tile_types
 from py_roguelike_tutorial.entity import Actor, Item
+from py_roguelike_tutorial.types import Coord
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.engine import Engine
@@ -23,6 +26,7 @@ class GameMap:
         self.explored = np.full((width, height), fill_value=False, order="F")
 
         self.entities = set(entities)
+        self.downstairs_location: Coord = (0, 0)
 
     @property
     def game_map(self) -> GameMap:

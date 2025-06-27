@@ -17,6 +17,7 @@ from py_roguelike_tutorial.actions import (
     WaitAction,
     PickupAction,
     DropItemAction,
+    TakeStairsAction,
 )
 from py_roguelike_tutorial.colors import Theme, Color
 from py_roguelike_tutorial.constants import SAVE_FILENAME
@@ -153,6 +154,8 @@ class MainGameEventHandler(EventHandler):
             case _ if key in _MOVE_KEYS:
                 dx, dy = _MOVE_KEYS[key]
                 return BumpAction(player, dx, dy)
+            case _ if key in _CONFIRM_KEYS:
+                return TakeStairsAction(player)
             case _ if key in _WAIT_KEYS:
                 return WaitAction(player)
             case Key.ESCAPE:

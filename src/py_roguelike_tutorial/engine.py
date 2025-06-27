@@ -7,11 +7,13 @@ from tcod.map import compute_fov
 from py_roguelike_tutorial import exceptions
 from py_roguelike_tutorial.entity import Actor
 from py_roguelike_tutorial.game_map import GameMap
+from py_roguelike_tutorial.game_world import GameWorld
 from py_roguelike_tutorial.message_log import MessageLog
 from py_roguelike_tutorial.render_functions import (
     render_hp_bar,
     render_names_at,
     render_you_died,
+    render_dungeon_level,
 )
 from py_roguelike_tutorial.types import Coord
 
@@ -20,6 +22,7 @@ _FOV_RADIUS = 8
 
 class Engine:
     game_map: GameMap
+    game_world: GameWorld
 
     def __init__(
         self,
@@ -37,7 +40,10 @@ class Engine:
         render_hp_bar(console, stats.hp, stats.max_hp, 20)
         if not self.player.is_alive:
             render_you_died(console)
-        render_names_at(console=console, console_x=21, console_y=44, engine=self)
+        render_names_at(console=console, x=21, y=44, engine=self)
+        render_dungeon_level(
+            console=console, x=0, y=47, dungeon_level=self.game_world.current_floor
+        )
 
     def update_fov(self) -> None:
         """Recompute the visible area based on player's field of view."""

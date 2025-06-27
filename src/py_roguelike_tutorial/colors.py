@@ -33,6 +33,11 @@ class Color:
     RED = hex_to_rgb("#ff00ff")
     PINK_INSANITY = hex_to_rgb("#cf3fff")
     BLUE_BABY = hex_to_rgb("#3fffff")
+    MAGENTA_LIGHT = hex_to_rgb("#9f3fff")
+    BLUE_NAVY = hex_to_rgb("#000064")
+    BLUE_LOCHMARA = hex_to_rgb("#323296")
+    YELLOW_AUTUMN_GOLD = hex_to_rgb("#c8b432")
+    YELLOW_PALE_BROWN = hex_to_rgb('#826e32')
 
 
 class Theme:
@@ -57,6 +62,7 @@ class Theme:
     menu_title = Color.YELLOW_LIGHT
     menu_text = Color.WHITE
     menu_background = Color.BLACK
+    descend = Color.MAGENTA_LIGHT
 
 
 if __name__ == "__main__":

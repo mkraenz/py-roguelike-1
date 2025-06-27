@@ -1,14 +1,17 @@
+from __future__ import annotations
 import random
-from typing import Iterator, Protocol
+from typing import Iterator, Protocol, TYPE_CHECKING
 
 from tcod.los import bresenham
 
 from py_roguelike_tutorial import tile_types
-from py_roguelike_tutorial.engine import Engine
 from py_roguelike_tutorial.entity import Entity
 from py_roguelike_tutorial.entity_factory import EntityFactory
 from py_roguelike_tutorial.game_map import GameMap
 from py_roguelike_tutorial.types import Coord
+
+if TYPE_CHECKING:
+    from py_roguelike_tutorial.engine import Engine
 
 type Table = list[tuple[Entity, int]]
 
@@ -99,7 +102,15 @@ def generate_dungeon(
 
     player.place(*rooms[0].center, dungeon)
 
+    # TODO should be [-1]
+    place_down_stairs(dungeon, rooms[0])
+
     return dungeon
+
+
+def place_down_stairs(dungeon: GameMap, final_room: Room):
+    dungeon.downstairs_location = final_room.center
+    dungeon.tiles[final_room.center] = tile_types.down_stairs
 
 
 def tunnel_between_room_centers(room1: Room, room2: Room) -> Iterator[Coord]:

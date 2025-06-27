@@ -39,12 +39,18 @@ SHROUD = np.array((ord(" "), Color.WHITE, Color.BLACK), dtype=graphic_dt)
 floor = new_tile(
     walkable=True,
     transparent=True,
-    dark=(ord(" "), Color.WHITE, (50, 50, 150)),
-    light=(ord(" "), Color.WHITE, (200, 180, 50)),
+    dark=(ord(" "), Color.WHITE, Color.BLUE_LOCHMARA),
+    light=(ord(" "), Color.WHITE, Color.YELLOW_AUTUMN_GOLD),
 )
 wall = new_tile(
     walkable=False,
     transparent=False,
-    dark=(ord(" "), Color.WHITE, (0, 0, 100)),
-    light=(ord(" "), Color.WHITE, (130, 110, 50)),
+    dark=(ord(" "), Color.WHITE, Color.BLUE_NAVY),
+    light=(ord(" "), Color.WHITE, Color.YELLOW_PALE_BROWN),
+)
+down_stairs = new_tile(
+    walkable=True,
+    transparent=True,
+    dark=(ord(">"), Color.BLUE_NAVY, Color.BLUE_LOCHMARA),
+    light=(ord(">"), Color.WHITE, Color.YELLOW_AUTUMN_GOLD),
 )

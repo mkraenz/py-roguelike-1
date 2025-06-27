@@ -15,7 +15,7 @@ from py_roguelike_tutorial.colors import Theme
 from py_roguelike_tutorial.constants import SAVE_FILENAME
 from py_roguelike_tutorial.engine import Engine
 from py_roguelike_tutorial.entity_factory import EntityFactory
-from py_roguelike_tutorial.procgen import generate_dungeon
+from py_roguelike_tutorial.game_world import GameWorld
 
 background_image = tcod.image.load("assets/menu_background.png")[:, :, :3]
 
@@ -38,7 +38,8 @@ def new_game() -> Engine:
 
     engine = Engine(player=player)
 
-    engine.game_map = generate_dungeon(
+    engine.game_world = GameWorld(
+        engine=engine,
         map_width=map_width,
         map_height=map_height,
         max_rooms=max_rooms,
@@ -46,8 +47,8 @@ def new_game() -> Engine:
         room_min_size=room_min_size,
         max_monsters_per_room=max_monsters_per_room,
         max_items_per_room=max_items_per_room,
-        engine=engine,
     )
+    engine.game_world.generate_floor()
     engine.update_fov()
     engine.message_log.add(text="Welcome, adventurer.", fg=Theme.welcome_text)
     return engine
