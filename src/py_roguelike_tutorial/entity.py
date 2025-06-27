@@ -80,12 +80,19 @@ class Entity:
     def pos(self) -> Coord:
         return self.x, self.y
 
-    def diff_position(self, from_: "Entity") -> Coord:
+    def diff_from(self, from_: "Entity") -> Coord:
         """The position difference from `from_` to this entity"""
-        return self.x - from_.x, self.y - from_.y
+        return self.diff_position(*from_.pos)
+
+    def diff_position(self, x: int, y: int) -> Coord:
+        """The position difference from the given coordinates."""
+        return self.x - x, self.y - y
 
     def dist_chebyshev(self, to: "Entity") -> int:
-        dx, dy = self.diff_position(to)
+        return self.dist_chebyshev_pos(*to.pos)
+
+    def dist_chebyshev_pos(self, x: int, y: int) -> int:
+        dx, dy = self.diff_position(x, y)
         return max(abs(dx), abs(dy))
 
     def dist_euclidean(self, to: "Entity") -> float:

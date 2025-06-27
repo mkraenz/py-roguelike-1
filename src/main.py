@@ -34,6 +34,12 @@ def main():
     )
 
     player = copy.deepcopy(EntityFactory.player_prefab)
+    fb1 = copy.deepcopy(EntityFactory.fireball_scroll_prefab)
+    fb2 = copy.deepcopy(EntityFactory.fireball_scroll_prefab)
+    fb3 = copy.deepcopy(EntityFactory.fireball_scroll_prefab)
+    fb4 = copy.deepcopy(EntityFactory.fireball_scroll_prefab)
+    player.inventory.add_many((fb1, fb2, fb3, fb4))
+
     engine = Engine(player=player)
     engine.game_map = generate_dungeon(
         map_width=map_width,

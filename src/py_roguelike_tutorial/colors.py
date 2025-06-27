@@ -24,12 +24,15 @@ class Color:
     ORANGE_VIBRANT_WARM = (0xFF, 0xA0, 0x30)
     AZURE_LIGHT_WASHED = (0x20, 0xA0, 0xFF)
     YELLOW = (0xFF, 0xFF, 0x00)
+    YELLOW_LIGHT = hex_to_rgb("#ffff33")
     RED_CORAL = (0xFF, 0x40, 0x40)
     GREEN = (0x00, 0xFF, 0x00)
+    GREEN_SCREAMING = hex_to_rgb("#3fff3f")
     BLUE = hex_to_rgb("#0000ff")
     VIOLET = (0x80, 0x00, 0xFF)
     RED = hex_to_rgb("#ff00ff")
     PINK_INSANITY = hex_to_rgb("#cf3fff")
+    BLUE_BABY = hex_to_rgb("#3fffff")
 
 
 class Theme:
@@ -48,8 +51,11 @@ class Theme:
     impossible = Color.GREY
     error = Color.RED_CORAL
     health_recovered = Color.GREEN
-    needs_target = hex_to_rgb("#3fffff")
-    status_effect_applied = hex_to_rgb("#3fff3f")
+    needs_target = Color.BLUE_BABY
+    status_effect_applied = Color.GREEN_SCREAMING
+    cursor_aoe = Color.RED
+    menu_title = Color.YELLOW_LIGHT
+    menu_text = Color.WHITE
 
 
 if __name__ == "__main__":

@@ -114,6 +114,8 @@ def place_items(room: RectangularRoom, game_map: GameMap, max_items: int) -> Non
             location = (game_map, x, y)
             if item_type_chance < 0.7:
                 EntityFactory.health_potion_prefab.spawn(*location)
+            elif item_type_chance < 0.8:
+                EntityFactory.fireball_scroll_prefab.spawn(*location)
             elif item_type_chance < 0.9:
                 EntityFactory.confusion_scroll_prefab.spawn(*location)
             else:

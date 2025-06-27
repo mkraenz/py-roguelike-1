@@ -1,3 +1,5 @@
+from typing import Final
+
 from py_roguelike_tutorial.colors import Color
 from py_roguelike_tutorial.components.ai import HostileEnemy
 from py_roguelike_tutorial.components.fighter import Fighter
@@ -5,6 +7,7 @@ from py_roguelike_tutorial.components.inventory import Inventory
 from py_roguelike_tutorial.components import consumable
 from py_roguelike_tutorial.entity import Actor, Item
 
+SCROLL: Final[str] = "~"
 
 class EntityFactory:
     player_prefab = Actor(
@@ -41,14 +44,20 @@ class EntityFactory:
         consumable=consumable.HealingConsumable(amount=4),
     )
     lightning_scroll_prefab = Item(
-        char="~",
+        char=SCROLL,
         color=Color.BLUE,
         name="Lightning Scroll",
         consumable=consumable.LightningDamageConsumable(damage=20, max_range=5),
     )
     confusion_scroll_prefab = Item(
-        char="~",
+        char=SCROLL,
         color=Color.PINK_INSANITY,
         name="Confusion Scroll",
         consumable=consumable.ConfusionConsumable(turns=10),
+    )
+    fireball_scroll_prefab = Item(
+        char=SCROLL,
+        color=Color.RED,
+        name="Fireball Scroll",
+        consumable=consumable.FireballDamageConsumable(damage=12, radius=3)
     )

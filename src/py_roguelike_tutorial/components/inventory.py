@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Iterable
 
 from py_roguelike_tutorial.components.base_components import BaseComponent
 
@@ -36,6 +36,10 @@ class Inventory(BaseComponent):
     def add(self, item: Item):
         self.items.append(item)
         item.parent = self
+
+    def add_many(self, items: Iterable[Item]) -> None:
+        for item in items:
+            self.add(item)
 
     def get(self, index: int) -> Item | None:
         return self.items[index] if index < len(self.items) else None

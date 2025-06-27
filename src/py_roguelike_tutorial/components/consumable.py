@@ -8,7 +8,10 @@ from py_roguelike_tutorial.components.ai import ConfusedEnemy
 from py_roguelike_tutorial.components.base_components import BaseComponent
 from py_roguelike_tutorial.components.inventory import Inventory
 from py_roguelike_tutorial.exceptions import Impossible
-from py_roguelike_tutorial.input_handlers import SingleRangedAttackHandler
+from py_roguelike_tutorial.input_handlers import (
+    SingleRangedAttackHandler,
+    AreaRangedAttackHandler,
+)
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.entity import Actor, Item
@@ -109,5 +112,45 @@ class ConfusionConsumable(Consumable):
 
         txt = f"{target.name} starts to stumble around aimlessly."
         self.engine.message_log.add(txt, fg=Theme.status_effect_applied)
-        target.ai = ConfusedEnemy(entity=target, previous_ai=target.ai, turns_remaining=self.turns)
+        target.ai = ConfusedEnemy(
+            entity=target, previous_ai=target.ai, turns_remaining=self.turns
+        )
+        self.consume()
+
+
+class FireballDamageConsumable(Consumable):
+    """AOE Fireball attack. May inflict damage onto the user!"""
+
+    def __init__(self, damage: int, radius: int):
+        self.damage = damage
+        self.radius = radius
+
+    def get_action(self, consumer: Actor) -> Action | None:
+        self.engine.message_log.add("Select a target location.", Theme.needs_target)
+        self.engine.event_handler = AreaRangedAttackHandler(
+            self.engine,
+            radius=self.radius,
+            callback=lambda xy: ItemAction(consumer, self.parent, xy),
+        )
+
+    def activate(self, ctx: ItemAction) -> None:  # type: ignore [reportIncompatibleMethodOverride]
+        xy = ctx.target_xy
+
+        if not self.engine.game_map.visible[xy]:
+            self.log("Cannot target area you cannot see.")
+            return
+
+        some_target_hit = False
+        # explicitly using actors and not visible_actors because we can target at the corner of the fog of war
+        # and the spell may hit enemies hidden inside fog of war
+        for actor in self.engine.game_map.actors:
+            if actor.dist_chebyshev_pos(*xy) <= self.radius:
+                self.log(
+                    f"The {actor.name} is engulfed in a fiery explosion, taking {self.damage} damage."
+                )
+                actor.fighter.take_damage(self.damage)
+                some_target_hit = True
+
+        if not some_target_hit:
+            raise Impossible("There are no targets in the radius.")
         self.consume()

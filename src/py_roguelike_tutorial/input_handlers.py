@@ -328,8 +328,8 @@ class SelectIndexHandler(AskUserEventHandler):
         """Highlight the tile under the cursor."""
         super().on_render(console)
         x, y = self.engine.mouse_location
-        console.tiles_rgb["bg"][x, y] = Color.WHITE
-        console.tiles_rgb["fg"][x, y] = Color.BLACK
+        console.rgb["bg"][x, y] = Color.WHITE
+        console.rgb["fg"][x, y] = Color.BLACK
 
     def ev_keydown(self, event: tcod.event.KeyDown, /) -> Action | None:
         """Check for key movement or confirmation keys."""
@@ -384,6 +384,35 @@ class SingleRangedAttackHandler(SelectIndexHandler):
     def __init__(self, engine: Engine, callback: Callable[[Coord], Action | None]):
         super().__init__(engine)
         self.callback = callback
+
+    def on_index_selected(self, x: int, y: int) -> Action | None:
+        return self.callback((x, y))
+
+
+class AreaRangedAttackHandler(SelectIndexHandler):
+    """Targets an area."""
+
+    def __init__(
+        self, engine: Engine, radius: int, callback: Callable[[Coord], Action | None]
+    ):
+        super().__init__(engine)
+        self.callback = callback
+        self.radius = radius
+
+    def on_render(self, console: tcod.console.Console) -> None:
+        """Highlight the area around the cursor"""
+        super().on_render(console)
+
+        cursor_x, cursor_y = self.engine.mouse_location
+        # enemies on the border will not be included in the radius
+        console.draw_frame(
+            x=cursor_x - self.radius -1,
+            y=cursor_y - self.radius -1,
+            width=(self.radius +1) * 2 +1,
+            height=(self.radius +1) * 2 +1,
+            fg=Theme.cursor_aoe,
+            clear=False,
+        )
 
     def on_index_selected(self, x: int, y: int) -> Action | None:
         return self.callback((x, y))
