@@ -1,4 +1,5 @@
 import traceback
+import random
 
 import tcod
 from tcod.event import wait
@@ -18,12 +19,15 @@ def save_game(handler: BaseEventHandler, filename: str):
 
 
 def main():
+    rng_seed = 42
     monitor_width = 1920
     window_width = monitor_width // 2
     window_height = 1080
     screen_width = 80
     screen_height = 50
     window_x = monitor_width // 2 - 10
+
+    random.seed(rng_seed)
 
     tileset = tcod.tileset.load_tilesheet(
         "assets/dejavu10x10_gs_tc.png",
