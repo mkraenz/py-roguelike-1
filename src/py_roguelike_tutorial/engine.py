@@ -14,6 +14,7 @@ from py_roguelike_tutorial.render_functions import (
     render_names_at,
     render_you_died,
     render_dungeon_level,
+    render_xp,
 )
 from py_roguelike_tutorial.types import Coord
 
@@ -41,6 +42,13 @@ class Engine:
         if not self.player.is_alive:
             render_you_died(console)
         render_names_at(console=console, x=21, y=44, engine=self)
+        render_xp(
+            console=console,
+            x=0,
+            y=46,
+            current_xp=self.player.level.current_xp,
+            xp_needed=self.player.level.xp_to_next_level,
+        )
         render_dungeon_level(
             console=console, x=0, y=47, dungeon_level=self.game_world.current_floor
         )

@@ -4,7 +4,6 @@ from functools import reduce
 from typing import TYPE_CHECKING
 
 from py_roguelike_tutorial.colors import Theme
-from py_roguelike_tutorial.types import Coord
 
 if TYPE_CHECKING:
     from tcod.console import Console
@@ -25,7 +24,7 @@ def render_hp_bar(
         console.draw_rect(
             x=x, y=y, width=bar_width, height=1, ch=1, bg=Theme.hp_bar_filled
         )
-    hp = f"HP: {current_value}/{max_value}"
+    hp = f"{current_value}/{max_value} HP"
     console.print(x=x + 1, y=y, text=hp, fg=Theme.hp_bar_text)
 
 
@@ -89,7 +88,18 @@ def render_you_died(console: Console):
 
 
 def render_dungeon_level(console: Console, dungeon_level: int, x: int, y: int) -> None:
-    text = f"Floor: {dungeon_level}BF"
+    text = f"{dungeon_level}BF"
+    console.print(
+        x=x,
+        y=y,
+        text=text,
+    )
+
+
+def render_xp(
+    console: Console, current_xp: int, xp_needed: int, x: int, y: int
+) -> None:
+    text = f"{current_xp} / {xp_needed} EXP"
     console.print(
         x=x,
         y=y,

@@ -9,6 +9,7 @@ from py_roguelike_tutorial.render_order import RenderOrder
 from py_roguelike_tutorial.types import Coord, Rgb
 
 if TYPE_CHECKING:
+    from py_roguelike_tutorial.components.level import Level
     from py_roguelike_tutorial.components.ai import BaseAI
     from py_roguelike_tutorial.game_map import GameMap
     from py_roguelike_tutorial.components.fighter import Fighter
@@ -119,6 +120,7 @@ class Actor(Entity):
         ai_cls: Type[BaseAI],
         fighter: Fighter,
         inventory: Inventory,
+        level: Level,
     ):
         super().__init__(
             x=x,
@@ -129,6 +131,8 @@ class Actor(Entity):
             blocks_movement=True,
             render_order=RenderOrder.ACTOR,
         )
+        self.level = level
+        self.level.parent = self
         self.ai: BaseAI | None = ai_cls(self)
         self.fighter = fighter
         self.fighter.parent = self
@@ -159,7 +163,7 @@ class Item(Entity):
         y: int = 0,
         char: str = "?",
         color: Rgb = Color.WHITE,
-        name="<Unnamed Item>",
+        name: str = "<Unnamed Item>",
         consumable: Consumable,
     ):
         super().__init__(

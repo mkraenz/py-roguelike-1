@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING
 
 from py_roguelike_tutorial.colors import Theme
 from py_roguelike_tutorial.components.base_components import BaseComponent
-from py_roguelike_tutorial.input_handlers import GameOverEventHandler
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.entity import Actor
@@ -34,6 +33,7 @@ class Fighter(BaseComponent):
         log_color = Theme.player_dies if player_died else Theme.enemy_dies
         self.parent.die()
         self.engine.message_log.add(death_msg, fg=log_color)
+        self.engine.player.level.add_xp(self.parent.level.xp_given)
 
     def heal(self, amount: int) -> int:
         """Heals by the given amount and returns the amount recovered."""

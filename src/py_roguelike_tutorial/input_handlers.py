@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import os.path
 import sys
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, Callable, Type
 
 import tcod
 from tcod.constants import CENTER
@@ -118,6 +118,8 @@ class EventHandler(BaseEventHandler):
         if self.handle_action(action_or_state):
             if not self.player.is_alive:
                 return GameOverEventHandler(self.engine)
+            if self.player.level.requires_level_up:
+                return LevelUpEventHandler(self.engine)
             return MainGameEventHandler(self.engine)
         return self
 
@@ -197,41 +199,120 @@ class GameOverEventHandler(EventHandler):
         self.on_quit()
 
 
+class LevelUpEventHandler(EventHandler):
+    def on_render(self, console: Console) -> None:
+        HEADING = "┤Level Up!├"
+        super().on_render(console)
+        child_console = Console(console.width - 6, console.height - 6)
+        child_console.draw_frame(0, 0, child_console.width, child_console.height)
+        child_console.print(
+            x=0,
+            y=0,
+            height=1,
+            width=child_console.width,
+            text=HEADING,
+            alignment=CENTER,
+        )
+
+        def draw_text(text: str, y_offset: int):
+            width = 36
+            child_console.print(
+                x=child_console.width // 2,
+                y=child_console.height // 2 + y_offset,
+                text=text.ljust(width),
+                alignment=CENTER,
+            )
+
+        stats = self.player.fighter
+        draw_text("Select an attribute to increase.", -6)
+        draw_text(f"[S] Strength (+1 attack, from {stats.power}", -4)
+        draw_text(f"[A] Agility (+1 defense, from {stats.defense})", -3)
+        draw_text(f"[C] Constitution (+20 HP, from {stats.max_hp})", -2)
+        child_console.blit(console, 3, 3)
+
+    def ev_keydown(self, event: tcod.event.KeyDown, /) -> ActionOrHandler | None:
+        """User cannot exit the menu without selecting an option."""
+        key = event.sym
+
+        def on_confirm(cb: Callable[[], None]):
+            def inner():
+                cb()
+                return (
+                    MainGameEventHandler(self.engine)
+                    if not self.player.level.requires_level_up
+                    else self
+                )
+
+            return inner
+
+        match key:
+            case Key.S:
+                return ConfirmationPopup(
+                    self,
+                    "Increase strength?",
+                    callback=on_confirm(self.player.level.increase_power),
+                )
+            case Key.A:
+                return ConfirmationPopup(
+                    self,
+                    "Increase agility?",
+                    callback=on_confirm(self.player.level.increase_defense),
+                )
+            case Key.C:
+                return ConfirmationPopup(
+                    self,
+                    "Increase constitution?",
+                    callback=on_confirm(self.player.level.increase_max_hp),
+                )
+            case _:
+                pass
+        # there may be multiple level ups at once necessary, e.g. if the player killed a super high-EXP boss
+        if not self.player.level.requires_level_up:
+            return MainGameEventHandler(self.engine)
+        return super().ev_keydown(event)
+
+    def ev_mousebuttondown(
+        self, event: tcod.event.MouseButtonDown, /
+    ) -> ActionOrHandler | None:
+        """Forbid exiting the menu on mouse click."""
+        return None
+
+
 class LogHistoryViewer(EventHandler):
     """Print the history on a larger window which can be scrolled."""
 
-    def __init__(self, engine: Engine, on_back_cls):
+    def __init__(self, engine: Engine, on_back_cls: Type[EventHandler]):
         super().__init__(engine)
         self.log_length = len(engine.message_log.messages)
         self.cursor = self.log_length - 1
         self.on_back_cls = on_back_cls
 
     def on_render(self, console: Console) -> None:
+        heading = "┤Message history├"
         super().on_render(console)  # draw main state as background
 
-        log_console = Console(console.width - 6, console.height - 6)
-        log_console.draw_frame(
-            0, 0, log_console.width, log_console.height
+        child_console = Console(console.width - 6, console.height - 6)
+        child_console.draw_frame(
+            0, 0, child_console.width, child_console.height
         )  # screen border
-        heading = "┤Message history├"
-        log_console.print(
+        child_console.print(
             x=0,
             y=0,
-            width=log_console.width,
+            width=child_console.width,
             height=1,
             alignment=tcod.tcod.constants.CENTER,
             text=heading,
         )
 
         self.engine.message_log.render_messages(
-            log_console,
+            child_console,
             x=1,
             y=1,
-            width=log_console.width - 2,
-            height=log_console.height - 2,
+            width=child_console.width - 2,
+            height=child_console.height - 2,
             messages=self.engine.message_log.messages[: self.cursor + 1],
         )
-        log_console.blit(console, 3, 3)
+        child_console.blit(console, 3, 3)
 
     def ev_keydown(self, event: tcod.event.KeyDown, /) -> ActionOrHandler | None:
         end = self.log_length - 1
@@ -306,7 +387,7 @@ class InventoryEventHandler(AskUserEventHandler):
             fg=Color.WHITE,
             bg=Color.BLACK,
             clear=True,
-            title=self.TITLE,
+            text=self.TITLE,
         )
 
         if carried_items > 0:
@@ -508,18 +589,18 @@ class ConfirmationPopup(BaseEventHandler):
         console.rgb["fg"] //= 8
         console.rgb["bg"] //= 8
 
+        width = 24
         console.print(
             x=console.width // 2,
-            y=console.height // 2 - 4,
-            text=self.text,
+            y=console.height // 2 - 6,
+            text=self.text.ljust(width),
             fg=Theme.menu_text,
             bg=Theme.menu_background,
             alignment=CENTER,
         )
-        width = 24
         console.print(
             x=console.width // 2,
-            y=console.height // 2,
+            y=console.height // 2 - 4,
             text=confirm_text.ljust(width),
             fg=Theme.menu_text,
             bg=Theme.menu_background,
@@ -527,7 +608,7 @@ class ConfirmationPopup(BaseEventHandler):
         )
         console.print(
             x=console.width // 2,
-            y=console.height // 2 + 1,
+            y=console.height // 2 - 4 + 1,
             text=cancel_text.ljust(width),
             fg=Theme.menu_text,
             bg=Theme.menu_background,

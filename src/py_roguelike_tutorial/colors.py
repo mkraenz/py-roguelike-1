@@ -15,7 +15,7 @@ class Color:
     RED_ROBIN = (63, 127, 63)
     GREEN_DEEP_COOL = (0, 127, 0)
     RED_GUARDMANS = (191, 0, 0)
-    GREEN = (0x0, 0x60, 0x0)
+    GREEN_DARK = (0x0, 0x60, 0x0)
     RED_DARK_SIENNA = (0x40, 0x10, 0x10)
     GREY_88 = (0xE0, 0xE0, 0xE0)
     GREY = (0x80, 0x80, 0x80)
@@ -37,7 +37,7 @@ class Color:
     BLUE_NAVY = hex_to_rgb("#000064")
     BLUE_LOCHMARA = hex_to_rgb("#323296")
     YELLOW_AUTUMN_GOLD = hex_to_rgb("#c8b432")
-    YELLOW_PALE_BROWN = hex_to_rgb('#826e32')
+    YELLOW_PALE_BROWN = hex_to_rgb("#826e32")
 
 
 class Theme:
@@ -47,7 +47,7 @@ class Theme:
     enemy_dies = Color.ORANGE_VIBRANT_WARM
     welcome_text = Color.AZURE_LIGHT_WASHED
     hp_bar_text = Color.WHITE
-    hp_bar_filled = Color.GREEN
+    hp_bar_filled = Color.GREEN_DEEP_COOL
     hp_bar_empty = Color.RED_DARK_SIENNA
     you_died_text = Color.RED_FIREBRICK1
     log_message = Color.WHITE
