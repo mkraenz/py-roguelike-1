@@ -1,3 +1,6 @@
+import lzma
+import pickle
+
 from tcod.console import Console
 from tcod.map import compute_fov
 
@@ -53,3 +56,11 @@ class Engine:
                     entity.ai.perform()
                 except exceptions.Impossible:
                     pass  # ignore impossible actions performed by the AI
+
+    def save_to_file(self, filename: str) -> None:
+        """Save this instance as compressed file.
+        WARNING: Pickle may be used as an attack vector for arbitrary code execution,
+        so never load other peoples' save files"""
+        save_data = lzma.compress(pickle.dumps(self))
+        with open(filename, "wb") as f:
+            f.write(save_data)

@@ -1,5 +1,8 @@
 import copy
+import lzma
+import pickle
 import sys
+import traceback
 
 import tcod
 from tcod.console import Console
@@ -9,6 +12,7 @@ from tcod.libtcodpy import BKGND_ALPHA
 
 from py_roguelike_tutorial import input_handlers
 from py_roguelike_tutorial.colors import Theme
+from py_roguelike_tutorial.constants import SAVE_FILENAME
 from py_roguelike_tutorial.engine import Engine
 from py_roguelike_tutorial.entity_factory import EntityFactory
 from py_roguelike_tutorial.procgen import generate_dungeon
@@ -46,6 +50,14 @@ def new_game() -> Engine:
     )
     engine.update_fov()
     engine.message_log.add(text="Welcome, adventurer.", fg=Theme.welcome_text)
+    return engine
+
+
+def load_game(filepath: str):
+    """Load an engine from a file."""
+    with open(filepath, "rb") as f:
+        engine = pickle.loads(lzma.decompress(f.read()))
+    assert isinstance(engine, Engine)
     return engine
 
 
@@ -100,9 +112,27 @@ class MainMenu(input_handlers.BaseEventHandler):
             case _ if key in {Key.ESCAPE, Key.Q}:
                 sys.exit()
             case Key.C:
-                # TODO load game
-                return None
+                return self.try_load_game()
             case Key.N:
-                return input_handlers.MainGameEventHandler(new_game())
+                return input_handlers.ConfirmationPopup(
+                    self,
+                    text="Your current progress will be reset. Continue?",
+                    callback=lambda: input_handlers.MainGameEventHandler(
+                        new_game(),
+                    ),
+                )
             case _:
                 return None
+
+    def try_load_game(self):
+        try:
+            return input_handlers.MainGameEventHandler(load_game(SAVE_FILENAME))
+        except FileNotFoundError:
+            return input_handlers.PopupMessage(
+                self, f"No save file named {SAVE_FILENAME} found."
+            )
+        except Exception as exc:
+            traceback.print_exc()
+            return input_handlers.PopupMessage(
+                self, f"Failed to load save file:\n{exc}"
+            )

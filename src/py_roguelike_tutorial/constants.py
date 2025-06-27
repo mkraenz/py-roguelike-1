@@ -24,3 +24,5 @@ INTERCARDINAL_DIRECTIONS = (
     Direction.SW,
     Direction.SE,
 )
+
+SAVE_FILENAME = "savegame.sav"

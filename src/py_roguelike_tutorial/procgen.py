@@ -1,13 +1,27 @@
 import random
-from typing import Iterator, List, Protocol
+from typing import Iterator, Protocol
 
 from tcod.los import bresenham
 
 from py_roguelike_tutorial import tile_types
 from py_roguelike_tutorial.engine import Engine
+from py_roguelike_tutorial.entity import Entity
 from py_roguelike_tutorial.entity_factory import EntityFactory
 from py_roguelike_tutorial.game_map import GameMap
 from py_roguelike_tutorial.types import Coord
+
+type Table = list[tuple[Entity, int]]
+
+ITEM_TABLE: Table = [
+    (EntityFactory.health_potion_prefab, 70),
+    (EntityFactory.fireball_scroll_prefab, 10),
+    (EntityFactory.confusion_scroll_prefab, 10),
+    (EntityFactory.lightning_scroll_prefab, 10),
+]
+MONSTER_TABLE: Table = [
+    (EntityFactory.orc_prefab, 80),
+    (EntityFactory.troll_prefab, 20),
+]
 
 
 class Room(Protocol):
@@ -112,14 +126,8 @@ def place_items(room: RectangularRoom, game_map: GameMap, max_items: int) -> Non
         if not any(entity.x == x and entity.y == y for entity in game_map.entities):
             item_type_chance = random.random()
             location = (game_map, x, y)
-            if item_type_chance < 0.7:
-                EntityFactory.health_potion_prefab.spawn(*location)
-            elif item_type_chance < 0.8:
-                EntityFactory.fireball_scroll_prefab.spawn(*location)
-            elif item_type_chance < 0.9:
-                EntityFactory.confusion_scroll_prefab.spawn(*location)
-            else:
-                EntityFactory.lightning_scroll_prefab.spawn(*location)
+            entity = roll_on_table(ITEM_TABLE)
+            entity.spawn(*location)
 
 
 def place_entities(room: RectangularRoom, game_map: GameMap, max_monsters: int) -> None:
@@ -131,7 +139,28 @@ def place_entities(room: RectangularRoom, game_map: GameMap, max_monsters: int) 
             x == entity.x and y == entity.y for entity in game_map.entities
         )
         if not place_taken:
-            if random.random() < 0.8:
-                EntityFactory.orc_prefab.spawn(game_map, x, y)
-            else:
-                EntityFactory.troll_prefab.spawn(game_map, x, y)
+            prefab = roll_on_table(MONSTER_TABLE)
+            prefab.spawn(game_map, x, y)
+
+
+def roll_on_table(table: Table) -> Entity:
+    """
+    Lottery tickets algorithm.
+
+    Parameters:
+        table: A list of pairs of an Entity (typically a prefab) and how many lottery tickets for
+                that Entity are in the lottery pot.
+                `table` is a list because dictionary iteration is only semi-deterministic and thus hard to debug.
+    """
+    total = sum([entry[1] for entry in table])
+    picked_ticket = random.randint(0, total)
+    # we sum up until picked_ticket < sum(tickets for all entries until now)
+    running_total = 0
+    for [prefab, tickets_for_prefab] in table:
+        running_total += tickets_for_prefab
+        if picked_ticket < running_total:
+            # we found our winner
+            return prefab
+
+    # this will never happen by design of the algo. added only for linter/compiler
+    return table[0][0]

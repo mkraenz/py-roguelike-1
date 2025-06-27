@@ -1,4 +1,3 @@
-import copy
 import traceback
 
 import tcod
@@ -6,14 +5,16 @@ from tcod.event import wait
 
 from py_roguelike_tutorial import exceptions, setup_game
 from py_roguelike_tutorial.colors import Theme
-from py_roguelike_tutorial.engine import Engine
-from py_roguelike_tutorial.entity_factory import EntityFactory
 from py_roguelike_tutorial.input_handlers import (
     BaseEventHandler,
-    MainGameEventHandler,
     EventHandler,
 )
-from py_roguelike_tutorial.procgen import generate_dungeon
+
+
+def save_game(handler: BaseEventHandler, filename: str):
+    if isinstance(handler, EventHandler):
+        handler.engine.save_to_file(filename)
+        print(f"Game saved to {filename}.")
 
 
 def main():
@@ -24,14 +25,12 @@ def main():
     screen_height = 50
     window_x = monitor_width // 2 - 10
 
-
     tileset = tcod.tileset.load_tilesheet(
         "assets/dejavu10x10_gs_tc.png",
         32,
         8,
         tcod.tileset.CHARMAP_TCOD,
     )
-
 
     handler: BaseEventHandler = setup_game.MainMenu()
 
@@ -57,19 +56,22 @@ def main():
                         # TODO i guess i should use the converted event and pass that to the event handler
                         context.convert_event(event)
                         handler = handler.handle_events(event)
+                except exceptions.QuitWithoutSaving:
+                    raise
                 except Exception:  # ingame exceptions
                     traceback.print_exc()
                     if isinstance(handler, EventHandler):
                         handler.engine.message_log.add(
                             traceback.format_exc(), fg=Theme.error
                         )
+                    raise
         except exceptions.QuitWithoutSaving:
-            raise
+            raise SystemExit()
         except SystemExit:
-            # TODO: add save functionality here
+            save_game(handler, "savegame.sav")
             raise
         except BaseException:  # save on any unexpeceted exception
-            # TODO: add save functionality here
+            save_game(handler, "savegame.sav")
             raise
 
 

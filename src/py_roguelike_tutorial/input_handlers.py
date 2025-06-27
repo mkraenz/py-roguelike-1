@@ -1,10 +1,12 @@
 from __future__ import annotations
 
+import os.path
 import sys
 from typing import TYPE_CHECKING, Callable
 
 import tcod
-from tcod.event import KeySym as Key, Quit, EventDispatch, KeyDown, Modifier
+from tcod.constants import CENTER
+from tcod.event import KeySym as Key, Quit, EventDispatch, KeyDown, Modifier, T
 from tcod.console import Console
 
 from py_roguelike_tutorial import exceptions
@@ -17,6 +19,8 @@ from py_roguelike_tutorial.actions import (
     DropItemAction,
 )
 from py_roguelike_tutorial.colors import Theme, Color
+from py_roguelike_tutorial.constants import SAVE_FILENAME
+from py_roguelike_tutorial.exceptions import QuitWithoutSaving
 from py_roguelike_tutorial.types import Coord
 
 if TYPE_CHECKING:
@@ -171,14 +175,23 @@ class GameOverEventHandler(EventHandler):
 
     def ev_keydown(self, event: KeyDown, /) -> ActionOrHandler | None:
         key = event.sym
-        player = self.player
         match key:
             case Key.ESCAPE:
-                return EscapeAction(player)
+                return self.on_quit()
             case Key.V:
                 return LogHistoryViewer(self.engine, GameOverEventHandler)
             case _:
                 return None
+
+    def on_quit(self) -> None:
+        """Handle exiting out of a finished game."""
+        if os.path.exists(SAVE_FILENAME):
+            os.remove(SAVE_FILENAME)  # permadeath, baby
+        raise QuitWithoutSaving()
+
+    # compiler is not clever enough to notice that on_quit raises an exception...
+    def ev_quit(self, event: Quit):  # type: ignore [reportIncompatibleMethodOverride]
+        self.on_quit()
 
 
 class LogHistoryViewer(EventHandler):
@@ -297,14 +310,14 @@ class InventoryEventHandler(AskUserEventHandler):
             for i, item in enumerate(player.inventory.items):
                 item_key = chr(ord("a") + i)
                 console.print(
-                    x=x,
+                    x=x + 1,
                     y=y + i + 1,
                     width=width,
                     height=height,
-                    text=f"{item_key} {item.name}",
+                    text=f"[{item_key}] {item.name}",
                 )
         else:
-            console.print(x=x, y=y + 1, width=width, height=height, text="(Empty)")
+            console.print(x=x + 1, y=y + 1, width=width, height=height, text="(Empty)")
 
     def ev_keydown(self, event: tcod.event.KeyDown, /) -> ActionOrHandler | None:
         player = self.player
@@ -441,3 +454,87 @@ class AreaRangedAttackHandler(SelectIndexHandler):
 
     def on_index_selected(self, x: int, y: int) -> Action | None:
         return self.callback((x, y))
+
+
+class PopupMessage(BaseEventHandler):
+    """Displays a popup window. Hands back control to the `parent_handler`
+    (typically, the previous screen) on any key stroke."""
+
+    def __init__(self, parent_handler: BaseEventHandler, text: str):
+        self.parent = parent_handler
+        self.text = text
+
+    def on_render(self, console: Console) -> None:
+        self.parent.on_render(console)  # in background, display the parent
+        # dim the parent
+        console.rgb["fg"] //= 8
+        console.rgb["bg"] //= 8
+
+        console.print(
+            x=console.width // 2,
+            y=console.height // 2,
+            text=self.text,
+            fg=Theme.menu_text,
+            bg=Theme.menu_background,
+            alignment=CENTER,
+        )
+
+    def ev_keydown(self, event: tcod.event.KeyDown, /) -> ActionOrHandler | None:
+        return self.parent
+
+
+class ConfirmationPopup(BaseEventHandler):
+    """A popup window asking for confirmation.
+    On [Y], calls the callback. Else hands back control to the parent."""
+
+    def __init__(
+        self,
+        parent_handler: BaseEventHandler,
+        text: str,
+        callback: Callable[[], BaseEventHandler],
+    ):
+        self.parent = parent_handler
+        self.text = text
+        self.callback = callback
+
+    def on_render(self, console: Console) -> None:
+        confirm_text = "[Y] Confirm"
+        cancel_text = "[*] Cancel"
+
+        self.parent.on_render(console)
+        console.rgb["fg"] //= 8
+        console.rgb["bg"] //= 8
+
+        console.print(
+            x=console.width // 2,
+            y=console.height // 2 - 4,
+            text=self.text,
+            fg=Theme.menu_text,
+            bg=Theme.menu_background,
+            alignment=CENTER,
+        )
+        width = 24
+        console.print(
+            x=console.width // 2,
+            y=console.height // 2,
+            text=confirm_text.ljust(width),
+            fg=Theme.menu_text,
+            bg=Theme.menu_background,
+            alignment=CENTER,
+        )
+        console.print(
+            x=console.width // 2,
+            y=console.height // 2 + 1,
+            text=cancel_text.ljust(width),
+            fg=Theme.menu_text,
+            bg=Theme.menu_background,
+            alignment=CENTER,
+        )
+
+    def ev_keydown(self, event: tcod.event.KeyDown, /) -> ActionOrHandler | None:
+        key = event.sym
+        match key:
+            case Key.Y:
+                return self.callback()
+            case _:
+                return self.parent
