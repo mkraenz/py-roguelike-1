@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING, Callable, Type
 
 import tcod
 from tcod.constants import CENTER
-from tcod.event import KeySym as Key, Quit, EventDispatch, KeyDown, Modifier, T
+from tcod.event import KeySym as Key, Quit, EventDispatch, KeyDown, Modifier
 from tcod.console import Console
 
 from py_roguelike_tutorial import exceptions
@@ -387,7 +387,15 @@ class InventoryEventHandler(AskUserEventHandler):
             fg=Color.WHITE,
             bg=Color.BLACK,
             clear=True,
-            text=self.TITLE,
+        )
+        console.print(
+            x=x + 1,
+            y=y,
+            width=width,
+            height=height,
+            fg=Color.WHITE,
+            bg=Color.BLACK,
+            text=f"┤{self.TITLE}├",
         )
 
         if carried_items > 0:

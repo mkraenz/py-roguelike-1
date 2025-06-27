@@ -28,12 +28,13 @@ def render_hp_bar(
     console.print(x=x + 1, y=y, text=hp, fg=Theme.hp_bar_text)
 
 
-def get_entity_names_at(world_x: int, world_y: int, game_map: GameMap) -> str:
+def get_names_at(world_x: int, world_y: int, game_map: GameMap) -> str:
     if (
         not game_map.in_bounds(world_x, world_y)
         or not game_map.visible[world_x, world_y]
     ):
         return ""
+    tile_name = game_map.tiles["name"][world_x, world_y]
     entity_names = [
         entity.name
         for entity in game_map.visible_entities
@@ -48,6 +49,7 @@ def get_entity_names_at(world_x: int, world_y: int, game_map: GameMap) -> str:
         return acc
 
     names_with_count_dict = reduce(count_names, entity_names, {})
+    names_with_count_dict[tile_name] = 1
 
     def format_name(name: str, count: int) -> str:
         if count <= 1:
@@ -64,7 +66,7 @@ def get_entity_names_at(world_x: int, world_y: int, game_map: GameMap) -> str:
 
 def render_names_at(console: Console, x: int, y: int, engine: Engine) -> None:
     mouse_x, mouse_y = engine.mouse_location
-    names = get_entity_names_at(mouse_x, mouse_y, engine.game_map)
+    names = get_names_at(mouse_x, mouse_y, engine.game_map)
     console.print(x=x, y=y, text=names, fg=Theme.hover_over_entity_names)
 
 
