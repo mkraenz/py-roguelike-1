@@ -43,7 +43,7 @@ def main():
         columns=screen_width,
         rows=screen_height,
         tileset=tileset,
-        title="Miros Pythyfyl Roguelike",
+        title="TSTT's Pythyfyl Roguelike",
         vsync=True,
         width=window_width,
         height=window_height,
