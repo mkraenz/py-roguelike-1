@@ -25,4 +25,4 @@ INTERCARDINAL_DIRECTIONS = (
     Direction.SE,
 )
 
-SAVE_FILENAME = "savegame.sav"
+SAVE_FILENAME = "autosave.sav"

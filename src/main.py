@@ -6,6 +6,7 @@ from tcod.event import wait
 
 from py_roguelike_tutorial import exceptions, setup_game
 from py_roguelike_tutorial.colors import Theme
+from py_roguelike_tutorial.constants import SAVE_FILENAME
 from py_roguelike_tutorial.input_handlers import (
     BaseEventHandler,
     EventHandler,
@@ -72,10 +73,10 @@ def main():
         except exceptions.QuitWithoutSaving:
             raise SystemExit()
         except SystemExit:
-            save_game(handler, "savegame.sav")
+            save_game(handler, SAVE_FILENAME)
             raise
         except BaseException:  # save on any unexpeceted exception
-            save_game(handler, "savegame.sav")
+            save_game(handler, SAVE_FILENAME)
             raise
 
 
