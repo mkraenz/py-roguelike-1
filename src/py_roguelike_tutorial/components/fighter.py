@@ -14,8 +14,24 @@ class Fighter(BaseComponent):
     def __init__(self, max_hp: int, defense: int, power: int, hp: int | None = None):
         self.max_hp = max_hp
         self._hp = hp if hp else max_hp
-        self.defense = defense
-        self.power = power
+        self.base_defense = defense
+        self.base_power = power
+
+    @property
+    def power(self) -> int:
+        return self.base_power + self.power_bonus
+
+    @property
+    def defense(self) -> int:
+        return self.base_defense + self.defense_bonus
+
+    @property
+    def defense_bonus(self) -> int:
+        return self.parent.equipment.defense
+
+    @property
+    def power_bonus(self) -> int:
+        return self.parent.equipment.power
 
     @property
     def hp(self) -> int:

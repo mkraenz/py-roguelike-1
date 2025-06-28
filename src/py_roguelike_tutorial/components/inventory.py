@@ -22,7 +22,7 @@ class Inventory(BaseComponent):
     def drop(self, item: Item) -> None:
         """Removes the item from the inventory and drops it at the parents location."""
         self.items.remove(item)
-        item.place(self.parent.x, self.parent.y)
+        item.place(self.parent.x, self.parent.y, self.engine.game_map)
         txt = f"You dropped the {item.name}."
         self.engine.message_log.add(text=txt)
 

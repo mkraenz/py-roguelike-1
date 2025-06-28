@@ -118,7 +118,10 @@ class ItemAction(Action):
         return self.engine.game_map.get_actor_at_location(*self.target_xy)
 
     def perform(self) -> None:
-        self.item.consumable.activate(self)
+        if self.item.consumable:
+            self.item.consumable.activate(self)
+        elif self.item.equippable:
+            self.entity.equipment.toggle_equippable(self.item)
 
 
 class PickupAction(Action):
@@ -144,6 +147,8 @@ class PickupAction(Action):
 
 class DropItemAction(ItemAction):
     def perform(self):
+        if self.entity.equipment.is_equipped(self.item):
+            self.entity.equipment.toggle_equippable(self.item)
         self.entity.inventory.drop(self.item)
 
 
@@ -154,3 +159,9 @@ class TakeStairsAction(Action):
             raise Impossible("There are no stairs here.")
         self.engine.game_world.generate_floor()
         self.engine.message_log.add("You descend the staircase.", fg=Theme.descend)
+
+
+class EquipAction(ItemAction):
+    """Everything already implemented in ItemAction. The separate name is just to make the intent more explicit."""
+
+    pass

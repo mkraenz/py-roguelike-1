@@ -28,11 +28,7 @@ def new_game() -> Engine:
     max_rooms = 30
 
     player = copy.deepcopy(EntityPrefabs.player)
-    fb1 = copy.deepcopy(EntityPrefabs.fireball_scroll)
-    fb2 = copy.deepcopy(EntityPrefabs.fireball_scroll)
-    fb3 = copy.deepcopy(EntityPrefabs.fireball_scroll)
-    fb4 = copy.deepcopy(EntityPrefabs.fireball_scroll)
-    player.inventory.add_many((fb1, fb2, fb3, fb4))
+    initial_equip_and_items(player)
 
     engine = Engine(player=player)
 
@@ -48,6 +44,15 @@ def new_game() -> Engine:
     engine.update_fov()
     engine.message_log.add(text="Welcome, adventurer.", fg=Theme.welcome_text)
     return engine
+
+
+def initial_equip_and_items(player):
+    # dagger = copy.deepcopy(EntityPrefabs.dagger)
+    # leather_armor = copy.deepcopy(EntityPrefabs.leather_armor)
+    # player.inventory.add_many((dagger, leather_armor))
+    # player.equipment.toggle_equippable(dagger, show_message=False)
+    # player.equipment.toggle_equippable(leather_armor, show_message=False)
+    pass
 
 
 def load_game(filepath: str):

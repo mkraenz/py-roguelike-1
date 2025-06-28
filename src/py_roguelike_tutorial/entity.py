@@ -9,6 +9,8 @@ from py_roguelike_tutorial.render_order import RenderOrder
 from py_roguelike_tutorial.types import Coord, Rgb
 
 if TYPE_CHECKING:
+    from py_roguelike_tutorial.components.equippable import Equippable
+    from py_roguelike_tutorial.components.equipment import Equipment
     from py_roguelike_tutorial.components.level import Level
     from py_roguelike_tutorial.components.ai import BaseAI
     from py_roguelike_tutorial.game_map import GameMap
@@ -121,6 +123,7 @@ class Actor(Entity):
         fighter: Fighter,
         inventory: Inventory,
         level: Level,
+        equipment: Equipment,
     ):
         super().__init__(
             x=x,
@@ -138,6 +141,8 @@ class Actor(Entity):
         self.fighter.parent = self
         self.inventory = inventory
         self.inventory.parent = self
+        self.equipment = equipment
+        self.equipment.parent = self
 
     @property
     def is_alive(self) -> bool:
@@ -164,7 +169,8 @@ class Item(Entity):
         char: str = "?",
         color: Rgb = Color.WHITE,
         name: str = "<Unnamed Item>",
-        consumable: Consumable,
+        consumable: Consumable | None = None,
+        equippable: Equippable | None = None,
     ):
         super().__init__(
             x=x,
@@ -175,5 +181,9 @@ class Item(Entity):
             blocks_movement=False,
             render_order=RenderOrder.ITEM,
         )
+        self.equippable = equippable
         self.consumable = consumable
-        self.consumable.parent = self
+        if self.consumable:
+            self.consumable.parent = self
+        if self.equippable:
+            self.equippable.parent = self

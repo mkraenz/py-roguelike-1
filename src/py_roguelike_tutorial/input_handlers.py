@@ -18,6 +18,7 @@ from py_roguelike_tutorial.actions import (
     PickupAction,
     DropItemAction,
     TakeStairsAction,
+    EquipAction,
 )
 from py_roguelike_tutorial.colors import Theme, Color
 from py_roguelike_tutorial.constants import SAVE_FILENAME
@@ -448,12 +449,13 @@ class InventoryEventHandler(AskUserEventHandler):
         if carried_items > 0:
             for i, item in enumerate(player.inventory.items):
                 item_key = chr(ord("a") + i)
+                item_equipped = " (E)" if player.equipment.is_equipped(item) else ""
                 console.print(
                     x=x + 1,
                     y=y + i + 1,
                     width=width,
                     height=height,
-                    text=f"[{item_key}] {item.name}",
+                    text=f"[{item_key}] {item.name}{item_equipped}",
                 )
         else:
             console.print(x=x + 1, y=y + 1, width=width, height=height, text="(Empty)")
@@ -481,7 +483,11 @@ class InventoryActivateHandler(InventoryEventHandler):
     TITLE = "Select an item to use"
 
     def on_item_selected(self, selected_item: Item) -> ActionOrHandler | None:
-        return selected_item.consumable.get_action(self.player)
+        if selected_item.consumable:
+            return selected_item.consumable.get_action(self.player)
+        if selected_item.equippable:
+            return EquipAction(self.player, selected_item)
+        return None
 
 
 class InventoryDropHandler(InventoryEventHandler):
