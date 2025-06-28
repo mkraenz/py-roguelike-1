@@ -11,9 +11,9 @@ if TYPE_CHECKING:
 class Fighter(BaseComponent):
     parent: Actor  # type: ignore [reportIncompatibleVariableOverride]
 
-    def __init__(self, hp: int, defense: int, power: int):
-        self.max_hp = hp
-        self._hp = hp
+    def __init__(self, max_hp: int, defense: int, power: int, hp: int | None = None):
+        self.max_hp = max_hp
+        self._hp = hp if hp else max_hp
         self.defense = defense
         self.power = power
 

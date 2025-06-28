@@ -1,12 +1,13 @@
 from __future__ import annotations
+
 import random
-from typing import Iterator, Protocol, TYPE_CHECKING
+from typing import Iterator, Protocol, TYPE_CHECKING, NamedTuple
 
 from tcod.los import bresenham
 
 from py_roguelike_tutorial import tile_types
 from py_roguelike_tutorial.entity import Entity
-from py_roguelike_tutorial.entity_factory import EntityFactory
+from py_roguelike_tutorial.entity_factory import EntityPrefabs as prefabs
 from py_roguelike_tutorial.game_map import GameMap
 from py_roguelike_tutorial.types import Coord
 
@@ -15,16 +16,76 @@ if TYPE_CHECKING:
 
 type Table = list[tuple[Entity, int]]
 
-ITEM_TABLE: Table = [
-    (EntityFactory.health_potion_prefab, 70),
-    (EntityFactory.fireball_scroll_prefab, 10),
-    (EntityFactory.confusion_scroll_prefab, 10),
-    (EntityFactory.lightning_scroll_prefab, 10),
+
+class FloorTableRow(NamedTuple):
+    floor: int
+    max_value: int
+
+
+_MAX_ITEMS_BY_FLOOR = [
+    FloorTableRow(1, 1),
+    FloorTableRow(4, 2),
 ]
-MONSTER_TABLE: Table = [
-    (EntityFactory.orc_prefab, 80),
-    (EntityFactory.troll_prefab, 20),
+_MAX_MONSTERS_BY_FLOOR = [
+    FloorTableRow(1, 2),
+    FloorTableRow(4, 3),
+    FloorTableRow(6, 5),
+    FloorTableRow(9, 10),
 ]
+
+
+class EntityTableRow(NamedTuple):
+    entity: Entity
+    weight: int
+    """weights are the lottery tickets"""
+
+
+type EntityTable = list[EntityTableRow]
+type Floor = int
+type DungeonTable = dict[Floor, EntityTable]
+
+# The spawn chances are in some sense 'additive', so for floor 5, the actual roll table includes everything
+# from floor 0 to 5. Each row for a higher floor may override the weights/lottery tickets of an entity from a
+# previous floor.
+_ITEM_CHANCES: DungeonTable = {
+    0: [EntityTableRow(prefabs.health_potion, 35)],
+    2: [EntityTableRow(prefabs.confusion_scroll, 10)],
+    4: [EntityTableRow(prefabs.lightning_scroll, 25)],
+    6: [EntityTableRow(prefabs.fireball_scroll, 25)],
+}
+
+_ENEMY_CHANCES: DungeonTable = {
+    0: [EntityTableRow(prefabs.orc, 80)],
+    3: [EntityTableRow(prefabs.troll, 15)],
+    5: [EntityTableRow(prefabs.troll, 30)],
+    7: [EntityTableRow(prefabs.troll, 60)],
+}
+
+
+def get_prefabs_at_random(
+    weighted_chances_by_floor: DungeonTable, num_of_entities: int, current_floor: int
+) -> list[Entity]:
+    entity_weighted_chances = {}
+    for floor, entity_table in weighted_chances_by_floor.items():
+        print(floor)
+        if floor > current_floor:
+            break
+        for row in entity_table:
+            entity_weighted_chances[row.entity] = row.weight
+    entities = list(entity_weighted_chances.keys())
+    weights = list(entity_weighted_chances.values())
+    chosen_entities = random.choices(entities, weights=weights, k=num_of_entities)
+    return chosen_entities
+
+
+def get_max_row_for_floor(
+    table: list[FloorTableRow], current_floor: int
+) -> FloorTableRow:
+    max_row: FloorTableRow = FloorTableRow(0, 0)
+    for row in table:
+        if current_floor >= row.floor > max_row.floor:
+            max_row = row
+    return max_row
 
 
 class Room(Protocol):
@@ -68,8 +129,7 @@ def generate_dungeon(
     room_max_size: int,
     map_width: int,
     map_height: int,
-    max_monsters_per_room: int,
-    max_items_per_room: int,
+    current_floor: int,
     engine: Engine,
 ) -> GameMap:
     player = engine.player
@@ -95,8 +155,7 @@ def generate_dungeon(
             for coord in tunnel_between_room_centers(room, rooms[-1]):
                 dungeon.tiles[coord] = tile_types.floor
 
-        place_entities(room, dungeon, max_monsters_per_room)
-        place_items(room, dungeon, max_items_per_room)
+        place_entities(room, dungeon, current_floor)
 
         rooms.append(room)
 
@@ -129,48 +188,23 @@ def tunnel_between(start: Coord, end: Coord) -> Iterator[Coord]:
         yield x, y
 
 
-def place_items(room: RectangularRoom, game_map: GameMap, max_items: int) -> None:
-    num_of_items = random.randint(0, max_items)
-    for i in range(num_of_items):
-        x = random.randint(room.x1 + 1, room.x2 - 1)
-        y = random.randint(room.y1 + 1, room.y2 - 1)
-        if not any(entity.x == x and entity.y == y for entity in game_map.entities):
-            location = (game_map, x, y)
-            entity = roll_on_table(ITEM_TABLE)
-            entity.spawn(*location)
+def place_entities(
+    room: RectangularRoom, game_map: GameMap, current_floor: int
+) -> None:
+    num_of_monsters = random.randint(
+        0, get_max_row_for_floor(_MAX_MONSTERS_BY_FLOOR, current_floor).max_value
+    )
+    num_of_items = random.randint(
+        0, get_max_row_for_floor(_MAX_ITEMS_BY_FLOOR, current_floor).max_value
+    )
+    items = get_prefabs_at_random(_ITEM_CHANCES, num_of_items, current_floor)
+    enemies = get_prefabs_at_random(_ENEMY_CHANCES, num_of_monsters, current_floor)
 
-
-def place_entities(room: RectangularRoom, game_map: GameMap, max_monsters: int) -> None:
-    num_of_monsters = random.randint(0, max_monsters)
-    for i in range(num_of_monsters):
+    for prefab in enemies + items:
         x = random.randint(room.x1 + 1, room.x2 - 1)  # +-1 to avoid walls
         y = random.randint(room.y1 + 1, room.y2 - 1)
         place_taken = any(
             x == entity.x and y == entity.y for entity in game_map.entities
         )
         if not place_taken:
-            prefab = roll_on_table(MONSTER_TABLE)
             prefab.spawn(game_map, x, y)
-
-
-def roll_on_table(table: Table) -> Entity:
-    """
-    Lottery tickets algorithm.
-
-    Parameters:
-        table: A list of pairs of an Entity (typically a prefab) and how many lottery tickets for
-                that Entity are in the lottery pot.
-                `table` is a list because dictionary iteration is only semi-deterministic and thus hard to debug.
-    """
-    total = sum([entry[1] for entry in table])
-    picked_ticket = random.randint(0, total)
-    # we sum up until picked_ticket < sum(tickets for all entries until now)
-    running_total = 0
-    for [prefab, tickets_for_prefab] in table:
-        running_total += tickets_for_prefab
-        if picked_ticket < running_total:
-            # we found our winner
-            return prefab
-
-    # this will never happen by design of the algo. added only for linter/compiler
-    return table[0][0]

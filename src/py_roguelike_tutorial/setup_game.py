@@ -14,7 +14,7 @@ from py_roguelike_tutorial import input_handlers
 from py_roguelike_tutorial.colors import Theme
 from py_roguelike_tutorial.constants import SAVE_FILENAME
 from py_roguelike_tutorial.engine import Engine
-from py_roguelike_tutorial.entity_factory import EntityFactory
+from py_roguelike_tutorial.entity_factory import EntityPrefabs
 from py_roguelike_tutorial.game_world import GameWorld
 
 background_image = tcod.image.load("assets/menu_background.png")[:, :, :3]
@@ -26,14 +26,12 @@ def new_game() -> Engine:
     room_max_size = 10
     room_min_size = 6
     max_rooms = 30
-    max_monsters_per_room = 2
-    max_items_per_room = 2
 
-    player = copy.deepcopy(EntityFactory.player_prefab)
-    fb1 = copy.deepcopy(EntityFactory.fireball_scroll_prefab)
-    fb2 = copy.deepcopy(EntityFactory.fireball_scroll_prefab)
-    fb3 = copy.deepcopy(EntityFactory.fireball_scroll_prefab)
-    fb4 = copy.deepcopy(EntityFactory.fireball_scroll_prefab)
+    player = copy.deepcopy(EntityPrefabs.player)
+    fb1 = copy.deepcopy(EntityPrefabs.fireball_scroll)
+    fb2 = copy.deepcopy(EntityPrefabs.fireball_scroll)
+    fb3 = copy.deepcopy(EntityPrefabs.fireball_scroll)
+    fb4 = copy.deepcopy(EntityPrefabs.fireball_scroll)
     player.inventory.add_many((fb1, fb2, fb3, fb4))
 
     engine = Engine(player=player)
@@ -45,8 +43,6 @@ def new_game() -> Engine:
         max_rooms=max_rooms,
         room_max_size=room_max_size,
         room_min_size=room_min_size,
-        max_monsters_per_room=max_monsters_per_room,
-        max_items_per_room=max_items_per_room,
     )
     engine.game_world.generate_floor()
     engine.update_fov()

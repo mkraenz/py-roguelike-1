@@ -84,7 +84,7 @@ class MeleeAction(DirectedAction):
             self.engine.message_log.add(txt, fg=log_color)
             target.fighter.hp = next_hp
         else:
-            txt = f"{attack_desc} but does not damage."
+            txt = f"{attack_desc} but does no damage."
             self.engine.message_log.add(txt, fg=log_color)
 
 
