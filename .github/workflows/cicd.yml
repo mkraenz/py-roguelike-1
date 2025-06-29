@@ -31,7 +31,7 @@ jobs:
         run: uv run pyinstaller src/main.py -n tstt_rl --noconfirm
 
       - name: Include assets in distribution
-        run: cp assets dist/tstt_rl
+        run: cp -r assets dist/tstt_rl
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
