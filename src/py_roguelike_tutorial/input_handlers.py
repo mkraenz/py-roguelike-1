@@ -35,6 +35,15 @@ if TYPE_CHECKING:
     from py_roguelike_tutorial.engine import Engine
     from py_roguelike_tutorial.entity import Item
 
+    # putting this into TYPE_CHECKING scope because
+    # when put into module scope, nuitka does not strip the type, causing
+    #  File "/home/mirco/programming/py-roguelike-tutorial/src/py_roguelike_tutorial/input_handlers.py", line 82, in <module py_roguelike_tutorial.input_handlers>
+    # type ActionOrHandler = Action | BaseEventHandle
+    # NameError: name 'BaseEventHandler' is not defined
+    #
+
+type ActionOrHandler = Action | EventDispatch[ActionOrHandler]
+
 _MOVE_KEYS = {
     # numpad
     Key.KP_1: (-1, 1),
@@ -79,7 +88,6 @@ _CONFIRM_KEYS = {
     Key.KP_ENTER,
 }
 
-type ActionOrHandler = Action | BaseEventHandler
 """An event handler return type which can trigger an action or switch active event handlers.
 
 If a handler is returned, then it will become the active event handler for future events.
@@ -234,9 +242,7 @@ class LevelUpMenu(EventHandler):
             f"[A] Agility (+1 defense, from {stats.defense})",
             f"[C] Constitution (+20 HP, from {stats.max_hp})",
         ]
-        print_aligned_texts_center(
-            child_console, texts, child_console.height // 2 - 6
-        )
+        print_aligned_texts_center(child_console, texts, child_console.height // 2 - 6)
         blit()
 
     def ev_keydown(self, event: tcod.event.KeyDown, /) -> ActionOrHandler | None:
