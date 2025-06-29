@@ -4,7 +4,7 @@ os_name = os.name
 print(f"Running on {os_name}")
 if os_name == "posix":
     os.system("cp -r assets dist/tstt_rl/assets")
-elif os_name == "win32":
+elif os_name == "nt":
     # /i creates the missing destination directories, /s makes it recursive
     os.system("xcopy assets dist\tstt_rl\assets /s /i")
 else:
