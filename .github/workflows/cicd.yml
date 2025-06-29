@@ -22,13 +22,13 @@ jobs:
         with:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
+          version: "0.7.17"
 
       - name: Install dependencies
         run: uv sync --locked --all-extras --dev
 
       - name: Build
-        run: |
-          pyinstaller src/main.py -n tstt_rl --noconfirm
+        run: uv run pyinstaller src/main.py -n tstt_rl --noconfirm
 
       - name: Include assets in distribution
         run: cp assets dist/tstt_rl
