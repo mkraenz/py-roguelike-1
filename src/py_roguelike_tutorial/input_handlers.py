@@ -35,16 +35,6 @@ if TYPE_CHECKING:
     from py_roguelike_tutorial.engine import Engine
     from py_roguelike_tutorial.entity import Item
 
-    # putting this into TYPE_CHECKING scope because
-    # when put into module scope, nuitka does not strip the type, causing
-    #  File "/home/mirco/programming/py-roguelike-tutorial/src/py_roguelike_tutorial/input_handlers.py", line 82, in <module py_roguelike_tutorial.input_handlers>
-    # type ActionOrHandler = Action | BaseEventHandle
-    # NameError: name 'BaseEventHandler' is not defined
-    #
-
-# so this works for `./.venv/bin/nuitka src/main.py --mode=app --include-data-dir=assets=assets --output-dir=tstt_rl --include-module=tcod --verbose` but it sucks in terms of typing
-# ActionOrHandler = Action | EventDispatch[Any]
-# pyinstaller has no issues with this
 type ActionOrHandler = Action | EventDispatch[ActionOrHandler]
 
 _MOVE_KEYS = {

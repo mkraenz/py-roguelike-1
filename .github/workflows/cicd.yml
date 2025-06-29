@@ -10,6 +10,7 @@ jobs:
     strategy:
       matrix:
         # os: [macos-latest, ubuntu-latest, windows-latest]
+        # os: [ ubuntu-latest, windows-latest]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
 
@@ -22,31 +23,20 @@ jobs:
           enable-cache: true
           cache-dependency-glob: "uv.lock"
 
-      # - name: "Set up Python"
-      #   uses: actions/setup-python@v5
-      #   with:
-      #     python-version-file: "pyproject.toml"
-
-      - name: Install the project
+      - name: Install dependencies
         run: uv sync --locked --all-extras --dev
 
-      # Build python script into a single execute or app folder (macOS)
-      - name: Build Executable
-        uses: Nuitka/Nuitka-Action@v1.3
-        with:
-          nuitka-version: main
-          script-name: src/main.py
-          mode: app
-          include-data-dir: |
-            assets=assets
+      - name: Build
+        run: |
+          pyinstaller src/main.py -n tstt_rl --noconfirm
 
-      # - name: Upload Artifacts
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: ${{ runner.os }} Build
-      #     path: |
-      #       build/*.exe
-      #       build/*.bin
-      #       build/*.app/**/*
-      #       build/*.dist/**/*
-      #     include-hidden-files: true
+      - name: Include assets in distribution
+        run: cp assets dist/tstt_rl
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ runner.os }} Build
+          path: |
+            dist/tstt_rl/**/*
+          include-hidden-files: true
