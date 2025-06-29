@@ -17,8 +17,10 @@ from py_roguelike_tutorial.constants import AUTOSAVE_FILENAME
 from py_roguelike_tutorial.engine import Engine
 from py_roguelike_tutorial.entity_factory import EntityPrefabs
 from py_roguelike_tutorial.game_world import GameWorld
+from py_roguelike_tutorial.utils import assets_filepath
 
-background_image = tcod.image.load("assets/menu_background.png")[:, :, :3]
+filepath = assets_filepath("assets/menu_background.png")
+background_image = tcod.image.load(filepath)[:, :, :3]
 
 
 def new_game() -> Engine:

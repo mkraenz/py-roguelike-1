@@ -35,7 +35,8 @@ if TYPE_CHECKING:
     from py_roguelike_tutorial.engine import Engine
     from py_roguelike_tutorial.entity import Item
 
-type ActionOrHandler = Action | EventDispatch[ActionOrHandler]
+# nuitka really didn't like the version without quotes around the type bc BaseEventHandler is not yet defined (which in turn depends on ActionOrHandler). But this finally works!
+type ActionOrHandler = "Action | BaseEventHandler"
 
 _MOVE_KEYS = {
     # numpad

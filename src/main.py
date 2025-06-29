@@ -1,3 +1,4 @@
+import os
 import traceback
 import random
 
@@ -11,6 +12,7 @@ from py_roguelike_tutorial.input_handlers import (
     BaseEventHandler,
     EventHandler,
 )
+from py_roguelike_tutorial.utils import assets_filepath
 
 
 def save_game(handler: BaseEventHandler, filename: str):
@@ -30,8 +32,9 @@ def main():
 
     random.seed(rng_seed)
 
+    filename = assets_filepath("assets/dejavu10x10_gs_tc.png")
     tileset = tcod.tileset.load_tilesheet(
-        "assets/dejavu10x10_gs_tc.png",
+        filename,
         32,
         8,
         tcod.tileset.CHARMAP_TCOD,

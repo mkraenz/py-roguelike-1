@@ -10,8 +10,8 @@ jobs:
     strategy:
       matrix:
         # os: [macos-latest, ubuntu-latest, windows-latest]
-        os: [ubuntu-latest, windows-latest]
-        # os: [ubuntu-latest]
+        # os: [ubuntu-latest, windows-latest]
+        os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -27,16 +27,35 @@ jobs:
       - name: Install dependencies
         run: uv sync --locked --all-extras --dev
 
-      - name: Build
-        run: uv run pyinstaller src/main.py -n tstt_rl --noconfirm
+      # pyinstaller worked fine on linux but causes anti-virus alert on win11, thus using nuitka
+      - name: Build executable
+        run: |
+          uv run nuitka src/main.py \
+          --mode=app \
+          --output-dir=dist \
+          --include-data-dir=assets=assets \
+          --include-module=tcod
 
-      - name: Include assets in distribution
-        run: uv run ./scripts/copy-assets-to-dist.py
+      # # Build python script into a single execute or app folder (macOS)
+      # - name: Build Executable
+      #   uses: Nuitka/Nuitka-Action@v1.3
+      #   with:
+      #     nuitka-version: 2.7.11
+      #     script-name: src/main.py
+      #     mode: app
+      #     include-data-dir: |
+      #       assets=assets
+      #     output-dir: dist
+      #     include-module: |
+      #       tcod
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ runner.os }} Build
           path: |
-            dist/tstt_rl/**/*
+            dist/*.exe
+            dist/*.bin
+            dist/*.app/**/*
+            dist/*.dist/**/*
           include-hidden-files: true
