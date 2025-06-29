@@ -39,8 +39,6 @@ class Engine:
         self.message_log.render(console=console, x=21, y=45, width=40, height=5)
         stats = self.player.fighter
         render_hp_bar(console, stats.hp, stats.max_hp, 20)
-        if not self.player.is_alive:
-            render_you_died(console)
         render_names_at(console=console, x=21, y=44, engine=self)
         render_xp(
             console=console,

@@ -3,10 +3,13 @@ from __future__ import annotations
 from functools import reduce
 from typing import TYPE_CHECKING
 
+from tcod.console import Console
+from tcod.constants import CENTER
+
 from py_roguelike_tutorial.colors import Theme
+from py_roguelike_tutorial.types import Rgb
 
 if TYPE_CHECKING:
-    from tcod.console import Console
     from py_roguelike_tutorial.game_map import GameMap
     from py_roguelike_tutorial.engine import Engine
 
@@ -70,7 +73,7 @@ def render_names_at(console: Console, x: int, y: int, engine: Engine) -> None:
     console.print(x=x, y=y, text=names, fg=Theme.hover_over_entity_names)
 
 
-YOU_DIED = '''M""MMMM""M MMP"""""YMM M""MMMMM""M M""""""'YMM M""M MM""""""""`M M""""""'YMM 
+_YOU_DIED = '''M""MMMM""M MMP"""""YMM M""MMMMM""M M""""""'YMM M""M MM""""""""`M M""""""'YMM 
 M. `MM' .M M' .mmm. `M M  MMMMM  M M  mmmm. `M M  M MM  mmmmmmmM M  mmmm. `M 
 MM.    .MM M  MMMMM  M M  MMMMM  M M  MMMMM  M M  M M`      MMMM M  MMMMM  M 
 MMMb  dMMM M  MMMMM  M M  MMMMM  M M  MMMMM  M M  M MM  MMMMMMMM M  MMMMM  M 
@@ -80,12 +83,14 @@ MMMMMMMMMM MMMMMMMMMMM MMMMMMMMMMM MMMMMMMMMMM MMMM MMMMMMMMMMMM MMMMMMMMMMM
 '''
 
 
-def render_you_died(console: Console):
+def render_you_died(console: Console, x: int, y: int) -> None:
     console.print(
-        x=console.width // 2 - 76 // 2,
-        y=console.height // 2 - 7 // 2 - 1,
-        text=YOU_DIED,
+        x=x,
+        y=y,
+        width=console.width,
+        text=_YOU_DIED,
         fg=Theme.you_died_text,
+        alignment=CENTER,
     )
 
 
@@ -107,3 +112,49 @@ def render_xp(
         y=y,
         text=text,
     )
+
+
+def dim_console(console: Console) -> None:
+    console.rgb["fg"][:] //= 8
+    console.rgb["bg"][:] //= 8
+
+
+def print_text_center(
+    console: Console,
+    text: str,
+    y: int,
+    fg: Rgb = Theme.menu_text,
+    bg: Rgb = Theme.menu_background,
+    ljust_width: int = 0,
+) -> None:
+    justified = ljust_width == 0
+    x = 0 if justified else console.width // 2
+    txt = text if justified else text.ljust(ljust_width)
+    width = console.width if justified else None
+    console.print(x=x, y=y, text=txt, alignment=CENTER, fg=fg, bg=bg, width=width)
+
+
+def print_aligned_texts_center(
+    console: Console,
+    lines: list[str],
+    start_y: int,
+):
+    """Prints the given lines Left-aligned to the console."""
+    width = max(map(len, lines))
+    for i, text in enumerate(lines):
+        y = start_y + i
+        print_text_center(console, ljust_width=width, y=y, text=text)
+
+
+def render_border(console: Console) -> None:
+    console.draw_frame(0, 0, console.width, console.height)
+
+
+def IngameMenuConsole(console: Console, title: str):
+    """Creates a child console with border and heading. Remember to `blit()` at the end of the calling method!"""
+    child_console = Console(console.width - 6, console.height - 6)
+    render_border(child_console)
+    text = f"┤{title}├"
+    print_text_center(child_console, text, 0)
+    blit = lambda: child_console.blit(console, 3, 3)
+    return child_console, blit

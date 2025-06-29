@@ -5,11 +5,10 @@ import sys
 from typing import TYPE_CHECKING, Callable, Type
 
 import tcod
-from tcod.constants import CENTER
-from tcod.event import KeySym as Key, Quit, EventDispatch, KeyDown, Modifier, T
 from tcod.console import Console
+from tcod.event import KeySym as Key, Quit, EventDispatch, KeyDown, Modifier
 
-from py_roguelike_tutorial import exceptions
+from py_roguelike_tutorial import exceptions, setup_game
 from py_roguelike_tutorial.actions import (
     Action,
     EscapeAction,
@@ -23,6 +22,13 @@ from py_roguelike_tutorial.actions import (
 from py_roguelike_tutorial.colors import Theme, Color
 from py_roguelike_tutorial.constants import AUTOSAVE_FILENAME
 from py_roguelike_tutorial.exceptions import QuitWithoutSaving
+from py_roguelike_tutorial.render_functions import (
+    print_aligned_texts_center,
+    render_you_died,
+    dim_console,
+    print_text_center,
+    IngameMenuConsole,
+)
 from py_roguelike_tutorial.types import Coord
 
 if TYPE_CHECKING:
@@ -120,7 +126,7 @@ class EventHandler(BaseEventHandler):
             if not self.player.is_alive:
                 return GameOverEventHandler(self.engine)
             if self.player.level.requires_level_up:
-                return LevelUpEventHandler(self.engine)
+                return LevelUpMenu(self.engine)
             return MainGameEventHandler(self.engine)
         return self
 
@@ -164,13 +170,13 @@ class MainGameEventHandler(EventHandler):
             case Key.ESCAPE:
                 return EscapeAction(player)
             case Key.V:
-                return LogHistoryViewer(self.engine, MainGameEventHandler)
+                return LogHistoryMenu(self.engine, MainGameEventHandler)
             case Key.I:
                 return InventoryActivateHandler(self.engine)
             case Key.P:
                 return InventoryDropHandler(self.engine)
             case Key.C:
-                return CharacterSheetEventHandler(self.engine)
+                return CharacterSheetMenu(self.engine)
             case Key.G:
                 return PickupAction(player)
             case Key.K:
@@ -181,15 +187,27 @@ class MainGameEventHandler(EventHandler):
 
 class GameOverEventHandler(EventHandler):
 
+    def on_render(self, console: Console) -> None:
+        super().on_render(console)
+        dim_console(console)
+        render_you_died(console, 2, console.height // 2 - 7 // 2 - 1)
+        texts = ["[F] Back to title menu", "[V] View combat log"]
+        print_aligned_texts_center(console, texts, console.height // 2 + 10)
+
     def ev_keydown(self, event: KeyDown, /) -> ActionOrHandler | None:
         key = event.sym
         match key:
-            case Key.ESCAPE:
-                return self.on_quit()
+            case Key.ESCAPE | Key.F:
+                return self.on_confirm()
+            case _ if key in _CONFIRM_KEYS:
+                return self.on_confirm()
             case Key.V:
-                return LogHistoryViewer(self.engine, GameOverEventHandler)
+                return LogHistoryMenu(self.engine, GameOverEventHandler)
             case _:
                 return None
+
+    def on_confirm(self) -> None | ActionOrHandler:
+        return setup_game.MainMenu()
 
     def on_quit(self) -> None:
         """Handle exiting out of a finished game."""
@@ -202,36 +220,24 @@ class GameOverEventHandler(EventHandler):
         self.on_quit()
 
 
-class LevelUpEventHandler(EventHandler):
+class LevelUpMenu(EventHandler):
     def on_render(self, console: Console) -> None:
-        HEADING = "┤Level Up!├"
+        title = "New Level"
         super().on_render(console)
-        child_console = Console(console.width - 6, console.height - 6)
-        child_console.draw_frame(0, 0, child_console.width, child_console.height)
-        child_console.print(
-            x=0,
-            y=0,
-            height=1,
-            width=child_console.width,
-            text=HEADING,
-            alignment=CENTER,
-        )
-
-        def draw_text(text: str, y_offset: int):
-            width = 36
-            child_console.print(
-                x=child_console.width // 2,
-                y=child_console.height // 2 + y_offset,
-                text=text.ljust(width),
-                alignment=CENTER,
-            )
+        child_console, blit = IngameMenuConsole(console, title)
 
         stats = self.player.fighter
-        draw_text("Select an attribute to increase.", -6)
-        draw_text(f"[S] Strength (+1 attack, from {stats.power}", -4)
-        draw_text(f"[A] Agility (+1 defense, from {stats.defense})", -3)
-        draw_text(f"[C] Constitution (+20 HP, from {stats.max_hp})", -2)
-        child_console.blit(console, 3, 3)
+        texts = [
+            "Select an attribute to increase.",
+            "",
+            f"[S] Strength (+1 attack, from {stats.power}",
+            f"[A] Agility (+1 defense, from {stats.defense})",
+            f"[C] Constitution (+20 HP, from {stats.max_hp})",
+        ]
+        print_aligned_texts_center(
+            child_console, texts, child_console.height // 2 - 6
+        )
+        blit()
 
     def ev_keydown(self, event: tcod.event.KeyDown, /) -> ActionOrHandler | None:
         """User cannot exit the menu without selecting an option."""
@@ -281,35 +287,13 @@ class LevelUpEventHandler(EventHandler):
         return None
 
 
-class CharacterSheetEventHandler(EventHandler):
+class CharacterSheetMenu(EventHandler):
     def on_render(self, console: Console) -> None:
-        heading = "┤Character Details├"
         super().on_render(console)  # draw main state as background
-
-        child_console = Console(console.width - 6, console.height - 6)
-        child_console.draw_frame(
-            0, 0, child_console.width, child_console.height
-        )  # screen border
-        child_console.print(
-            x=0,
-            y=0,
-            width=child_console.width,
-            height=1,
-            alignment=tcod.tcod.constants.CENTER,
-            text=heading,
-        )
-
-        def draw_text(text: str, y_offset: int):
-            width = 36
-            child_console.print(
-                x=child_console.width // 2,
-                y=child_console.height // 2 + y_offset,
-                text=text.ljust(width),
-                alignment=CENTER,
-            )
+        child_console, blit = IngameMenuConsole(console, "Character Details")
 
         p = self.player
-        texts = (
+        texts = [
             f"Health:     {p.fighter.hp}/{p.fighter.max_hp} HP",
             "",
             "" f"Level:      {p.level.current_level}",
@@ -317,16 +301,16 @@ class CharacterSheetEventHandler(EventHandler):
             "",
             "" f"Strength:   {p.fighter.power}",
             f"Agility:    {p.fighter.defense}",
-        )
-        for i, text in enumerate(texts):
-            draw_text(text, -4 + i)
-        child_console.blit(console, 3, 3)
+        ]
+
+        print_aligned_texts_center(child_console, texts, console.height // 2 + -4)
+        blit()
 
     def ev_keydown(self, event: tcod.event.KeyDown, /) -> ActionOrHandler | None:
         return MainGameEventHandler(self.engine)
 
 
-class LogHistoryViewer(EventHandler):
+class LogHistoryMenu(EventHandler):
     """Print the history on a larger window which can be scrolled."""
 
     def __init__(self, engine: Engine, on_back_cls: Type[EventHandler]):
@@ -336,21 +320,9 @@ class LogHistoryViewer(EventHandler):
         self.on_back_cls = on_back_cls
 
     def on_render(self, console: Console) -> None:
-        heading = "┤Message history├"
-        super().on_render(console)  # draw main state as background
+        super().on_render(console)
 
-        child_console = Console(console.width - 6, console.height - 6)
-        child_console.draw_frame(
-            0, 0, child_console.width, child_console.height
-        )  # screen border
-        child_console.print(
-            x=0,
-            y=0,
-            width=child_console.width,
-            height=1,
-            alignment=tcod.tcod.constants.CENTER,
-            text=heading,
-        )
+        child_console, blit = IngameMenuConsole(console, "Message History")
 
         self.engine.message_log.render_messages(
             child_console,
@@ -360,7 +332,7 @@ class LogHistoryViewer(EventHandler):
             height=child_console.height - 2,
             messages=self.engine.message_log.messages[: self.cursor + 1],
         )
-        child_console.blit(console, 3, 3)
+        blit()
 
     def ev_keydown(self, event: tcod.event.KeyDown, /) -> ActionOrHandler | None:
         end = self.log_length - 1
@@ -546,7 +518,9 @@ class SelectIndexHandler(AskUserEventHandler):
         """Left click confirms a selection."""
         if self.engine.game_map.in_bounds(int(event.position.x), int(event.position.y)):
             if event.button == 1:
-                return self.on_index_selected(int(event.position.x), int(event.position.y))
+                return self.on_index_selected(
+                    int(event.position.x), int(event.position.y)
+                )
         return super().ev_mousebuttondown(event)
 
     def on_index_selected(self, x: int, y: int) -> ActionOrHandler | None:
@@ -611,18 +585,8 @@ class PopupMessage(BaseEventHandler):
 
     def on_render(self, console: Console) -> None:
         self.parent.on_render(console)  # in background, display the parent
-        # dim the parent
-        console.rgb["fg"] //= 8
-        console.rgb["bg"] //= 8
-
-        console.print(
-            x=console.width // 2,
-            y=console.height // 2,
-            text=self.text,
-            fg=Theme.menu_text,
-            bg=Theme.menu_background,
-            alignment=CENTER,
-        )
+        dim_console(console)
+        print_text_center(console, self.text, console.height // 2)
 
     def ev_keydown(self, event: tcod.event.KeyDown, /) -> ActionOrHandler | None:
         return self.parent
@@ -643,38 +607,11 @@ class ConfirmationPopup(BaseEventHandler):
         self.callback = callback
 
     def on_render(self, console: Console) -> None:
-        confirm_text = "[Y] Confirm"
-        cancel_text = "[*] Cancel"
-
         self.parent.on_render(console)
-        console.rgb["fg"] //= 8
-        console.rgb["bg"] //= 8
+        dim_console(console)
 
-        width = 24
-        console.print(
-            x=console.width // 2,
-            y=console.height // 2 - 6,
-            text=self.text.ljust(width),
-            fg=Theme.menu_text,
-            bg=Theme.menu_background,
-            alignment=CENTER,
-        )
-        console.print(
-            x=console.width // 2,
-            y=console.height // 2 - 4,
-            text=confirm_text.ljust(width),
-            fg=Theme.menu_text,
-            bg=Theme.menu_background,
-            alignment=CENTER,
-        )
-        console.print(
-            x=console.width // 2,
-            y=console.height // 2 - 4 + 1,
-            text=cancel_text.ljust(width),
-            fg=Theme.menu_text,
-            bg=Theme.menu_background,
-            alignment=CENTER,
-        )
+        texts = [self.text, "", "[Y] Confirm", "[*] Cancel"]
+        print_aligned_texts_center(console, texts, console.height // 2 - 2)
 
     def ev_keydown(self, event: tcod.event.KeyDown, /) -> ActionOrHandler | None:
         key = event.sym
