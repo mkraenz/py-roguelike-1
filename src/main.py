@@ -58,9 +58,8 @@ def main():
                 context.present(root_console)
                 try:
                     for event in wait():
-                        # TODO i guess i should use the converted event and pass that to the event handler
-                        context.convert_event(event)
-                        handler = handler.handle_events(event)
+                        converted_event = context.convert_event(event)
+                        handler = handler.handle_events(converted_event)
                 except exceptions.QuitWithoutSaving:
                     raise
                 except Exception:  # ingame exceptions

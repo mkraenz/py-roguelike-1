@@ -1,13 +1,14 @@
 from __future__ import annotations
 
 import random
-from typing import Iterator, Protocol, TYPE_CHECKING, NamedTuple
+from typing import Iterator, Protocol, TYPE_CHECKING
 
 from tcod.los import bresenham
 
 from py_roguelike_tutorial import tile_types
+from py_roguelike_tutorial.components import procgen_config
+from py_roguelike_tutorial.components.procgen_config import ProcgenConfig as data
 from py_roguelike_tutorial.entity import Entity
-from py_roguelike_tutorial.entity_factory import EntityPrefabs as prefabs
 from py_roguelike_tutorial.game_map import GameMap
 from py_roguelike_tutorial.types import Coord
 
@@ -16,62 +17,11 @@ if TYPE_CHECKING:
 
 DEBUG_STAIRS_AT_START = False
 
-type Table = list[tuple[Entity, int]]
-
-
-class FloorTableRow(NamedTuple):
-    floor: int
-    max_value: int
-
-
-_MAX_ITEMS_BY_FLOOR = [
-    FloorTableRow(1, 1),
-    FloorTableRow(4, 2),
-]
-_MAX_MONSTERS_BY_FLOOR = [
-    FloorTableRow(1, 2),
-    FloorTableRow(4, 3),
-    FloorTableRow(6, 5),
-    FloorTableRow(9, 10),
-]
-
-
-class EntityTableRow(NamedTuple):
-    entity: Entity
-    weight: int
-    """weights are the lottery tickets"""
-
-
-type EntityTable = list[EntityTableRow]
-type Floor = int
-type DungeonTable = dict[Floor, EntityTable]
-
-# The spawn chances are in some sense 'additive', so for floor 5, the actual roll table includes everything
-# from floor 0 to 5. Each row for a higher floor may override the weights/lottery tickets of an entity from a
-# previous floor.
-_ITEM_CHANCES: DungeonTable = {
-    0: [EntityTableRow(prefabs.health_potion, 35), EntityTableRow(prefabs.dagger, 5)],
-    2: [
-        EntityTableRow(prefabs.confusion_scroll, 10),
-        EntityTableRow(prefabs.leather_armor, 15),
-    ],
-    4: [EntityTableRow(prefabs.lightning_scroll, 25), EntityTableRow(prefabs.sword, 5)],
-    6: [
-        EntityTableRow(prefabs.fireball_scroll, 25),
-        EntityTableRow(prefabs.chain_mail, 15),
-    ],
-}
-
-_ENEMY_CHANCES: DungeonTable = {
-    0: [EntityTableRow(prefabs.orc, 80)],
-    3: [EntityTableRow(prefabs.troll, 15)],
-    5: [EntityTableRow(prefabs.troll, 30)],
-    7: [EntityTableRow(prefabs.troll, 60)],
-}
-
 
 def get_prefabs_at_random(
-    weighted_chances_by_floor: DungeonTable, num_of_entities: int, current_floor: int
+    weighted_chances_by_floor: procgen_config.DungeonTable,
+    num_of_entities: int,
+    current_floor: int,
 ) -> list[Entity]:
     entity_weighted_chances = {}
     for floor, entity_table in weighted_chances_by_floor.items():
@@ -86,9 +36,9 @@ def get_prefabs_at_random(
 
 
 def get_max_row_for_floor(
-    table: list[FloorTableRow], current_floor: int
-) -> FloorTableRow:
-    max_row: FloorTableRow = FloorTableRow(0, 0)
+    table: list[procgen_config.FloorTableRow], current_floor: int
+) -> procgen_config.FloorTableRow:
+    max_row: procgen_config.FloorTableRow = procgen_config.FloorTableRow(0, 0)
     for row in table:
         if current_floor >= row.floor > max_row.floor:
             max_row = row
@@ -199,13 +149,23 @@ def place_entities(
     room: RectangularRoom, game_map: GameMap, current_floor: int
 ) -> None:
     num_of_monsters = random.randint(
-        0, get_max_row_for_floor(_MAX_MONSTERS_BY_FLOOR, current_floor).max_value
+        0,
+        get_max_row_for_floor(
+            data.MAX_MONSTERS_BY_FLOOR, current_floor
+        ).max_value,
     )
     num_of_items = random.randint(
-        0, get_max_row_for_floor(_MAX_ITEMS_BY_FLOOR, current_floor).max_value
+        0,
+        get_max_row_for_floor(
+            data.MAX_ITEMS_BY_FLOOR, current_floor
+        ).max_value,
     )
-    items = get_prefabs_at_random(_ITEM_CHANCES, num_of_items, current_floor)
-    enemies = get_prefabs_at_random(_ENEMY_CHANCES, num_of_monsters, current_floor)
+    items = get_prefabs_at_random(
+        data.ITEM_CHANCES, num_of_items, current_floor
+    )
+    enemies = get_prefabs_at_random(
+        data.ENEMY_CHANCES, num_of_monsters, current_floor
+    )
 
     for prefab in enemies + items:
         x = random.randint(room.x1 + 1, room.x2 - 1)  # +-1 to avoid walls
