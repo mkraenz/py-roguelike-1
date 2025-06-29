@@ -21,7 +21,7 @@ from py_roguelike_tutorial.actions import (
     EquipAction,
 )
 from py_roguelike_tutorial.colors import Theme, Color
-from py_roguelike_tutorial.constants import SAVE_FILENAME
+from py_roguelike_tutorial.constants import AUTOSAVE_FILENAME
 from py_roguelike_tutorial.exceptions import QuitWithoutSaving
 from py_roguelike_tutorial.types import Coord
 
@@ -193,8 +193,8 @@ class GameOverEventHandler(EventHandler):
 
     def on_quit(self) -> None:
         """Handle exiting out of a finished game."""
-        if os.path.exists(SAVE_FILENAME):
-            os.remove(SAVE_FILENAME)  # permadeath, baby
+        if os.path.exists(AUTOSAVE_FILENAME):
+            os.remove(AUTOSAVE_FILENAME)  # permadeath, baby
         raise QuitWithoutSaving()
 
     # compiler is not clever enough to notice that on_quit raises an exception...

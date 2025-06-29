@@ -1,5 +1,6 @@
 import copy
 import lzma
+import os
 import pickle
 import sys
 import traceback
@@ -12,7 +13,7 @@ from tcod.libtcodpy import BKGND_ALPHA
 
 from py_roguelike_tutorial import input_handlers
 from py_roguelike_tutorial.colors import Theme
-from py_roguelike_tutorial.constants import SAVE_FILENAME
+from py_roguelike_tutorial.constants import AUTOSAVE_FILENAME
 from py_roguelike_tutorial.engine import Engine
 from py_roguelike_tutorial.entity_factory import EntityPrefabs
 from py_roguelike_tutorial.game_world import GameWorld
@@ -116,9 +117,13 @@ class MainMenu(input_handlers.BaseEventHandler):
             case Key.C:
                 return self.try_load_game()
             case Key.N:
+                if not os.path.exists(AUTOSAVE_FILENAME):
+                    return input_handlers.MainGameEventHandler(
+                        new_game(),
+                    )
                 return input_handlers.ConfirmationPopup(
                     self,
-                    text="Your current progress will be reset. Continue?",
+                    text="Your existing progress will be lost. Continue?",
                     callback=lambda: input_handlers.MainGameEventHandler(
                         new_game(),
                     ),
@@ -128,10 +133,10 @@ class MainMenu(input_handlers.BaseEventHandler):
 
     def try_load_game(self):
         try:
-            return input_handlers.MainGameEventHandler(load_game(SAVE_FILENAME))
+            return input_handlers.MainGameEventHandler(load_game(AUTOSAVE_FILENAME))
         except FileNotFoundError:
             return input_handlers.PopupMessage(
-                self, f"No save file named {SAVE_FILENAME} found."
+                self, f"No save file named {AUTOSAVE_FILENAME} found."
             )
         except Exception as exc:
             traceback.print_exc()
