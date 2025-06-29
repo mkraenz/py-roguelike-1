@@ -42,6 +42,9 @@ if TYPE_CHECKING:
     # NameError: name 'BaseEventHandler' is not defined
     #
 
+# so this works for `./.venv/bin/nuitka src/main.py --mode=app --include-data-dir=assets=assets --output-dir=tstt_rl --include-module=tcod --verbose` but it sucks in terms of typing
+# ActionOrHandler = Action | EventDispatch[Any]
+# pyinstaller has no issues with this
 type ActionOrHandler = Action | EventDispatch[ActionOrHandler]
 
 _MOVE_KEYS = {
