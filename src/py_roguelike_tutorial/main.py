@@ -1,4 +1,5 @@
-import os
+# main entrypoint file. I would love to name this `main.py` but nuitka drops file extensions if I use --output-filename=tstt_rl
+
 import traceback
 import random
 
@@ -80,7 +81,3 @@ def main():
         except BaseException:  # save on any unexpeceted exception
             save_game(handler, AUTOSAVE_FILENAME)
             raise
-
-
-if __name__ == "__main__":
-    main()

@@ -31,31 +31,23 @@ jobs:
       - name: Build executable
         run: |
           uv run nuitka src/main.py \
-          --mode=app \
-          --output-dir=dist \
-          --include-data-dir=assets=assets \
-          --include-module=tcod
-
-      # # Build python script into a single execute or app folder (macOS)
-      # - name: Build Executable
-      #   uses: Nuitka/Nuitka-Action@v1.3
-      #   with:
-      #     nuitka-version: 2.7.11
-      #     script-name: src/main.py
-      #     mode: app
-      #     include-data-dir: |
-      #       assets=assets
-      #     output-dir: dist
-      #     include-module: |
-      #       tcod
+                  --mode=app \
+                  --output-dir=dist \
+                  --include-data-dir=src/assets=assets \
+                  --include-module=tcod
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: ${{ runner.os }} Build
+          # these are the single file distributables. For now that's what we want. we could also go with the `tstt_rl.dist/` but why bother at this point.
           path: |
             dist/*.exe
             dist/*.bin
-            dist/*.app/**/*
-            dist/*.dist/**/*
+          # this is for also having the folder versions
+          # path: |
+          #   dist/*.exe
+          #   dist/*.bin
+          #   dist/*.app/**/*
+          #   dist/*.dist/**/*
           include-hidden-files: true
