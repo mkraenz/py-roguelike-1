@@ -10,8 +10,8 @@ jobs:
     strategy:
       matrix:
         # os: [macos-latest, ubuntu-latest, windows-latest]
-        # os: [windows-latest]
-        os: [ubuntu-latest]
+        os: [windows-latest]
+        # os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -27,28 +27,24 @@ jobs:
       - name: Install dependencies
         run: uv sync --locked --all-extras --dev
 
+      - name: Windows only - Install Dependency Walker
+        run: python -m scripts/windows-install-dependency-walker.py
+
       # pyinstaller worked fine on linux but causes anti-virus alert on win11, thus using nuitka
       - name: Build executable
-        uses: Nuitka/Nuitka-Action@main
-        with:
-          nuitka-version: "2.7.10"
-          script-name: src/tstt_rl.py
-          output-dir: dist
-          include-data-dir: |
-            src/assets=assets
-          include-module: tcod
-          mode: app
+        # windows does not like multiline commands separated by \. it uses ^
+        run: |
+          uv run nuitka src/tstt_rl.py --mode=app --output-dir=dist --include-data-dir=src/assets=assets --include-module=tcod
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: tstt_rl_${{ runner.os }}
           # these are the single file distributables. For now that's what we want. we could also go with the `tstt_rl.dist/` but why bother at this point.
-          # path: |
-          #   dist/*.exe
-          #   dist/*.bin
+          path: |
+            dist/*.exe
+            dist/*.bin
           # this is for also having the folder versions
-          path: dist/*
           # path: |
           #   dist/*.exe
           #   dist/*.bin
