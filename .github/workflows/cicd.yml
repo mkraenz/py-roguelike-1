@@ -27,14 +27,14 @@ jobs:
       - name: Install dependencies
         run: uv sync --locked --all-extras --dev
 
-      - name: Windows only - Install Dependency Walker
-        run: python scripts/windows-install-dependency-walker.py
+      # - name: Windows only - Install Dependency Walker
+      #   run: python scripts/windows-install-dependency-walker.py
 
       # pyinstaller worked fine on linux but causes anti-virus alert on win11, thus using nuitka
       - name: Build executable
         # windows does not like multiline commands separated by \. it uses ^
         run: |
-          uv run nuitka src/tstt_rl.py --mode=app --output-dir=dist --include-data-dir=src/assets=assets --include-module=tcod
+          uv run nuitka src/tstt_rl.py --mode=app --output-dir=dist --include-data-dir=src/assets=assets --include-module=tcod --assume-yes-for-downloads
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
