@@ -34,20 +34,20 @@ jobs:
       - name: Build executable
         # windows does not like multiline commands separated by \. it uses ^
         run: |
-          uv run nuitka src/tstt_rl.py --mode=app --output-dir=dist --include-data-dir=src/assets=assets --include-module=tcod --assume-yes-for-downloads
+          uv run nuitka src/tstt_rl.py --mode=app --output-dir=dist --include-data-dir=src/assets=assets --include-module=tcod --assume-yes-for-downloads --mingw64
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: tstt_rl_${{ runner.os }}
           # these are the single file distributables. For now that's what we want. we could also go with the `tstt_rl.dist/` but why bother at this point.
-          path: |
-            dist/*.exe
-            dist/*.bin
-          # this is for also having the folder versions
           # path: |
           #   dist/*.exe
           #   dist/*.bin
-          #   dist/*.app/**/*
-          #   dist/*.dist/**/*
+          # this is for also having the folder versions
+          path: |
+            dist/*.exe
+            dist/*.bin
+            dist/*.app/**/*
+            dist/*.dist/**/*
           include-hidden-files: true
