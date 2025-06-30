@@ -22,25 +22,26 @@ class EntityPrefabs:
         level=Level(level_up_base=30, level_up_factor=10),
         equipment=Equipment(),
     )
-    # enemies
-    orc = Actor(
-        char="o",
-        color=Color.RED_ROBIN,
-        name="Orc",
-        ai_cls=HostileEnemy,
-        fighter=Fighter(max_hp=10, defense=0, power=3),
-        inventory=Inventory.none(),
-        level=Level(level_up_base=0, xp_given=35),
-        equipment=Equipment(),
-    )
-    troll = Actor(
-        char="T",
-        color=Color.GREEN_DEEP_COOL,
-        name="Troll",
-        ai_cls=HostileEnemy,
-        fighter=Fighter(max_hp=16, defense=1, power=4),
-        inventory=Inventory.none(),
-        level=Level(level_up_base=0, xp_given=35),
-        equipment=Equipment(),
-    )
-    items: dict[str, Item]
+    npcs: dict[str, Actor] = {
+        "orc": Actor(
+            char="o",
+            color=Color.RED_ROBIN,
+            name="Orc",
+            ai_cls=HostileEnemy,
+            fighter=Fighter(max_hp=10, defense=0, power=3),
+            inventory=Inventory.none(),
+            level=Level(level_up_base=0, xp_given=35),
+            equipment=Equipment(),
+        ),
+        "troll": Actor(
+            char="T",
+            color=Color.GREEN_DEEP_COOL,
+            name="Troll",
+            ai_cls=HostileEnemy,
+            fighter=Fighter(max_hp=16, defense=1, power=4),
+            inventory=Inventory.none(),
+            level=Level(level_up_base=0, xp_given=35),
+            equipment=Equipment(),
+        ),
+    }
+    items: dict[str, Item] = {}

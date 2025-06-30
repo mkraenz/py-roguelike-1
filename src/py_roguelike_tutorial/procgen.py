@@ -9,11 +9,8 @@ from py_roguelike_tutorial import tile_types
 from py_roguelike_tutorial.components import procgen_config
 from py_roguelike_tutorial.components.procgen_config import (
     ProcgenConfig as data,
-    DungeonTable,
-    EntityTableRow,
 )
 from py_roguelike_tutorial.entity import Entity
-from py_roguelike_tutorial.entity_factory import EntityPrefabs
 from py_roguelike_tutorial.game_map import GameMap
 from py_roguelike_tutorial.types import Coord
 
@@ -162,15 +159,8 @@ def place_entities(
         get_max_row_for_floor(data.MAX_ITEMS_BY_FLOOR, current_floor).max_value,
     )
 
-    items_table: DungeonTable = {}
-    for floor, entity_name_table in data.item_chances.items():
-        entity_table = map(
-            lambda row: EntityTableRow(EntityPrefabs.items[row[0]], row[1]),
-            entity_name_table,
-        )
-        items_table[floor] = list(entity_table)
-    items = get_prefabs_at_random(items_table, num_of_items, current_floor)
-    enemies = get_prefabs_at_random(data.ENEMY_CHANCES, num_of_monsters, current_floor)
+    items = get_prefabs_at_random(data.item_chances, num_of_items, current_floor)
+    enemies = get_prefabs_at_random(data.enemy_chances, num_of_monsters, current_floor)
 
     for prefab in enemies + items:
         x = random.randint(room.x1 + 1, room.x2 - 1)  # +-1 to avoid walls

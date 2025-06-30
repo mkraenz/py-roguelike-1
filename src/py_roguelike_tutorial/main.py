@@ -2,18 +2,20 @@ import random
 import traceback
 
 import tcod
-import yaml
 from tcod.event import wait
 
 from py_roguelike_tutorial import exceptions, setup_game
 from py_roguelike_tutorial.colors import Theme
+from py_roguelike_tutorial.components.procgen_config import (
+    ProcgenConfig,
+)
 from py_roguelike_tutorial.constants import AUTOSAVE_FILENAME
-from py_roguelike_tutorial.entity_deserializers import item_from_dict
 from py_roguelike_tutorial.entity_factory import EntityPrefabs
 from py_roguelike_tutorial.input_handlers import (
     BaseEventHandler,
     EventHandler,
 )
+from py_roguelike_tutorial.loader import DataLoader
 from py_roguelike_tutorial.utils import assets_filepath
 
 
@@ -23,15 +25,11 @@ def save_game(handler: BaseEventHandler, filename: str):
         print(f"Game saved to {filename}.")
 
 
-def load_prefabs():
-    entities = {}
-
-    with open(assets_filepath("assets/entities/items.yml")) as file:
-        contents = file.read()
-    item_data: dict[str, dict] = yaml.safe_load(contents)
-    for key, val in item_data.items():
-        entities[key] = item_from_dict(val)
-    EntityPrefabs.items = entities
+def load_data_files():
+    loader = DataLoader()
+    EntityPrefabs.items = loader.load_item_entities()
+    ProcgenConfig.item_chances = loader.load_item_drops_rates(EntityPrefabs.items)
+    ProcgenConfig.enemy_chances = loader.load_enemy_spawn_rates(EntityPrefabs.npcs)
 
 
 def main():
@@ -53,7 +51,7 @@ def main():
         tcod.tileset.CHARMAP_TCOD,
     )
 
-    load_prefabs()
+    load_data_files()
 
     handler: BaseEventHandler = setup_game.MainMenu()
 

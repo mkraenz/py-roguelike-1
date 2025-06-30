@@ -1,0 +1,15 @@
+# the root-level key is the floor from which on the items in its value-list start spawning.
+# Each pair ['health_potion', 35] is the name of an item (as defined in data/entities/items.yml) and
+# its weight/lottery tickets. The weight may be overridden by redefining the same key on a higher floor.
+0:
+  - [health_potion, 35]
+  - [dagger, 5]
+2:
+  - [confusion_scroll, 10]
+  - [leather_armor, 15]
+4:
+  - [lightning_scroll, 25]
+  - [sword, 5]
+6:
+  - [fireball_scroll, 25]
+  - [chain_mail, 15]

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from py_roguelike_tutorial.actions import Action, ItemAction
 from py_roguelike_tutorial.colors import Theme
@@ -35,6 +35,10 @@ class Consumable(BaseComponent):
         inventory = item.parent
         if isinstance(inventory, Inventory):
             inventory.remove(item)
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]):
+        raise NotImplementedError("Must be implemented by subclass")
 
 
 class HealingConsumable(Consumable):

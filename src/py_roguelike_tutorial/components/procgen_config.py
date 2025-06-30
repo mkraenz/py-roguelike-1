@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import NamedTuple
 
 from py_roguelike_tutorial.entity import Entity
-from py_roguelike_tutorial.entity_factory import EntityPrefabs as prefabs
 
 type Table = list[tuple[Entity, int]]
 
@@ -39,28 +38,6 @@ class ProcgenConfig:
     # The spawn chances are in some sense 'additive', so for floor 5, the actual roll table includes everything
     # from floor 0 to 5. Each row for a higher floor may override the weights/lottery tickets of an entity from a
     # previous floor.
-    item_chances = {
-        0: [
-            ("health_potion", 35),
-            ("dagger", 5),
-        ],
-        2: [
-            ("confusion_scroll", 10),
-            ("leather_armor", 15),
-        ],
-        4: [
-            ("lightning_scroll", 25),
-            ("sword", 5),
-        ],
-        6: [
-            ("fireball_scroll", 25),
-            ("chain_mail", 15),
-        ],
-    }
+    item_chances: DungeonTable = {}
 
-    ENEMY_CHANCES: DungeonTable = {
-        0: [EntityTableRow(prefabs.orc, 80)],
-        3: [EntityTableRow(prefabs.troll, 15)],
-        5: [EntityTableRow(prefabs.troll, 30)],
-        7: [EntityTableRow(prefabs.troll, 60)],
-    }
+    enemy_chances: DungeonTable = {}
