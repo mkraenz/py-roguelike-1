@@ -27,6 +27,15 @@ jobs:
       - name: Install dependencies
         run: uv sync --locked --all-extras --dev
 
+      - name: Download
+        run: |
+          $downloadUrl = "https://github.com/libsdl-org/SDL/releases/download/release-3.2.16/SDL3-3.2.16-win32-x64.zip"
+          $zipPath = "$PSScriptRoot\SDL3-3.2.16-win32-x64.zip"
+          $extractPath = $PSScriptRoot
+
+          Invoke-WebRequest $downloadUrl -OutFile $zipPath
+          Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
+
       # nuitka and pyinstaller worked fine on linux but causes anti-virus alert on win11. Now using cx_freeze. At the very least cx_freeze is much faster to compile.
       - name: Build executable
         run: uv run python setup.py build

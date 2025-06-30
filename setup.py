@@ -2,7 +2,7 @@ from cx_Freeze import setup
 
 # Dependencies are automatically detected, but they might need fine-tuning.
 build_exe_options = {
-    "include_files": [("src/assets/", "assets/")],
+    "include_files": [("src/assets/", "assets/"), ("SDL3.dll", "SDL3.dll")],
     "excludes": ["tkinter", "unittest", "tests"],
     "zip_include_packages": [
         "PyYAML",
