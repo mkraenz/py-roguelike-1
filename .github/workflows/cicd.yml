@@ -35,6 +35,7 @@ jobs:
 
           Invoke-WebRequest $downloadUrl -OutFile $zipPath
           Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
+          Get-ChildItem -Force
 
       # nuitka and pyinstaller worked fine on linux but causes anti-virus alert on win11. Now using cx_freeze. At the very least cx_freeze is much faster to compile.
       - name: Build executable
