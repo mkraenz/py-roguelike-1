@@ -25,12 +25,12 @@ class EntityPrefabs:
     npcs: dict[str, Actor] = {
         "orc": Actor(
             char="o",
-            color=Color.RED_ROBIN,
+            color=Color.GREEN_ORC,
             name="Orc",
             ai_cls=HostileEnemy,
             fighter=Fighter(max_hp=10, defense=0, power=3),
             inventory=Inventory.none(),
-            level=Level(level_up_base=0, xp_given=35),
+            level=Level(level_up_base=0, xp_given=15),
             equipment=Equipment(),
         ),
         "troll": Actor(

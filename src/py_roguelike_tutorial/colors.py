@@ -12,8 +12,8 @@ def hex_to_rgb(hex_color: str) -> Rgb:
 class Color:
     WHITE = (255, 255, 255)
     BLACK = (0, 0, 0)
-    RED_ROBIN = (63, 127, 63)
-    GREEN_DEEP_COOL = (0, 127, 0)
+    GREEN_ORC = hex_to_rgb("#3f7f3f")
+    GREEN_DEEP_COOL = hex_to_rgb("#008800")
     RED_GUARDMANS = (191, 0, 0)
     GREEN_DARK = (0x0, 0x60, 0x0)
     RED_DARK_SIENNA = (0x40, 0x10, 0x10)
