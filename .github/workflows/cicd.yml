@@ -17,11 +17,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      # using 3.12 bc nuitka does not support 3.13 with --mingw64. --mingw64 is used to not get flagged as a virus
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
       - name: Install uv
         uses: astral-sh/setup-uv@v5
         with:
@@ -32,27 +27,14 @@ jobs:
       - name: Install dependencies
         run: uv sync --locked --all-extras --dev
 
-      # - name: Windows only - Install Dependency Walker
-      #   run: python scripts/windows-install-dependency-walker.py
-
-      # pyinstaller worked fine on linux but causes anti-virus alert on win11, thus using nuitka
+      # nuitka and pyinstaller worked fine on linux but causes anti-virus alert on win11. Now using cx_freeze. At the very least cx_freeze is much faster to compile.
       - name: Build executable
-        # windows does not like multiline commands separated by \. it uses ^
-        run: |
-          uv run nuitka src/tstt_rl.py --mode=app --output-dir=dist --include-data-dir=src/assets=assets --include-module=tcod --assume-yes-for-downloads --mingw64
+        run: uv run python setup.py build
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           name: tstt_rl_${{ runner.os }}
-          # these are the single file distributables. For now that's what we want. we could also go with the `tstt_rl.dist/` but why bother at this point.
-          # path: |
-          #   dist/*.exe
-          #   dist/*.bin
-          # this is for also having the folder versions
           path: |
-            dist/*.exe
-            dist/*.bin
-            dist/*.app/**/*
-            dist/*.dist/**/*
+            build/*
           include-hidden-files: true
