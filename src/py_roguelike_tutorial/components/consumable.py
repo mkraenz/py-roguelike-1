@@ -52,6 +52,10 @@ class HealingConsumable(Consumable):
         else:
             raise Impossible("You are at full health already.")
 
+    @classmethod
+    def from_dict(cls, data: dict):
+        return cls(amount=data["amount"])
+
 
 class LightningDamageConsumable(Consumable):
     """Lightning attacks automatically pick the closest target within range."""
@@ -83,6 +87,10 @@ class LightningDamageConsumable(Consumable):
                 closest_distance = distance
                 target = actor
         return target
+
+    @classmethod
+    def from_dict(cls, data: dict):
+        return cls(damage=data["damage"], max_range=data["max_range"])
 
 
 class ConfusionConsumable(Consumable):
@@ -117,6 +125,10 @@ class ConfusionConsumable(Consumable):
         )
         self.consume()
 
+    @classmethod
+    def from_dict(cls, data: dict):
+        return cls(turns=data["turns"])
+
 
 class FireballDamageConsumable(Consumable):
     """AOE Fireball attack. May inflict damage onto the user!"""
@@ -124,6 +136,10 @@ class FireballDamageConsumable(Consumable):
     def __init__(self, damage: int, radius: int):
         self.damage = damage
         self.radius = radius
+
+    @classmethod
+    def from_dict(cls, data: dict):
+        return cls(damage=data["damage"], radius=data["radius"])
 
     def get_action(self, consumer: Actor) -> AreaRangedAttackHandler | None:
         self.engine.message_log.add("Select a target location.", Theme.needs_target)

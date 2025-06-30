@@ -1,14 +1,15 @@
-# main entrypoint file. I would love to name this `main.py` but nuitka drops file extensions if I use --output-filename=tstt_rl
-
-import traceback
 import random
+import traceback
 
 import tcod
+import yaml
 from tcod.event import wait
 
 from py_roguelike_tutorial import exceptions, setup_game
 from py_roguelike_tutorial.colors import Theme
 from py_roguelike_tutorial.constants import AUTOSAVE_FILENAME
+from py_roguelike_tutorial.entity_deserializers import item_from_dict
+from py_roguelike_tutorial.entity_factory import EntityPrefabs
 from py_roguelike_tutorial.input_handlers import (
     BaseEventHandler,
     EventHandler,
@@ -20,6 +21,17 @@ def save_game(handler: BaseEventHandler, filename: str):
     if isinstance(handler, EventHandler):
         handler.engine.save_to_file(filename)
         print(f"Game saved to {filename}.")
+
+
+def load_prefabs():
+    entities = {}
+
+    with open(assets_filepath("assets/entities/items.yml")) as file:
+        contents = file.read()
+    item_data: dict[str, dict] = yaml.safe_load(contents)
+    for key, val in item_data.items():
+        entities[key] = item_from_dict(val)
+    EntityPrefabs.items = entities
 
 
 def main():
@@ -40,6 +52,8 @@ def main():
         8,
         tcod.tileset.CHARMAP_TCOD,
     )
+
+    load_prefabs()
 
     handler: BaseEventHandler = setup_game.MainMenu()
 

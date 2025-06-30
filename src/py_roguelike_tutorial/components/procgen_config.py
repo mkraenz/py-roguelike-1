@@ -39,22 +39,22 @@ class ProcgenConfig:
     # The spawn chances are in some sense 'additive', so for floor 5, the actual roll table includes everything
     # from floor 0 to 5. Each row for a higher floor may override the weights/lottery tickets of an entity from a
     # previous floor.
-    ITEM_CHANCES: DungeonTable = {
+    item_chances = {
         0: [
-            EntityTableRow(prefabs.health_potion, 35),
-            EntityTableRow(prefabs.dagger, 5),
+            ("health_potion", 35),
+            ("dagger", 5),
         ],
         2: [
-            EntityTableRow(prefabs.confusion_scroll, 10),
-            EntityTableRow(prefabs.leather_armor, 15),
+            ("confusion_scroll", 10),
+            ("leather_armor", 15),
         ],
         4: [
-            EntityTableRow(prefabs.lightning_scroll, 25),
-            EntityTableRow(prefabs.sword, 5),
+            ("lightning_scroll", 25),
+            ("sword", 5),
         ],
         6: [
-            EntityTableRow(prefabs.fireball_scroll, 25),
-            EntityTableRow(prefabs.chain_mail, 15),
+            ("fireball_scroll", 25),
+            ("chain_mail", 15),
         ],
     }
 

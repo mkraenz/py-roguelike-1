@@ -2,7 +2,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Literal
 
 from py_roguelike_tutorial.components.base_components import BaseComponent
-from py_roguelike_tutorial.equipment_types import EquipmentType
 from py_roguelike_tutorial.entity import Item
 
 if TYPE_CHECKING:
@@ -75,8 +74,7 @@ class Equipment(BaseComponent):
 
     def toggle_equippable(self, equippable_item: Item, show_message: bool = True):
         is_weapon = (
-            equippable_item.equippable
-            and equippable_item.equippable.type == EquipmentType.WEAPON
+            equippable_item.equippable and equippable_item.equippable.type == "weapon"
         )
         slot: Slot = "weapon" if is_weapon else "armor"
         if self.is_equipped(equippable_item):
