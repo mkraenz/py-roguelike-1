@@ -31,7 +31,7 @@ jobs:
         run: |
           $downloadUrl = "https://github.com/libsdl-org/SDL/releases/download/release-3.2.16/SDL3-3.2.16-win32-x64.zip"
           $zipPath = "$PSScriptRoot\SDL3-3.2.16-win32-x64.zip"
-          $extractPath = $PSScriptRoot
+          $extractPath = "."
 
           Invoke-WebRequest $downloadUrl -OutFile $zipPath
           Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
