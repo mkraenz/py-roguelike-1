@@ -14,6 +14,5 @@ player:
     level_up_base: 30
     level_up_factor: 10
   equipment:
-    {}
-    # weapon: dagger
-    # armor: leather_armor
+    weapon: dagger
+    armor: leather_armor

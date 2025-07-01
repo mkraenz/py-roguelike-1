@@ -1,3 +1,4 @@
+import copy
 from typing import Any, Type
 from py_roguelike_tutorial.colors import hex_to_rgb
 from py_roguelike_tutorial.components.ai import BaseAI, HostileEnemy
@@ -14,6 +15,7 @@ from py_roguelike_tutorial.components.fighter import Fighter
 from py_roguelike_tutorial.components.inventory import Inventory
 from py_roguelike_tutorial.components.level import Level
 from py_roguelike_tutorial.entity import Item, Actor
+from py_roguelike_tutorial.entity_factory import EntityPrefabs
 
 CONSUMABLE_CLASSES: dict[str, Type[Consumable]] = {
     "HealingConsumable": HealingConsumable,
@@ -38,11 +40,7 @@ def item_from_dict(data: dict[str, Any]) -> Item:
         else None
     )
     equippable_data = data.get("equippable")
-    equippable = (
-        Equippable.from_dict(equippable_data)
-        if equippable_data
-        else None
-    )
+    equippable = Equippable.from_dict(equippable_data) if equippable_data else None
 
     item = Item(
         char=data["char"],
@@ -58,29 +56,42 @@ def item_from_dict(data: dict[str, Any]) -> Item:
     return item
 
 
-def actor_from_dict(data: dict[str, Any]) -> Actor:
+def actor_from_dict(data: dict[str, Any], item_prefabs: dict[str, Item]) -> Actor:
     ai_data: dict = data["ai"]
     ai_cls = AI_CLASSES[ai_data["class"]]
-    
+
     fighter_data: dict = data["fighter"]
     fighter = Fighter(
         max_hp=fighter_data["max_hp"],
         defense=fighter_data["defense"],
         power=fighter_data["power"],
     )
-    
+
     inventory_data: dict = data["inventory"]
     inventory = (
         Inventory(capacity=inventory_data["capacity"])
         if inventory_data
         else Inventory.none()
     )
-    
-    # equipment_data: dict = data['equipment']
-    # todo weapons and armor are Items, so we need to instantiate them as such.
-    equipment = Equipment()
-    
-    level_data = data['level']
+
+    equipment_data: dict = data["equipment"]
+    weapon = (
+        copy.deepcopy(item_prefabs[equipment_data["weapon"]])
+        if equipment_data.get("weapon")
+        else None
+    )
+    armor = (
+        copy.deepcopy(item_prefabs[equipment_data["armor"]])
+        if equipment_data.get("armor")
+        else None
+    )
+    equipment = Equipment(weapon=weapon, armor=armor)
+    if weapon:
+        inventory.add(weapon)
+    if armor:
+        inventory.add(armor)
+
+    level_data = data["level"]
     level = Level.from_dict(level_data)
 
     return Actor(
@@ -91,5 +102,5 @@ def actor_from_dict(data: dict[str, Any]) -> Actor:
         fighter=fighter,
         inventory=inventory,
         equipment=equipment,
-        level=level
+        level=level,
     )
