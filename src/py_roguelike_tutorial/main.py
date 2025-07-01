@@ -15,7 +15,7 @@ from py_roguelike_tutorial.input_handlers import (
     BaseEventHandler,
     EventHandler,
 )
-from py_roguelike_tutorial.loader import DataLoader
+import py_roguelike_tutorial.loader as loader
 from py_roguelike_tutorial.utils import assets_filepath
 
 
@@ -26,7 +26,6 @@ def save_game(handler: BaseEventHandler, filename: str):
 
 
 def load_data_files():
-    loader = DataLoader()
     EntityPrefabs.items = loader.load_item_entities()
     EntityPrefabs.player = loader.load_player_entity(EntityPrefabs.items)
     EntityPrefabs.npcs = loader.load_npcs_entities(EntityPrefabs.items)
