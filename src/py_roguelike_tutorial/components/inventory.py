@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Iterable
 
 from py_roguelike_tutorial.components.base_components import BaseComponent
+from py_roguelike_tutorial.validators.actor_validator import InventoryData
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.entity import Actor, Item
@@ -11,12 +12,8 @@ if TYPE_CHECKING:
 class Inventory(BaseComponent):
     parent: Actor  # type: ignore [reportIncompatibleVariableOverride]
 
-    @classmethod
-    def none(cls):
-        return Inventory(0)
-
-    def __init__(self, capacity: int):
-        self._capacity = capacity
+    def __init__(self, data: InventoryData):
+        self._capacity = data.capacity
         self.items: list[Item] = []
 
     def drop(self, item: Item) -> None:

@@ -26,24 +26,19 @@ CONSUMABLE_CLASSES = {
     "FireballDamageConsumable": FireballDamageConsumable,
 }
 
-AI_CLASSES: dict[str, Type[BaseAI]] = {"HostileEnemy": HostileEnemy}
-
-
-class FromDict(Protocol):
-    @classmethod
-    def from_dict(cls, constructor_args: Any): ...
+AI_CLASSES = {"HostileEnemy": HostileEnemy}
 
 
 def item_from_dict(data: ItemData) -> Item:
     consumable_data = data.consumable
-    consumable_class: Type[FromDict] | None = (
+    consumable_class = (
         CONSUMABLE_CLASSES[consumable_data.class_type]
         if consumable_data is not None
         else None
     )
-    consumable: Consumable | None = (
-        consumable_class.from_dict(consumable_data.constructor_args)
-        if consumable_data and consumable_class
+    consumable = (
+        consumable_class(consumable_data.constructor_args)
+        if consumable_data is not None and consumable_class is not None
         else None
     )
     equippable_data = data.equippable
@@ -73,14 +68,9 @@ def actor_from_dict(data: ActorData, item_prefabs: dict[str, Item]) -> Actor:
         power=fighter_data.power,
     )
 
-    inventory_data = data.inventory
-    inventory = (
-        Inventory(capacity=inventory_data.capacity)
-        if inventory_data.capacity
-        else Inventory.none()
-    )
+    inventory = Inventory(data.inventory)
     new_item = lambda key: copy.deepcopy(item_prefabs[key])
-    inventory_items = [new_item(item_key) for item_key in inventory_data.items or []]
+    inventory_items = [new_item(item_key) for item_key in data.inventory.items or []]
     inventory.add_many(inventory_items)
 
     equipment_data = data.equipment
@@ -93,7 +83,7 @@ def actor_from_dict(data: ActorData, item_prefabs: dict[str, Item]) -> Actor:
         inventory.add(armor)
 
     level_data = data.level
-    level = Level.from_dict(level_data)
+    level = Level(level_data)
 
     return Actor(
         char=data.char,

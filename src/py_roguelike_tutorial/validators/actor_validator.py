@@ -14,16 +14,16 @@ class FighterData(BaseModel):
 
 
 class InventoryData(BaseModel):
-    capacity: int | None = None
-    items: list[str] | None = None
+    capacity: int = 0
+    items: list[str] = []
 
 
 class LevelData(BaseModel):
-    level_up_base: int | None = None
-    level_up_factor: int | None = None
-    xp_given: int | None = None
-    current_level: int | None = None
-    current_xp: int | None = None
+    level_up_base: int = 0
+    level_up_factor: int = 150
+    xp_given: int = 0
+    current_level: int = 1
+    current_xp: int = 0
 
 
 class EquipmentData(BaseModel):

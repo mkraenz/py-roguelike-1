@@ -12,34 +12,17 @@ if TYPE_CHECKING:
 class Level(BaseComponent):
     parent: Actor  # type: ignore [reportIncompatibleVariableOverride]
 
-    def __init__(
-        self,
-        current_level: int = 1,
-        current_xp: int = 0,
-        level_up_base: int = 0,
-        level_up_factor: int = 150,
-        xp_given: int = 0,
-    ):
+    def __init__(self, data: LevelData):
         """
         Parameters:
             level_up_base: If set to 0, the parent will NOT be able to level up! Enemies will have level_up_base=0.
             xp_given: The amount of EXP given to the player on death of the parent.
         """
-        self.current_level = current_level
-        self.current_xp = current_xp
-        self.level_up_base = level_up_base
-        self.level_up_factor = level_up_factor
-        self.xp_given = xp_given
-
-    @classmethod
-    def from_dict(cls, data: LevelData):
-        return cls(
-            current_level=data.current_level if data.current_level else 1,
-            current_xp=data.current_xp if data.current_xp else 0,
-            level_up_base=data.level_up_base if data.level_up_base else 0,
-            level_up_factor=data.level_up_factor if data.level_up_factor else 150,
-            xp_given=data.xp_given if data.xp_given else 0
-        )
+        self.current_level = data.current_level
+        self.current_xp = data.current_xp
+        self.level_up_base = data.level_up_base
+        self.level_up_factor = data.level_up_factor
+        self.xp_given = data.xp_given
 
     @property
     def xp_to_next_level(self) -> int:

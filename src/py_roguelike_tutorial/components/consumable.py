@@ -39,8 +39,8 @@ class Consumable(BaseComponent):
 
 
 class HealingConsumable(Consumable):
-    def __init__(self, amount: int):
-        self.amount = amount
+    def __init__(self, data: validators.HealingConsumableConstructorData):
+        self.amount = data.amount
 
     def activate(self, ctx: Action) -> None:
         consumer = ctx.entity
@@ -53,17 +53,13 @@ class HealingConsumable(Consumable):
         else:
             raise Impossible("You are at full health already.")
 
-    @classmethod
-    def from_dict(cls, data: validators.HealingConsumableConstructorData):
-        return cls(amount=data.amount)
-
 
 class LightningDamageConsumable(Consumable):
     """Lightning attacks automatically pick the closest target within range."""
 
-    def __init__(self, damage: int, max_range: int):
-        self.max_range = max_range
-        self.damage = damage
+    def __init__(self, data: validators.LightningDamageConsumableConstructorData):
+        self.max_range = data.max_range
+        self.damage = data.damage
 
     def activate(self, ctx: ItemAction) -> None:  # type: ignore [reportIncompatibleMethodOverride]
         consumer = ctx.entity
@@ -89,14 +85,10 @@ class LightningDamageConsumable(Consumable):
                 target = actor
         return target
 
-    @classmethod
-    def from_dict(cls, data: validators.LightningDamageConsumableConstructorData):
-        return cls(damage=data.damage, max_range=data.max_range)
-
 
 class ConfusionConsumable(Consumable):
-    def __init__(self, turns: int):
-        self.turns = turns
+    def __init__(self, data: validators.ConfusionConsumableConstructorData):
+        self.turns = data.turns
 
     def get_action(self, consumer: Actor) -> SingleRangedAttackHandler:
         self.engine.message_log.add("Select a target location.", Theme.needs_target)
@@ -126,21 +118,13 @@ class ConfusionConsumable(Consumable):
         )
         self.consume()
 
-    @classmethod
-    def from_dict(cls, data: validators.ConfusionConsumableConstructorData):
-        return cls(turns=data.turns)
-
 
 class FireballDamageConsumable(Consumable):
     """AOE Fireball attack. May inflict damage onto the user!"""
 
-    def __init__(self, damage: int, radius: int):
-        self.damage = damage
-        self.radius = radius
-
-    @classmethod
-    def from_dict(cls, data: validators.FireballDamageConsumableConstructorData):
-        return cls(damage=data.damage, radius=data.radius)
+    def __init__(self, data: validators.FireballDamageConsumableConstructorData):
+        self.damage = data.damage
+        self.radius = data.radius
 
     def get_action(self, consumer: Actor) -> AreaRangedAttackHandler | None:
         self.engine.message_log.add("Select a target location.", Theme.needs_target)
