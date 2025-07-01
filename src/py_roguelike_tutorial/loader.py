@@ -1,15 +1,13 @@
 from __future__ import annotations
 
 import traceback
-from typing import TYPE_CHECKING, Any, Callable
+from typing import TYPE_CHECKING, Callable
 
 import yaml
 
 from py_roguelike_tutorial.components.procgen_config import DungeonTable, EntityTableRow
 from py_roguelike_tutorial.entity_deserializers import item_from_dict, actor_from_dict
-from py_roguelike_tutorial.entity_factory import EntityPrefabs
 from py_roguelike_tutorial.utils import assets_filepath
-
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.entity import Item, Actor

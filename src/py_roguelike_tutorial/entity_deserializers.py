@@ -73,15 +73,18 @@ def actor_from_dict(data: dict[str, Any], item_prefabs: dict[str, Item]) -> Acto
         if inventory_data
         else Inventory.none()
     )
+    new_item = lambda key: copy.deepcopy(item_prefabs[key])
+    inventory_items = [new_item(item_key) for item_key in inventory_data.get('items', [])]
+    inventory.add_many(inventory_items)
 
     equipment_data: dict = data["equipment"]
     weapon = (
-        copy.deepcopy(item_prefabs[equipment_data["weapon"]])
+        new_item(equipment_data["weapon"])
         if equipment_data.get("weapon")
         else None
     )
     armor = (
-        copy.deepcopy(item_prefabs[equipment_data["armor"]])
+        new_item(equipment_data["armor"])
         if equipment_data.get("armor")
         else None
     )
