@@ -47,10 +47,10 @@ class DataLoader:
         item_drops_data: SpawnRateTable = self.load_asset(filename)
         item_chances: DungeonTable = {}
         for floor, entity_name_table in item_drops_data.items():
-            entity_table = map(
-                lambda row: EntityTableRow(item_prefabs[str(row[0])], int(row[1])),
-                entity_name_table,
-            )
+            entity_table = [
+                EntityTableRow(item_prefabs[row[0]], row[1])
+                for row in entity_name_table
+            ]
             item_chances[floor] = list(entity_table)
         return item_chances
 
@@ -59,10 +59,9 @@ class DataLoader:
         raw_spawn_rates_by_floor: SpawnRateTable = self.load_asset(filename)
         spawn_rates: DungeonTable = {}
         for floor, raw_entity_table in raw_spawn_rates_by_floor.items():
-            entity_table = map(
-                lambda x: EntityTableRow(npc_prefabs[str(x[0])], int(x[1])),
-                raw_entity_table,
-            )
+            entity_table = [
+                EntityTableRow(npc_prefabs[row[0]], row[1]) for row in raw_entity_table
+            ]
             spawn_rates[floor] = list(entity_table)
         return spawn_rates
 
