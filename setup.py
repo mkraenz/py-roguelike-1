@@ -1,8 +1,16 @@
+import platform
+
 from cx_Freeze import setup
+
+included_files = (
+    [("src/assets/", "assets/")]
+    if platform.system == "Linux"
+    else [("src/assets/", "assets/"), ("SDL3.dll", "SDL3.dll")]
+)
 
 # Dependencies are automatically detected, but they might need fine-tuning.
 build_exe_options = {
-    "include_files": [("src/assets/", "assets/"), ("SDL3.dll", "SDL3.dll")],
+    "include_files": included_files,
     "excludes": ["tkinter", "unittest", "tests"],
     "zip_include_packages": [
         "PyYAML",
