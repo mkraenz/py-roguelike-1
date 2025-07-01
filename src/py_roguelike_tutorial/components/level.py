@@ -30,6 +30,16 @@ class Level(BaseComponent):
         self.level_up_factor = level_up_factor
         self.xp_given = xp_given
 
+    @classmethod
+    def from_dict(cls, data: dict):
+        return cls(
+            current_level=data.get("current_level", 1),
+            current_xp=data.get("current_xp", 0),
+            level_up_base=data.get("level_up_base", 0),
+            level_up_factor=data.get('level_up_factor', 150),
+            xp_given=data.get('xp_given', 0)
+        )
+
     @property
     def xp_to_next_level(self) -> int:
         return self.level_up_base + self.current_level * self.level_up_factor

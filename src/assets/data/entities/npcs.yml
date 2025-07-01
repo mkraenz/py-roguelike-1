@@ -2,13 +2,13 @@ orc:
   char: "o"
   color: "#3f7f3f"
   name: "Orc"
-  ai_cls: HostileEnemy
+  ai:
+    class: HostileEnemy
   fighter:
     max_hp: 10
     defense: 0
     power: 3
-  inventory:
-    capacity: 0
+  inventory: {}
   level:
     level_up_base: 0
     xp_given: 35
@@ -17,13 +17,13 @@ troll:
   char: "T"
   color: "#008800"
   name: "Troll"
-  ai_cls: HostileEnemy
+  ai:
+    class: HostileEnemy
   fighter:
     max_hp: 16
     defense: 1
     power: 4
-  inventory:
-    capacity: 0
+  inventory: {}
   level:
     level_up_base: 0
     xp_given: 35

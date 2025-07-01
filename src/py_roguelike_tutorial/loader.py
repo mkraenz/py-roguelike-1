@@ -1,10 +1,12 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+
+import traceback
+from typing import TYPE_CHECKING, Any, Callable
 
 import yaml
 
 from py_roguelike_tutorial.components.procgen_config import DungeonTable, EntityTableRow
-from py_roguelike_tutorial.entity_deserializers import item_from_dict
+from py_roguelike_tutorial.entity_deserializers import item_from_dict, actor_from_dict
 from py_roguelike_tutorial.utils import assets_filepath
 
 
@@ -20,24 +22,26 @@ class DataLoader:
         with open(assets_filepath(filename)) as file:
             return yaml.safe_load(file.read())
 
-    def load_item_entities(self) -> dict[str, Item]:
-        items: dict[str, Item] = {}
-
-        filename = "assets/data/entities/items.yml"
-        item_data: dict[str, dict] = self.load_asset(filename)
+    @staticmethod
+    def to_entities_or_fail[T](
+        filename: str, data: dict, create_entity: Callable[[dict], T]
+    ) -> dict[str, T]:
         # todo consider using pydantic for validation
+
+        entities: dict[str, T] = {}
         erroneous_keys: list[str] = []
-        for key, val in item_data.items():
+        for key, val in data.items():
             try:
-                items[key] = item_from_dict(val)
-            except Exception as e:
+                entities[key] = create_entity(val)
+            except Exception:
+                traceback.print_exc()
                 erroneous_keys.append(key)
         if erroneous_keys:
             error_keys = ", ".join(erroneous_keys)
             raise SystemError(
                 f"Error loading {filename}. Entity definitions malformed: {error_keys}"
             )
-        return items
+        return entities
 
     def load_item_drops_rates(self, item_prefabs: dict[str, Item]) -> DungeonTable:
         filename = "assets/data/tables/dungeon_item_drops.yml"
@@ -63,7 +67,20 @@ class DataLoader:
             spawn_rates[floor] = list(entity_table)
         return spawn_rates
 
-    def load_npcs(self) -> dict[str, Actor]:
+    def load_npcs_entities(self) -> dict[str, Actor]:
         filename = "assets/data/entities/npcs.yml"
-        npcs: dict[str, Actor] = {}
-        return npcs
+        data: dict[str, dict] = self.load_asset(filename)
+        entities = self.to_entities_or_fail(filename, data, actor_from_dict)
+        return entities
+
+    def load_item_entities(self) -> dict[str, Item]:
+        filename = "assets/data/entities/items.yml"
+        data: dict[str, dict] = self.load_asset(filename)
+        entities = self.to_entities_or_fail(filename, data, item_from_dict)
+        return entities
+
+    def load_player_entity(self) -> Actor:
+        filename = "assets/data/entities/player.yml"
+        data: dict[str, dict] = self.load_asset(filename)
+        entities = self.to_entities_or_fail(filename, data, actor_from_dict)
+        return entities["player"]

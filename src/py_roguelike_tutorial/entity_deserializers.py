@@ -1,5 +1,6 @@
 from typing import Any, Type
 from py_roguelike_tutorial.colors import hex_to_rgb
+from py_roguelike_tutorial.components.ai import BaseAI, HostileEnemy
 from py_roguelike_tutorial.components.consumable import (
     Consumable,
     HealingConsumable,
@@ -7,9 +8,12 @@ from py_roguelike_tutorial.components.consumable import (
     ConfusionConsumable,
     FireballDamageConsumable,
 )
+from py_roguelike_tutorial.components.equipment import Equipment
 from py_roguelike_tutorial.components.equippable import Equippable
-from py_roguelike_tutorial.entity import Item
-
+from py_roguelike_tutorial.components.fighter import Fighter
+from py_roguelike_tutorial.components.inventory import Inventory
+from py_roguelike_tutorial.components.level import Level
+from py_roguelike_tutorial.entity import Item, Actor
 
 CONSUMABLE_CLASSES: dict[str, Type[Consumable]] = {
     "HealingConsumable": HealingConsumable,
@@ -18,11 +22,13 @@ CONSUMABLE_CLASSES: dict[str, Type[Consumable]] = {
     "FireballDamageConsumable": FireballDamageConsumable,
 }
 
+AI_CLASSES: dict[str, Type[BaseAI]] = {"HostileEnemy": HostileEnemy}
+
 
 def item_from_dict(data: dict[str, Any]) -> Item:
     consumable_data = data.get("consumable")
     consumable_class: Type[Consumable] | None = (
-        CONSUMABLE_CLASSES.get(consumable_data["class"])
+        CONSUMABLE_CLASSES[consumable_data["class"]]
         if consumable_data is not None
         else None
     )
@@ -33,11 +39,7 @@ def item_from_dict(data: dict[str, Any]) -> Item:
     )
     equippable_data = data.get("equippable")
     equippable = (
-        Equippable(
-            defense=equippable_data.get("defense"),
-            power=equippable_data.get("power"),
-            type=equippable_data.get("type"),
-        )
+        Equippable.from_dict(equippable_data)
         if equippable_data
         else None
     )
@@ -54,3 +56,40 @@ def item_from_dict(data: dict[str, Any]) -> Item:
     if equippable:
         equippable.parent = item
     return item
+
+
+def actor_from_dict(data: dict[str, Any]) -> Actor:
+    ai_data: dict = data["ai"]
+    ai_cls = AI_CLASSES[ai_data["class"]]
+    
+    fighter_data: dict = data["fighter"]
+    fighter = Fighter(
+        max_hp=fighter_data["max_hp"],
+        defense=fighter_data["defense"],
+        power=fighter_data["power"],
+    )
+    
+    inventory_data: dict = data["inventory"]
+    inventory = (
+        Inventory(capacity=inventory_data["capacity"])
+        if inventory_data
+        else Inventory.none()
+    )
+    
+    # equipment_data: dict = data['equipment']
+    # todo weapons and armor are Items, so we need to instantiate them as such.
+    equipment = Equipment()
+    
+    level_data = data['level']
+    level = Level.from_dict(level_data)
+
+    return Actor(
+        char=data["char"],
+        color=hex_to_rgb(data["color"]),
+        name=data["name"],
+        ai_cls=ai_cls,
+        fighter=fighter,
+        inventory=inventory,
+        equipment=equipment,
+        level=level
+    )

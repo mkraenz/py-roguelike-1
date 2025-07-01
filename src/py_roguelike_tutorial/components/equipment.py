@@ -74,7 +74,7 @@ class Equipment(BaseComponent):
 
     def toggle_equippable(self, equippable_item: Item, show_message: bool = True):
         is_weapon = (
-            equippable_item.equippable and equippable_item.equippable.type == "weapon"
+            equippable_item.equippable and equippable_item.equippable.slot == "weapon"
         )
         slot: Slot = "weapon" if is_weapon else "armor"
         if self.is_equipped(equippable_item):
