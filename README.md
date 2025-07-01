@@ -19,7 +19,7 @@ python ./src/tstt_rl.py
 ### Type checking
 
 ```sh
-pyright .
+pyright src
 ```
 
 ## Package and Deploy

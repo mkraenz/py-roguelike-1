@@ -1,17 +1,17 @@
-name: CICD
+name: Build executables
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+  # push:
+  #   branches:
+  #     - main
 
 jobs:
   build:
     strategy:
       matrix:
         # os: [macos-latest, ubuntu-latest, windows-latest]
-        os: [windows-latest]
-        # os: [ubuntu-latest]
+        os: [ubuntu-latest, windows-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -27,7 +27,9 @@ jobs:
       - name: Install dependencies
         run: uv sync --locked --all-extras --dev
 
-      - name: Download
+      - name: Download SDL3.dll (windows only)
+        if: runner.os == 'Windows'
+        # on windows the dll is not being bundled automatically
         run: |
           $downloadUrl = "https://github.com/libsdl-org/SDL/releases/download/release-3.2.16/SDL3-3.2.16-win32-x64.zip"
           $zipPath = "$PSScriptRoot\SDL3-3.2.16-win32-x64.zip"
@@ -35,9 +37,8 @@ jobs:
 
           Invoke-WebRequest $downloadUrl -OutFile $zipPath
           Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
-          Get-ChildItem -Force
 
-      # nuitka and pyinstaller worked fine on linux but causes anti-virus alert on win11. Now using cx_freeze. At the very least cx_freeze is much faster to compile.
+      # nuitka and pyinstaller worked fine on linux but caused anti-virus alert on win11. Now using cx_freeze. Cx_freeze compiles much, much, much faster (10 seconds vs 10 mins for nuitka!), and does not trigger anti-virus. In the current setup though, Windows Defender still says the app is from an unknown origin and may be malicious. But this is probably due to missing App Signing, and can be ignored with a click on Run Anyway. For now, we can live with this.
       - name: Build executable
         run: uv run python setup.py build
 
@@ -48,3 +49,4 @@ jobs:
           path: |
             build/*
           include-hidden-files: true
+          retention-days: 7
