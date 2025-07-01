@@ -63,3 +63,8 @@ class Fighter(BaseComponent):
 
     def take_damage(self, amount: int) -> None:
         self.hp -= amount
+
+    def increase_max_hp(self, amount: int) -> None:
+        self.parent.fighter.max_hp += amount
+        self.parent.fighter.hp += amount
+
