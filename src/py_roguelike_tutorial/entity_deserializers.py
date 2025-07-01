@@ -1,5 +1,6 @@
 import copy
-from typing import Any, Type
+from typing import Any, Type, Protocol
+
 from py_roguelike_tutorial.colors import hex_to_rgb
 from py_roguelike_tutorial.components.ai import BaseAI, HostileEnemy
 from py_roguelike_tutorial.components.consumable import (
@@ -14,10 +15,11 @@ from py_roguelike_tutorial.components.equippable import Equippable
 from py_roguelike_tutorial.components.fighter import Fighter
 from py_roguelike_tutorial.components.inventory import Inventory
 from py_roguelike_tutorial.components.level import Level
+from py_roguelike_tutorial.validators.actor_validator import ActorData
+from py_roguelike_tutorial.validators.item_validator import ItemData
 from py_roguelike_tutorial.entity import Item, Actor
-from py_roguelike_tutorial.entity_factory import EntityPrefabs
 
-CONSUMABLE_CLASSES: dict[str, Type[Consumable]] = {
+CONSUMABLE_CLASSES = {
     "HealingConsumable": HealingConsumable,
     "LightningDamageConsumable": LightningDamageConsumable,
     "ConfusionConsumable": ConfusionConsumable,
@@ -27,25 +29,30 @@ CONSUMABLE_CLASSES: dict[str, Type[Consumable]] = {
 AI_CLASSES: dict[str, Type[BaseAI]] = {"HostileEnemy": HostileEnemy}
 
 
-def item_from_dict(data: dict[str, Any]) -> Item:
-    consumable_data = data.get("consumable")
-    consumable_class: Type[Consumable] | None = (
-        CONSUMABLE_CLASSES[consumable_data["class"]]
+class FromDict(Protocol):
+    @classmethod
+    def from_dict(cls, constructor_args: Any): ...
+
+
+def item_from_dict(data: ItemData) -> Item:
+    consumable_data = data.consumable
+    consumable_class: Type[FromDict] | None = (
+        CONSUMABLE_CLASSES[consumable_data.class_type]
         if consumable_data is not None
         else None
     )
     consumable: Consumable | None = (
-        consumable_class.from_dict(consumable_data["constructor_args"])
+        consumable_class.from_dict(consumable_data.constructor_args)
         if consumable_data and consumable_class
         else None
     )
-    equippable_data = data.get("equippable")
+    equippable_data = data.equippable
     equippable = Equippable.from_dict(equippable_data) if equippable_data else None
 
     item = Item(
-        char=data["char"],
-        color=hex_to_rgb(data["color"]),
-        name=data["name"],
+        char=data.char,
+        color=hex_to_rgb(data.color),
+        name=data.name,
         consumable=consumable,
         equippable=equippable,
     )
@@ -56,51 +63,42 @@ def item_from_dict(data: dict[str, Any]) -> Item:
     return item
 
 
-def actor_from_dict(data: dict[str, Any], item_prefabs: dict[str, Item]) -> Actor:
-    ai_data: dict = data["ai"]
-    ai_cls = AI_CLASSES[ai_data["class"]]
+def actor_from_dict(data: ActorData, item_prefabs: dict[str, Item]) -> Actor:
+    ai_cls = AI_CLASSES[data.ai.class_type]
 
-    fighter_data: dict = data["fighter"]
+    fighter_data = data.fighter
     fighter = Fighter(
-        max_hp=fighter_data["max_hp"],
-        defense=fighter_data["defense"],
-        power=fighter_data["power"],
+        max_hp=fighter_data.max_hp,
+        defense=fighter_data.defense,
+        power=fighter_data.power,
     )
 
-    inventory_data: dict = data["inventory"]
+    inventory_data = data.inventory
     inventory = (
-        Inventory(capacity=inventory_data["capacity"])
-        if inventory_data
+        Inventory(capacity=inventory_data.capacity)
+        if inventory_data.capacity
         else Inventory.none()
     )
     new_item = lambda key: copy.deepcopy(item_prefabs[key])
-    inventory_items = [new_item(item_key) for item_key in inventory_data.get('items', [])]
+    inventory_items = [new_item(item_key) for item_key in inventory_data.items or []]
     inventory.add_many(inventory_items)
 
-    equipment_data: dict = data["equipment"]
-    weapon = (
-        new_item(equipment_data["weapon"])
-        if equipment_data.get("weapon")
-        else None
-    )
-    armor = (
-        new_item(equipment_data["armor"])
-        if equipment_data.get("armor")
-        else None
-    )
+    equipment_data = data.equipment
+    weapon = new_item(equipment_data.weapon) if equipment_data.weapon else None
+    armor = new_item(equipment_data.armor) if equipment_data.armor else None
     equipment = Equipment(weapon=weapon, armor=armor)
     if weapon:
         inventory.add(weapon)
     if armor:
         inventory.add(armor)
 
-    level_data = data["level"]
+    level_data = data.level
     level = Level.from_dict(level_data)
 
     return Actor(
-        char=data["char"],
-        color=hex_to_rgb(data["color"]),
-        name=data["name"],
+        char=data.char,
+        color=hex_to_rgb(data.color),
+        name=data.name,
         ai_cls=ai_cls,
         fighter=fighter,
         inventory=inventory,

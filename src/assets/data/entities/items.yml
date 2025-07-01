@@ -35,7 +35,7 @@ health_potion:
   color: "#8000FF"
   name: "Health Potion"
   consumable:
-    class: HealingConsumable
+    class_type: HealingConsumable
     constructor_args:
       amount: 4
 
@@ -44,7 +44,7 @@ lightning_scroll:
   color: "#0000ff"
   name: "Lightning Scroll"
   consumable:
-    class: LightningDamageConsumable
+    class_type: LightningDamageConsumable
     constructor_args:
       damage: 20
       max_range: 5
@@ -54,7 +54,7 @@ confusion_scroll:
   color: "#cf3fff"
   name: "Confusion Scroll"
   consumable:
-    class: ConfusionConsumable
+    class_type: ConfusionConsumable
     constructor_args:
       turns: 10
 
@@ -63,7 +63,7 @@ fireball_scroll:
   color: "#ff0000"
   name: "Fireball Scroll"
   consumable:
-    class: FireballDamageConsumable
+    class_type: FireballDamageConsumable
     constructor_args:
       damage: 12
       radius: 3

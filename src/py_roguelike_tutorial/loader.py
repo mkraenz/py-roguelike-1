@@ -1,13 +1,15 @@
 from __future__ import annotations
 
 import traceback
-from typing import TYPE_CHECKING, Callable
+from typing import TYPE_CHECKING, Callable, Any
 
 import yaml
 
 from py_roguelike_tutorial.components.procgen_config import DungeonTable, EntityTableRow
 from py_roguelike_tutorial.entity_deserializers import item_from_dict, actor_from_dict
 from py_roguelike_tutorial.utils import assets_filepath
+from py_roguelike_tutorial.validators.actor_validator import ActorData
+from py_roguelike_tutorial.validators.item_validator import ItemData
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.entity import Item, Actor
@@ -20,8 +22,11 @@ def _load_asset(filename: str):
         return yaml.safe_load(file.read())
 
 
-def _to_entities_or_fail[T](
-    filename: str, data: dict, create_entity: Callable[[dict], T]
+def _to_entities_or_fail[T, ValidatedData](
+    filename: str,
+    data: dict,
+    validate: Callable[[Any], ValidatedData],
+    create_entity: Callable[[ValidatedData], T],
 ) -> dict[str, T]:
     # todo consider using pydantic for validation
 
@@ -29,7 +34,8 @@ def _to_entities_or_fail[T](
     erroneous_keys: list[str] = []
     for key, val in data.items():
         try:
-            entities[key] = create_entity(val)
+            validated = validate(val)
+            entities[key] = create_entity(validated)
         except Exception:
             traceback.print_exc()
             erroneous_keys.append(key)
@@ -68,7 +74,12 @@ def load_enemy_spawn_rates(npc_prefabs: dict[str, Actor]) -> DungeonTable:
 def load_item_entities() -> dict[str, Item]:
     filename = "assets/data/entities/items.yml"
     data: dict[str, dict] = _load_asset(filename)
-    entities = _to_entities_or_fail(filename, data, item_from_dict)
+    entities = _to_entities_or_fail(
+        filename,
+        data,
+        create_entity=item_from_dict,
+        validate=lambda x: ItemData(**x),
+    )
     return entities
 
 
@@ -76,7 +87,12 @@ def load_npcs_entities(item_entities: dict[str, Item]) -> dict[str, Actor]:
     filename = "assets/data/entities/npcs.yml"
     data: dict[str, dict] = _load_asset(filename)
     partial_actor_from_dict = lambda val: actor_from_dict(val, item_entities)
-    entities = _to_entities_or_fail(filename, data, partial_actor_from_dict)
+    entities = _to_entities_or_fail(
+        filename,
+        data,
+        create_entity=partial_actor_from_dict,
+        validate=lambda x: ActorData(**x),
+    )
     return entities
 
 
@@ -84,5 +100,10 @@ def load_player_entity(item_entities: dict[str, Item]) -> Actor:
     filename = "assets/data/entities/player.yml"
     data: dict[str, dict] = _load_asset(filename)
     partial_actor_from_dict = lambda val: actor_from_dict(val, item_entities)
-    entities = _to_entities_or_fail(filename, data, partial_actor_from_dict)
+    entities = _to_entities_or_fail(
+        filename,
+        data,
+        create_entity=partial_actor_from_dict,
+        validate=lambda x: ActorData(**x),
+    )
     return entities["player"]

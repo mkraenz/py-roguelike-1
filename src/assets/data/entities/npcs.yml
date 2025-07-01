@@ -3,7 +3,7 @@ orc:
   color: "#3f7f3f"
   name: "Orc"
   ai:
-    class: HostileEnemy
+    class_type: HostileEnemy
   fighter:
     max_hp: 10
     defense: 0
@@ -18,7 +18,7 @@ troll:
   color: "#008800"
   name: "Troll"
   ai:
-    class: HostileEnemy
+    class_type: HostileEnemy
   fighter:
     max_hp: 16
     defense: 1

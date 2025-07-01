@@ -1,5 +1,6 @@
 from py_roguelike_tutorial.components.base_components import BaseComponent
 from py_roguelike_tutorial.components.equipment_type import EquipmentType
+import py_roguelike_tutorial.validators.item_validator as validators
 from py_roguelike_tutorial.entity import Item
 
 
@@ -12,9 +13,9 @@ class Equippable(BaseComponent):
         self.defense: int = defense
 
     @classmethod
-    def from_dict(cls, data: dict):
+    def from_dict(cls, data: validators.EquippableData):
         return cls(
-            defense=data.get("defense", 0),
-            power=data.get("power", 0),
-            slot=data["slot"],
+            defense=data.defense if data.defense else 0,
+            power=data.power if data.power else 0,
+            slot=data.slot,
         )

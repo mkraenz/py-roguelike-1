@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 from py_roguelike_tutorial.actions import Action, ItemAction
 from py_roguelike_tutorial.colors import Theme
@@ -13,6 +13,7 @@ from py_roguelike_tutorial.input_handlers import (
     AreaRangedAttackHandler,
     ActionOrHandler,
 )
+import py_roguelike_tutorial.validators.item_validator as validators
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.entity import Actor, Item
@@ -36,10 +37,6 @@ class Consumable(BaseComponent):
         if isinstance(inventory, Inventory):
             inventory.remove(item)
 
-    @classmethod
-    def from_dict(cls, data: dict[str, Any]):
-        raise NotImplementedError("Must be implemented by subclass")
-
 
 class HealingConsumable(Consumable):
     def __init__(self, amount: int):
@@ -57,8 +54,8 @@ class HealingConsumable(Consumable):
             raise Impossible("You are at full health already.")
 
     @classmethod
-    def from_dict(cls, data: dict):
-        return cls(amount=data["amount"])
+    def from_dict(cls, data: validators.HealingConsumableConstructorData):
+        return cls(amount=data.amount)
 
 
 class LightningDamageConsumable(Consumable):
@@ -93,8 +90,8 @@ class LightningDamageConsumable(Consumable):
         return target
 
     @classmethod
-    def from_dict(cls, data: dict):
-        return cls(damage=data["damage"], max_range=data["max_range"])
+    def from_dict(cls, data: validators.LightningDamageConsumableConstructorData):
+        return cls(damage=data.damage, max_range=data.max_range)
 
 
 class ConfusionConsumable(Consumable):
@@ -130,8 +127,8 @@ class ConfusionConsumable(Consumable):
         self.consume()
 
     @classmethod
-    def from_dict(cls, data: dict):
-        return cls(turns=data["turns"])
+    def from_dict(cls, data: validators.ConfusionConsumableConstructorData):
+        return cls(turns=data.turns)
 
 
 class FireballDamageConsumable(Consumable):
@@ -142,8 +139,8 @@ class FireballDamageConsumable(Consumable):
         self.radius = radius
 
     @classmethod
-    def from_dict(cls, data: dict):
-        return cls(damage=data["damage"], radius=data["radius"])
+    def from_dict(cls, data: validators.FireballDamageConsumableConstructorData):
+        return cls(damage=data.damage, radius=data.radius)
 
     def get_action(self, consumer: Actor) -> AreaRangedAttackHandler | None:
         self.engine.message_log.add("Select a target location.", Theme.needs_target)

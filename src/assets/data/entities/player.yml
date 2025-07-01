@@ -3,7 +3,7 @@ player:
   color: "#ff00ff"
   name: "Player"
   ai:
-    class: HostileEnemy
+    class_type: HostileEnemy
   fighter:
     max_hp: 30
     defense: 2

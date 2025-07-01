@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from py_roguelike_tutorial.components.base_components import BaseComponent
+from py_roguelike_tutorial.validators.actor_validator import LevelData
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.entity import Actor
@@ -31,13 +32,13 @@ class Level(BaseComponent):
         self.xp_given = xp_given
 
     @classmethod
-    def from_dict(cls, data: dict):
+    def from_dict(cls, data: LevelData):
         return cls(
-            current_level=data.get("current_level", 1),
-            current_xp=data.get("current_xp", 0),
-            level_up_base=data.get("level_up_base", 0),
-            level_up_factor=data.get('level_up_factor', 150),
-            xp_given=data.get('xp_given', 0)
+            current_level=data.current_level if data.current_level else 1,
+            current_xp=data.current_xp if data.current_xp else 0,
+            level_up_base=data.level_up_base if data.level_up_base else 0,
+            level_up_factor=data.level_up_factor if data.level_up_factor else 150,
+            xp_given=data.xp_given if data.xp_given else 0
         )
 
     @property
