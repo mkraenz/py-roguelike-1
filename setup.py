@@ -4,8 +4,8 @@ from cx_Freeze import setup
 
 included_files = (
     [("src/assets/", "assets/")]
-    # if platform.system == "Linux"
-    # else [("src/assets/", "assets/"), ("SDL3.dll", "SDL3.dll")]
+    if platform.system() == "Linux"
+    else [("src/assets/", "assets/"), ("SDL3.dll", "SDL3.dll")]
 )
 
 # Dependencies are automatically detected, but they might need fine-tuning.
