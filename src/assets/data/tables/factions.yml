@@ -1,0 +1,13 @@
+factions:
+  cups:
+    name: The Cups
+  swords:
+    name: The Swords
+  wands:
+    name: The Wands
+  pentacles:
+    name: The Pentacles
+  civilians:
+    name: Civilians
+  player:
+    name: Player

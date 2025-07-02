@@ -7,12 +7,13 @@ from tcod.los import bresenham
 
 from py_roguelike_tutorial import tile_types
 from py_roguelike_tutorial.components import procgen_config
+from py_roguelike_tutorial.components.faction import Faction
+from py_roguelike_tutorial.components.factions_manager import FactionsManager
 from py_roguelike_tutorial.components.procgen_config import (
     ProcgenConfig as data,
 )
-from py_roguelike_tutorial.entity import Entity
 from py_roguelike_tutorial.game_map import GameMap
-from py_roguelike_tutorial.types import Coord
+from py_roguelike_tutorial.types import Coord, CoordN
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.engine import Engine
@@ -20,11 +21,11 @@ if TYPE_CHECKING:
 DEBUG_STAIRS_AT_START = False
 
 
-def get_prefabs_at_random(
-    weighted_chances_by_floor: procgen_config.DungeonTable,
+def get_prefabs_at_random[T](
+    weighted_chances_by_floor: procgen_config.DungeonTable[T],
     num_of_entities: int,
     current_floor: int,
-) -> list[Entity]:
+) -> list[T]:
     entity_weighted_chances = {}
     for floor, entity_table in weighted_chances_by_floor.items():
         if floor > current_floor:
@@ -90,6 +91,7 @@ def generate_dungeon(
     map_height: int,
     current_floor: int,
     engine: Engine,
+    factions: FactionsManager,
 ) -> GameMap:
     player = engine.player
     dungeon = GameMap(
@@ -114,7 +116,7 @@ def generate_dungeon(
             for coord in tunnel_between_room_centers(room, rooms[-1]):
                 dungeon.tiles[coord] = tile_types.floor
 
-        place_entities(room, dungeon, current_floor)
+        place_entities(room, dungeon, current_floor, factions)
 
         rooms.append(room)
 
@@ -148,7 +150,10 @@ def tunnel_between(start: Coord, end: Coord) -> Iterator[Coord]:
 
 
 def place_entities(
-    room: RectangularRoom, game_map: GameMap, current_floor: int
+    room: RectangularRoom,
+    game_map: GameMap,
+    current_floor: int,
+    factions: FactionsManager,
 ) -> None:
     num_of_monsters = random.randint(
         0,
@@ -159,14 +164,27 @@ def place_entities(
         get_max_row_for_floor(data.MAX_ITEMS_BY_FLOOR, current_floor).max_value,
     )
 
+    room_faction: Faction = random.choice(list(factions.factions.values()))
     items = get_prefabs_at_random(data.item_chances, num_of_items, current_floor)
     enemies = get_prefabs_at_random(data.enemy_chances, num_of_monsters, current_floor)
+    for item_prefab in items:
+        loc = _random_spawn_location(room, game_map)
+        if loc is None:
+            continue
+        item_prefab.spawn(game_map, loc.x, loc.y)
 
-    for prefab in enemies + items:
-        x = random.randint(room.x1 + 1, room.x2 - 1)  # +-1 to avoid walls
-        y = random.randint(room.y1 + 1, room.y2 - 1)
-        place_taken = any(
-            x == entity.x and y == entity.y for entity in game_map.entities
-        )
-        if not place_taken:
-            prefab.spawn(game_map, x, y)
+    for actor_prefab in enemies:
+        loc = _random_spawn_location(room, game_map)
+        if loc is None:
+            continue
+        actor = actor_prefab.spawn(game_map, loc.x, loc.y)
+        actor.faction = room_faction
+
+
+def _random_spawn_location(room: RectangularRoom, game_map: GameMap):
+    x = random.randint(room.x1 + 1, room.x2 - 1)  # +-1 to avoid walls
+    y = random.randint(room.y1 + 1, room.y2 - 1)
+    place_taken = any(x == entity.x and y == entity.y for entity in game_map.entities)
+    if place_taken:
+        return None
+    return CoordN(x, y)

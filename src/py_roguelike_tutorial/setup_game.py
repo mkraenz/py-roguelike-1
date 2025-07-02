@@ -13,6 +13,8 @@ from tcod.libtcodpy import BKGND_ALPHA
 
 from py_roguelike_tutorial import input_handlers
 from py_roguelike_tutorial.colors import Theme
+from py_roguelike_tutorial.components.faction import Faction
+from py_roguelike_tutorial.components.factions_manager import FactionsManager
 from py_roguelike_tutorial.constants import AUTOSAVE_FILENAME
 from py_roguelike_tutorial.engine import Engine
 from py_roguelike_tutorial.entity_factory import EntityPrefabs
@@ -35,7 +37,9 @@ def new_game() -> Engine:
 
     engine = Engine(player=player)
 
+    factions = FactionsManager(EntityPrefabs.factions)
     engine.game_world = GameWorld(
+        factions=factions,
         engine=engine,
         map_width=map_width,
         map_height=map_height,

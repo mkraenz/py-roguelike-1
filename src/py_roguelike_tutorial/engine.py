@@ -12,7 +12,6 @@ from py_roguelike_tutorial.message_log import MessageLog
 from py_roguelike_tutorial.render_functions import (
     render_hp_bar,
     render_names_at,
-    render_you_died,
     render_dungeon_level,
     render_xp,
 )

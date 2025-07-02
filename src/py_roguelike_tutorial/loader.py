@@ -5,10 +5,12 @@ from typing import TYPE_CHECKING, Callable, Any
 
 import yaml
 
+from py_roguelike_tutorial.components.faction import Faction
 from py_roguelike_tutorial.components.procgen_config import DungeonTable, EntityTableRow
 from py_roguelike_tutorial.entity_deserializers import item_from_dict, actor_from_dict
 from py_roguelike_tutorial.utils import assets_filepath
 from py_roguelike_tutorial.validators.actor_validator import ActorData
+from py_roguelike_tutorial.validators.faction_validator import FactionsData
 from py_roguelike_tutorial.validators.item_validator import ItemData
 
 if TYPE_CHECKING:
@@ -107,3 +109,14 @@ def load_player_entity(item_entities: dict[str, Item]) -> Actor:
         validate=lambda x: ActorData(**x),
     )
     return entities["player"]
+
+
+def load_factions() -> dict[str, Faction]:
+    filename = "assets/data/tables/factions.yml"
+    data: dict[str, dict] = _load_asset(filename)
+    factions_data = FactionsData(**data)
+    factions = {
+        id: Faction(id=id, name=faction.name)
+        for (id, faction) in factions_data.factions.items()
+    }
+    return factions

@@ -5,6 +5,7 @@ import math
 from typing import Type, TYPE_CHECKING
 
 from py_roguelike_tutorial.colors import Color
+from py_roguelike_tutorial.components.faction import Faction
 from py_roguelike_tutorial.render_order import RenderOrder
 from py_roguelike_tutorial.types import Coord, Rgb
 
@@ -143,6 +144,7 @@ class Actor(Entity):
         self.inventory.parent = self
         self.equipment = equipment
         self.equipment.parent = self
+        self.faction: Faction
 
     @property
     def is_alive(self) -> bool:

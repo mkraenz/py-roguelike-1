@@ -27,6 +27,7 @@ def save_game(handler: BaseEventHandler, filename: str):
 
 def load_data_files():
     EntityPrefabs.items = loader.load_item_entities()
+    EntityPrefabs.factions = loader.load_factions()
     EntityPrefabs.player = loader.load_player_entity(EntityPrefabs.items)
     EntityPrefabs.npcs = loader.load_npcs_entities(EntityPrefabs.items)
     ProcgenConfig.item_chances = loader.load_item_drops_rates(EntityPrefabs.items)
