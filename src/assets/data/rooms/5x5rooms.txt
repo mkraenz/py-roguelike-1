@@ -1,0 +1,85 @@
+// How to:
+// Each room is a 5x5 block. 
+// Above the room we have a bitmap of North, East, South, West. A bit of 1 means there is an entrance/exit in this direction.
+// The constraint is traversal from one tile to adjacent tiles must be possible.
+// In technical terms, this constraint is modelled as: Adjacent rooms must have their bitwise-multiplication result (=logical AND operation) be non-zero.
+// Explanation: Using the bits, we can use room A bitwise-AND room B to determine whether the two rooms can be matched. If the result is 0 (0000), then they are not compatible so cannot be matched. Otherwise they can be matched.
+// Remember: We have diagonal movement so the exit can be slightly off-center and still count as an exit.
+// Legend: w = wall, . = floor
+
+0000
+wwwww
+wwwww
+wwwww
+wwwww
+wwwww
+
+0000
+wwwww
+w...w
+w...w
+w...w
+wwwww
+
+0100
+wwwww
+w...w
+w....
+w...w
+wwwww
+
+0001
+wwwww
+w...w
+....w
+w...w
+wwwww
+
+1000
+ww.ww
+w...w
+w...w
+w...w
+wwwww
+
+0010
+wwwww
+w...w
+w...w
+w...w
+ww.ww
+
+0101
+wwwww
+w....
+.....
+....w
+wwwww
+
+0101
+wwwww
+....w
+.....
+w....
+wwwww
+
+1010
+ww..w
+w...w
+w...w
+w...w
+w..ww
+
+1010
+w..ww
+w...w
+w...w
+w...w
+ww..w
+
+1110
+w.www
+w....
+w....
+w...w
+www.w
