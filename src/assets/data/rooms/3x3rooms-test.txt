@@ -1,3 +1,5 @@
+// LEARNING: single entrance/exit tiles increase the likelihood of a non-connected dungeon tremendously. Better avoid them.
+
 0000
 www
 www

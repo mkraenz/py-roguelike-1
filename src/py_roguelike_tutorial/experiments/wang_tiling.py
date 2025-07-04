@@ -50,9 +50,13 @@ def _read_next_tile(file: TextIOWrapper):
     """
     current_tile_lines: list[str] = []
     for line in file:
+        if line.startswith("//"):
+            continue
         if line != "\n":
             current_tile_lines.append(line)
         else:
+            if len(current_tile_lines) == 0:
+                continue
             bitmask_str, *room_data = current_tile_lines
             # TODO validation?
             tile = _new_wang_tile(int(bitmask_str.strip(), 2), "".join(room_data))
@@ -60,15 +64,9 @@ def _read_next_tile(file: TextIOWrapper):
             current_tile_lines = []
 
 
-def load_wang_tiles() -> list[_Tile]:
-    # filename = "assets/data/rooms/3x3rooms-test.txt"
-    # with open(assets_filepath(filename)) as file:
-    filename = "/home/mirco/programming/py-roguelike-tutorial/src/assets/data/rooms/3x3rooms-test.txt"
-    tiles: list[_Tile] = []
-    with open(filename) as file:
-        for tile in _read_next_tile(file):
-            tiles.append(tile)
-    return tiles
+def load_wang_tiles(filepath: str) -> list[_Tile]:
+    with open(filepath) as file:
+        return [tile for tile in _read_next_tile(file)]
 
 
 def _test_north_south_compatible(north_tile: _Tile, south_tile: _Tile) -> bool:
@@ -95,7 +93,7 @@ def _test_east_west_compatible(east_tile: _Tile, west_tile: _Tile) -> bool:
     return c == b
 
 
-def generate(tiles: list[_Tile], width: int, height: int) -> _Map:
+def _generate(tiles: list[_Tile], width: int, height: int) -> _Map:
     """Procedurally generate a filled map with all borders being all-walls wang tiles.
     The map will have dimensions width+2, height+2."""
     outer_width = width + 2
@@ -122,12 +120,21 @@ def generate(tiles: list[_Tile], width: int, height: int) -> _Map:
             west_tile = map[y][x - 1]
             neighbors = _Neighbors(north_tile, east_tile, south_tile, west_tile)
 
-            candidates = _get_tile_candidates(tiles, neighbors)
-            map[y][x] = random.choice(candidates)
+            if x == 5 and y == 10:
+                print("hello")
+            candidates = _get_tile_candidates(tiles, neighbors, [all_walls_tile])
+            # we try to keep the all_walls tile out of things as much as possible, only falling back to it in the worst case of no other matching tiles.
+            candidates_or_fallback = (
+                candidates if len(candidates) != 0 else [all_walls_tile]
+            )
+            map[y][x] = random.choice(candidates_or_fallback)
+
     return map
 
 
-def _get_tile_candidates(tiles: list[np.ndarray], neighbors: _Neighbors):
+def _get_tile_candidates(
+    tiles: list[_Tile], neighbors: _Neighbors, excluded_tiles: list[_Tile]
+):
     return [
         tile
         for tile in tiles
@@ -135,6 +142,7 @@ def _get_tile_candidates(tiles: list[np.ndarray], neighbors: _Neighbors):
         and _test_east_west_compatible(neighbors.east, tile)
         and _test_north_south_compatible(neighbors.north, tile)
         and _test_north_south_compatible(tile, neighbors.south)
+        and not tile in excluded_tiles
     ]
 
 
@@ -152,11 +160,19 @@ def _draw(map: _Map) -> str:
     return "\n".join(display)
 
 
+def generate_map(tiles: list[_Tile], width: int, height: int) -> str:
+    map = _generate(tiles, width, height)
+    return _draw(map)
+
+
 if __name__ == "__main__":
-    random.seed(14)
-    tiles = load_wang_tiles()
+    # random.seed(14)
+    # filename = "/home/mirco/programming/py-roguelike-tutorial/src/assets/data/rooms/3x3rooms-test.txt"
+    filename = "/home/mirco/programming/py-roguelike-tutorial/src/assets/data/rooms/5x5rooms.txt"
+
+    tiles = load_wang_tiles(filename)
     width, height = 30, 8
     # NOTE: map is actually width+2, height+2 due to all walls borders
-    map = generate(tiles, width, height)
+    map = _generate(tiles, width, height)
     rendered_map = _draw(map)
     print(rendered_map)
