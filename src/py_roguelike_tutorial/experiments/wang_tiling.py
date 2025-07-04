@@ -1,10 +1,21 @@
 import dataclasses
 import random
 from io import TextIOWrapper
-from pprint import pprint
-from typing import NamedTuple
+from typing import NamedTuple, Any
 
-from py_roguelike_tutorial.utils import assets_filepath
+import numpy as np
+
+wang_tile_dt = np.dtype(
+    [("bitmask", np.int32), ("data", np.dtypes.StringDType), ("empty", np.bool)]
+)
+
+
+def new_wang_tile(bitmask: int, data: str, empty=False) -> np.ndarray:
+    return np.array((bitmask, data, empty), dtype=wang_tile_dt)
+
+
+def is_empty_wang_tile(tile):
+    return tile["empty"]
 
 
 class WangTile(NamedTuple):
@@ -38,7 +49,7 @@ def read_next_tile(file: TextIOWrapper):
         else:
             bitmask_str, *room_data = current_tile_lines
             # TODO validation
-            tile = WangTile(int(bitmask_str.strip(), 2), "".join(room_data))
+            tile = new_wang_tile(int(bitmask_str.strip(), 2), "".join(room_data))
             yield tile
             current_tile_lines = []
 
@@ -99,34 +110,37 @@ class Bitmasks:
 
 @dataclasses.dataclass
 class Neighbors:
-    north: WangTile
-    east: WangTile
-    south: WangTile
-    west: WangTile
+    north: Any
+    east: Any
+    south: Any
+    west: Any
 
 
-def test_north_south_compatible(north_tile: WangTile, south_tile: WangTile) -> bool:
+def test_north_south_compatible(north_tile: Any, south_tile: Any) -> bool:
     # None-Tiles are always compatible
-    if WangTile.is_none(north_tile) or WangTile.is_none(south_tile):
+    if is_empty_wang_tile(north_tile) or is_empty_wang_tile(south_tile):
         return True
     a = (
-        south_tile.bitmask & Bitmasks.NORTH
+        south_tile["bitmask"] & Bitmasks.NORTH
     )  # pick the north bit, bitmask abcd becomes a000
-    b = north_tile.bitmask & Bitmasks.SOUTH  # abcd becomes 00c0
+    b = north_tile["bitmask"] & Bitmasks.SOUTH  # abcd becomes 00c0
     c = a >> 2  # a000 becomes 00a0
     # if the two values are equal now, we know they are compatible (both have walls, or both entrances)
     return c == b
 
 
-def test_east_west_compatible(east_tile: WangTile, west_tile: WangTile) -> bool:
+def test_east_west_compatible(east_tile: Any, west_tile: Any) -> bool:
     # None-Tiles are always compatible
-    if WangTile.is_none(east_tile) or WangTile.is_none(west_tile):
+    if is_empty_wang_tile(east_tile) or is_empty_wang_tile(west_tile):
         return True
 
-    a = west_tile.bitmask & Bitmasks.EAST  # abcd becomes 0b00
-    b = east_tile.bitmask & Bitmasks.WEST  # abcd becomes 000d
+    a = west_tile["bitmask"] & Bitmasks.EAST  # abcd becomes 0b00
+    b = east_tile["bitmask"] & Bitmasks.WEST  # abcd becomes 000d
     c = a >> 2  # 0b00 becomes 000b
     return c == b
+
+
+type Map = np.ndarray[tuple[int, int], Any]
 
 
 def generate(tiles: list[WangTile], width: int, height: int):
@@ -134,21 +148,21 @@ def generate(tiles: list[WangTile], width: int, height: int):
     The map will have dimensions width+2, height+2."""
     outer_width = width + 2
     outer_height = height + 2
-    map = [
-        [WangTile(-1) for _ in range(0, outer_width)] for _ in range(0, outer_height)
-    ]
+    map: Map = np.full(
+        (outer_height, outer_width), fill_value=new_wang_tile(0, "", True)
+    )
 
     # prefill map borders
-    all_walls_tile = next((tile for tile in tiles if tile.bitmask == 0), None)
+    # all_walls_tile = next((tile for tile in tiles if tile.bitmask == 0), None)
+    all_walls_tile = new_wang_tile(0, "www\nwww\nwww\n")
     assert (
         all_walls_tile
     ), "No tile with bitmask 0000 found to fill in the borders with all-walls tiles."
-    for x in range(0, outer_width):
-        for y in range(0, outer_height):
-            if x == 0 or y == 0 or x == outer_width - 1 or y == outer_height - 1:
-                map[y][x] = all_walls_tile
-
-    # here's the actual logic
+    map[0, :] = all_walls_tile
+    map[:, 0] = all_walls_tile
+    map[-1, :] = all_walls_tile
+    map[:, -1] = all_walls_tile
+    # # here's the actual logic
     for x in range(1, width + 1):
         for y in range(1, height + 1):
             north_tile = map[y - 1][x]
@@ -166,7 +180,6 @@ def get_tile_candidates(tiles: list[WangTile], neighbors: Neighbors):
     return [
         tile
         for tile in tiles
-        # TODO continue here. We somehow need to default to true if the neighboring tile is NONE
         if test_east_west_compatible(tile, neighbors.west)
         and test_east_west_compatible(neighbors.east, tile)
         and test_north_south_compatible(neighbors.north, tile)
@@ -174,14 +187,14 @@ def get_tile_candidates(tiles: list[WangTile], neighbors: Neighbors):
     ]
 
 
-def draw(map: list[list[WangTile]]):
+def draw(map: Map):
     # assuming square rooms
-    room_size = len(map[0][0].data.splitlines()[0])
+    room_size = len(map[0][0]["data"].splitlines()[0])
     display: list[str] = ["" for _ in range(len(map) * room_size)]
     for y in range(len(map)):
         for x in range(len(map[0])):
             tile = map[y][x]
-            room_rows = tile.data.splitlines()
+            room_rows = tile["data"].splitlines()
             for i, room_row in enumerate(room_rows):
                 display[room_size * y + i] += room_row
     return "\n".join(display)
@@ -193,6 +206,5 @@ if __name__ == "__main__":
     width, height = 50, 10
     # NOTE: map is actually 5x6 due to all walls borders
     map = generate(tiles, width, height)
-    pprint(map)
     rendered_map = draw(map)
     print(rendered_map)
