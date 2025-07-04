@@ -1,7 +1,7 @@
 import dataclasses
 import random
 from io import TextIOWrapper
-from typing import NamedTuple, Any
+from typing import Any
 
 import numpy as np
 
@@ -10,27 +10,15 @@ wang_tile_dt = np.dtype(
 )
 
 
-def new_wang_tile(bitmask: int, data: str, empty=False) -> np.ndarray:
+type Tile = np.ndarray
+
+
+def new_wang_tile(bitmask: int, data: str, empty: bool = False) -> Tile:
     return np.array((bitmask, data, empty), dtype=wang_tile_dt)
 
 
-def is_empty_wang_tile(tile):
+def is_empty_wang_tile(tile: Tile):
     return tile["empty"]
-
-
-class WangTile(NamedTuple):
-    bitmask: int
-    data: str = "NONE"
-
-    def __repr__(self):
-        return str(self.bitmask)
-
-    @staticmethod
-    def is_none(tile: "WangTile") -> bool:
-        return tile.data == "NONE"
-
-
-WALLS = WangTile(0b0000, "WALLS")
 
 
 def read_next_tile(file: TextIOWrapper):
@@ -54,51 +42,15 @@ def read_next_tile(file: TextIOWrapper):
             current_tile_lines = []
 
 
-def load_wang_tiles() -> list[WangTile]:
+def load_wang_tiles() -> list[Tile]:
     # filename = "assets/data/rooms/3x3rooms-test.txt"
     # with open(assets_filepath(filename)) as file:
     filename = "/home/mirco/programming/py-roguelike-tutorial/src/assets/data/rooms/3x3rooms-test.txt"
-    tiles: list[WangTile] = []
+    tiles: list[Tile] = []
     with open(filename) as file:
         for tile in read_next_tile(file):
             tiles.append(tile)
     return tiles
-
-
-def load_wang_tiles_hard_coded() -> list[WangTile]:
-    return [
-        WALLS,
-        WangTile(0b1000, "N1"),
-        WangTile(0b1000, "N2"),
-        WangTile(0b1001, "NW1"),
-        WangTile(0b1001, "NW2"),
-        WangTile(0b1010, "NS1"),
-        WangTile(0b1010, "NS2"),
-        WangTile(0b1011, "NSW1"),
-        WangTile(0b1011, "NSW2"),
-        WangTile(0b1100, "NE1"),
-        WangTile(0b1100, "NE2"),
-        WangTile(0b1101, "NEW1"),
-        WangTile(0b1101, "NEW2"),
-        WangTile(0b1110, "NES1"),
-        WangTile(0b1110, "NES2"),
-        WangTile(0b1111, "NESW1"),
-        WangTile(0b1111, "NESW2"),
-        WangTile(0b0100, "E1"),
-        WangTile(0b0100, "E2"),
-        WangTile(0b0101, "EW1"),
-        WangTile(0b0101, "EW2"),
-        WangTile(0b0110, "ES1"),
-        WangTile(0b0110, "ES2"),
-        WangTile(0b0111, "ESW1"),
-        WangTile(0b0111, "ESW2"),
-        WangTile(0b0010, "S1"),
-        WangTile(0b0010, "S2"),
-        WangTile(0b0011, "SW1"),
-        WangTile(0b0011, "SW2"),
-        WangTile(0b0001, "W1"),
-        WangTile(0b0001, "W2"),
-    ]
 
 
 class Bitmasks:
@@ -143,7 +95,7 @@ def test_east_west_compatible(east_tile: Any, west_tile: Any) -> bool:
 type Map = np.ndarray[tuple[int, int], Any]
 
 
-def generate(tiles: list[WangTile], width: int, height: int):
+def generate(tiles: list[Tile], width: int, height: int) -> Map:
     """Procedurally generate a filled map with all borders being all-walls wang tiles.
     The map will have dimensions width+2, height+2."""
     outer_width = width + 2
@@ -154,6 +106,7 @@ def generate(tiles: list[WangTile], width: int, height: int):
 
     # prefill map borders
     # all_walls_tile = next((tile for tile in tiles if tile.bitmask == 0), None)
+    # TODO
     all_walls_tile = new_wang_tile(0, "www\nwww\nwww\n")
     assert (
         all_walls_tile
@@ -171,12 +124,12 @@ def generate(tiles: list[WangTile], width: int, height: int):
             west_tile = map[y][x - 1]
             neighbors = Neighbors(north_tile, east_tile, south_tile, west_tile)
 
-            candidates = get_tile_candidates(tiles, neighbors)  # TODO continue here
+            candidates = get_tile_candidates(tiles, neighbors)
             map[y][x] = random.choice(candidates)
     return map
 
 
-def get_tile_candidates(tiles: list[WangTile], neighbors: Neighbors):
+def get_tile_candidates(tiles: list[np.ndarray], neighbors: Neighbors):
     return [
         tile
         for tile in tiles
@@ -187,7 +140,7 @@ def get_tile_candidates(tiles: list[WangTile], neighbors: Neighbors):
     ]
 
 
-def draw(map: Map):
+def draw(map: Map) -> str:
     # assuming square rooms
     room_size = len(map[0][0]["data"].splitlines()[0])
     display: list[str] = ["" for _ in range(len(map) * room_size)]
@@ -204,7 +157,7 @@ if __name__ == "__main__":
     random.seed(14)
     tiles = load_wang_tiles()
     width, height = 50, 10
-    # NOTE: map is actually 5x6 due to all walls borders
+    # NOTE: map is actually width+2, height+2 due to all walls borders
     map = generate(tiles, width, height)
     rendered_map = draw(map)
     print(rendered_map)
