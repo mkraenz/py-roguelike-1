@@ -20,32 +20,21 @@ def generate_dungeon(
     engine: Engine,
 ) -> GameMap:
     player = engine.player
-    fake_width = 10
-    fake_height = 5
+    wang_width = 10
+    wang_height = 5
     tiles = wang.load_wang_tiles(assets_filepath("assets/data/rooms/5x5rooms.txt"))
-    proto_map = wang.generate_map(tiles, fake_width, fake_height)
-    array = np.array([list(line) for line in proto_map.splitlines()])
+    wang_tile_map = wang.generate_map(tiles, wang_width, wang_height)
+    proto_map = np.array([list(line) for line in wang_tile_map.splitlines()])
     map_fn = np.vectorize(_replacements.get, otypes=[tile_types.tile_dt])
-    map = map_fn(array)
-
-    print(map)
-    # width = len(proto_map.splitlines()[0])
-    # height = len(proto_map.splitlines())
-    # map = np.full((width, height), fill_value=tile_types.wall, order="F")
-
-    # print(proto_map)
-
-    width = len(map[0])
-    height = len(map)
-
+    map = map_fn(proto_map)
+    height, width = map.shape
     dungeon = GameMap(
         width=width,
         height=height,
         entities=[player],
         engine=engine,
     )
-    dim_x, dim_y = slice(width), slice(height)
-    dungeon.tiles[dim_x, dim_y] = map.transpose()
+    dungeon.tiles[:] = map.transpose()
     coord: tuple[int, int] = tuple(np.argwhere(map == tile_types.floor)[0])
     player.place(coord[0], coord[1], dungeon)
     return dungeon
