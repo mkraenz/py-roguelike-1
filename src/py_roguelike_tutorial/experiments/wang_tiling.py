@@ -2,6 +2,7 @@ import dataclasses
 import random
 from io import TextIOWrapper
 from typing import Any
+import re
 
 import numpy as np
 
@@ -32,6 +33,12 @@ _wang_tile_dt = np.dtype(
 
 
 def _new_wang_tile(bitmask: int, data: str, empty: bool = False) -> _Tile:
+    if not empty:
+        if not re.match("^[w.\n]+$", data):
+            VALID_CHARS = ["w", "."]
+            raise ValueError(
+                f"Found unsupported character. Allowed chars are empty lines and: {' '.join(VALID_CHARS)}"
+            )
     return np.array((bitmask, data, empty), dtype=_wang_tile_dt)
 
 
@@ -49,19 +56,29 @@ def _read_next_tile(file: TextIOWrapper):
     on the last line in the file. The final room isn't being read properly.
     """
     current_tile_lines: list[str] = []
-    for line in file:
+    tile_starts_at_line = -1
+    for line_number, line in enumerate(file, 1):
         if line.startswith("//"):
             continue
         if line != "\n":
+            if tile_starts_at_line == -1:
+                tile_starts_at_line = line_number
             current_tile_lines.append(line)
         else:
             if len(current_tile_lines) == 0:
                 continue
             bitmask_str, *room_data = current_tile_lines
-            # TODO validation?
-            tile = _new_wang_tile(int(bitmask_str.strip(), 2), "".join(room_data))
-            yield tile
-            current_tile_lines = []
+            try:
+                # TODO validation?
+                tile = _new_wang_tile(int(bitmask_str.strip(), 2), "".join(room_data))
+                yield tile
+                current_tile_lines = []
+                tile_starts_at_line = -1
+            except ValueError:
+                print(
+                    f"\033[91mInvalid block at lines {tile_starts_at_line}-{line_number}\033[0m"
+                )
+                raise
 
 
 def load_wang_tiles(filepath: str) -> list[_Tile]:
@@ -168,11 +185,11 @@ def generate_map(tiles: list[_Tile], width: int, height: int) -> str:
 if __name__ == "__main__":
     # random.seed(14)
     # filename = "/home/mirco/programming/py-roguelike-tutorial/src/assets/data/rooms/3x3rooms-test.txt"
-    filename = "/home/mirco/programming/py-roguelike-tutorial/src/assets/data/rooms/5x5rooms.txt"
+    _filename = "/home/mirco/programming/py-roguelike-tutorial/src/assets/data/rooms/5x5rooms.txt"
 
-    tiles = load_wang_tiles(filename)
-    width, height = 30, 8
-    # NOTE: map is actually width+2, height+2 due to all walls borders
-    map = _generate(tiles, width, height)
-    rendered_map = _draw(map)
-    print(rendered_map)
+    _tiles = load_wang_tiles(_filename)
+    _width, _height = 30, 8
+    # NOTE: map is actually _width+2, _height+2 due to all walls borders
+    _map = _generate(_tiles, _width, _height)
+    _rendered_map = _draw(_map)
+    print(_rendered_map)
