@@ -1,29 +1,29 @@
 import copy
-from typing import Any, Type, Protocol
 
 from py_roguelike_tutorial.colors import hex_to_rgb
-from py_roguelike_tutorial.components.ai import BaseAI, HostileEnemy
+from py_roguelike_tutorial.components.ai import HostileEnemy
 from py_roguelike_tutorial.components.consumable import (
-    Consumable,
     HealingConsumable,
     LightningDamageConsumable,
     ConfusionConsumable,
     FireballDamageConsumable,
+    TeleportSelfConsumable,
 )
 from py_roguelike_tutorial.components.equipment import Equipment
 from py_roguelike_tutorial.components.equippable import Equippable
 from py_roguelike_tutorial.components.fighter import Fighter
 from py_roguelike_tutorial.components.inventory import Inventory
 from py_roguelike_tutorial.components.level import Level
+from py_roguelike_tutorial.entity import Item, Actor
 from py_roguelike_tutorial.validators.actor_validator import ActorData
 from py_roguelike_tutorial.validators.item_validator import ItemData
-from py_roguelike_tutorial.entity import Item, Actor
 
 CONSUMABLE_CLASSES = {
     "HealingConsumable": HealingConsumable,
     "LightningDamageConsumable": LightningDamageConsumable,
     "ConfusionConsumable": ConfusionConsumable,
     "FireballDamageConsumable": FireballDamageConsumable,
+    "TeleportSelfConsumable": TeleportSelfConsumable,
 }
 
 AI_CLASSES = {"HostileEnemy": HostileEnemy}

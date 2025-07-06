@@ -9,7 +9,7 @@ from py_roguelike_tutorial.colors import Theme
 from py_roguelike_tutorial.components.procgen_config import (
     ProcgenConfig,
 )
-from py_roguelike_tutorial.constants import AUTOSAVE_FILENAME
+from py_roguelike_tutorial.constants import AUTOSAVE_FILENAME, RNG_SEED
 from py_roguelike_tutorial.entity_factory import EntityPrefabs
 from py_roguelike_tutorial.input_handlers import (
     BaseEventHandler,
@@ -35,7 +35,6 @@ def load_data_files():
 
 
 def main():
-    rng_seed = 42
     monitor_width = 1920
     window_width = monitor_width // 2
     window_height = 1080
@@ -43,7 +42,7 @@ def main():
     screen_height = 50
     window_x = monitor_width // 2 - 10
 
-    random.seed(rng_seed)
+    random.seed(RNG_SEED)
 
     filename = assets_filepath("assets/dejavu10x10_gs_tc.png")
     tileset = tcod.tileset.load_tilesheet(

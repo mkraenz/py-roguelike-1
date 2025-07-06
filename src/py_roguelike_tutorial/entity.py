@@ -84,6 +84,11 @@ class Entity:
     def pos(self) -> Coord:
         return self.x, self.y
 
+    @pos.setter
+    def pos(self, pos: Coord) -> None:
+        self.x = pos[0]
+        self.y = pos[1]
+
     def diff_from(self, from_: "Entity") -> Coord:
         """The position difference from `from_` to this entity"""
         return self.diff_position(*from_.pos)

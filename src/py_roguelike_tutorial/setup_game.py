@@ -5,6 +5,7 @@ import pickle
 import sys
 import traceback
 
+import numpy as np
 import tcod
 from tcod.console import Console
 from tcod.constants import CENTER
@@ -13,9 +14,8 @@ from tcod.libtcodpy import BKGND_ALPHA
 
 from py_roguelike_tutorial import input_handlers
 from py_roguelike_tutorial.colors import Theme
-from py_roguelike_tutorial.components.faction import Faction
 from py_roguelike_tutorial.components.factions_manager import FactionsManager
-from py_roguelike_tutorial.constants import AUTOSAVE_FILENAME
+from py_roguelike_tutorial.constants import AUTOSAVE_FILENAME, RNG_SEED
 from py_roguelike_tutorial.engine import Engine
 from py_roguelike_tutorial.entity_factory import EntityPrefabs
 from py_roguelike_tutorial.game_world import GameWorld
@@ -35,7 +35,8 @@ def new_game() -> Engine:
     player = copy.deepcopy(EntityPrefabs.player)
     initial_equip_and_items(player)
 
-    engine = Engine(player=player)
+    np_rng = np.random.default_rng(RNG_SEED)
+    engine = Engine(player=player, np_rng=np_rng)
 
     factions = FactionsManager(EntityPrefabs.factions)
     engine.game_world = GameWorld(

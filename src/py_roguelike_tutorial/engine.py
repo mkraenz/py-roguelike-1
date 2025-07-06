@@ -1,6 +1,7 @@
 import lzma
 import pickle
 
+import numpy as np
 from tcod.console import Console
 from tcod.map import compute_fov
 
@@ -23,15 +24,13 @@ _FOV_RADIUS = 8
 class Engine:
     game_map: GameMap
     game_world: GameWorld
+    np_rng: np.random.Generator
 
-    def __init__(
-        self,
-        *,
-        player: Actor,
-    ) -> None:
+    def __init__(self, *, player: Actor, np_rng: np.random.Generator) -> None:
         self.message_log = MessageLog()
         self.mouse_location: Coord = (0, 0)
         self.player = player
+        self.np_rng = np_rng
 
     def render(self, console: Console) -> None:
         self.game_map.render(console)

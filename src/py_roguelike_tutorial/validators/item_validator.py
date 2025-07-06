@@ -23,6 +23,10 @@ class HealingConsumableConstructorData(BaseModel):
     amount: int
 
 
+class TeleportSelfConsumableConstructorData(BaseModel):
+    radius: int
+
+
 class LightningDamageConsumableData(BaseModel):
     class_type: Literal["LightningDamageConsumable"]
     constructor_args: LightningDamageConsumableConstructorData
@@ -43,6 +47,11 @@ class HealingConsumableData(BaseModel):
     constructor_args: HealingConsumableConstructorData
 
 
+class TeleportSelfConsumableData(BaseModel):
+    class_type: Literal["TeleportSelfConsumable"]
+    constructor_args: TeleportSelfConsumableConstructorData
+
+
 class EquippableData(BaseModel):
     slot: EquipmentType
     defense: int | None = None
@@ -54,10 +63,11 @@ class ItemData(BaseModel):
     color: str
     name: str
     consumable: (
-        LightningDamageConsumableData
-        | HealingConsumableData
-        | ConfusionConsumableData
-        | FireballDamageConsumableData
-        | None
+            LightningDamageConsumableData
+            | HealingConsumableData
+            | ConfusionConsumableData
+            | FireballDamageConsumableData
+            | TeleportSelfConsumableData
+            | None
     ) = None
     equippable: EquippableData | None = None

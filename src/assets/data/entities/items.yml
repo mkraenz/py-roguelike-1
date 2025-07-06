@@ -67,3 +67,12 @@ fireball_scroll:
     constructor_args:
       damage: 12
       radius: 3
+
+teleport_scroll:
+  char: "~"
+  color: "#ff0000"
+  name: Teleport Scroll
+  consumable:
+    class_type: TeleportSelfConsumable
+    constructor_args:
+      radius: 10

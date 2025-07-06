@@ -46,10 +46,10 @@ class HostileEnemy(BaseAI):
 
     def perform(self) -> None:
         target = self.engine.player
-        (dx, dy) = target.diff_from(self.entity)
-        distance = target.dist_chebyshev(self.entity)
 
         if self.engine.game_map.visible[self.entity.x, self.entity.y]:
+            (dx, dy) = target.diff_from(self.entity)
+            distance = target.dist_chebyshev(self.entity)
             in_melee_range = distance <= 1
             if in_melee_range:
                 return MeleeAction(self.entity, dx, dy).perform()

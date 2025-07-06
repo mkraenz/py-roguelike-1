@@ -2,6 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+import numpy as np
+
+import py_roguelike_tutorial.validators.item_validator as validators
+from py_roguelike_tutorial import tile_types
 from py_roguelike_tutorial.actions import Action, ItemAction
 from py_roguelike_tutorial.colors import Theme
 from py_roguelike_tutorial.components.ai import ConfusedEnemy
@@ -13,7 +17,6 @@ from py_roguelike_tutorial.input_handlers import (
     AreaRangedAttackHandler,
     ActionOrHandler,
 )
-import py_roguelike_tutorial.validators.item_validator as validators
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.entity import Actor, Item
@@ -154,4 +157,32 @@ class FireballDamageConsumable(Consumable):
 
         if not some_target_hit:
             raise Impossible("There are no targets in the radius.")
+        self.consume()
+
+
+class TeleportSelfConsumable(Consumable):
+    def __init__(self, data: validators.TeleportSelfConsumableConstructorData):
+        self.radius = data.radius
+
+    def activate(self, ctx: Action) -> None:
+        consumer = ctx.entity
+        map = self.engine.game_map
+        width, height = map.tiles.shape
+        # avoid getting negative numbers because that would iterate from the end of the array
+        offset_x = max(consumer.x - self.radius, 0)
+        offset_y = max(consumer.y - self.radius, 0)
+        tiles_in_range = map.tiles[
+            offset_x : min(consumer.x + self.radius, width),
+            offset_y : min(consumer.y + self.radius, height),
+        ]
+        floor_tile_indexes = np.argwhere(tiles_in_range == tile_types.floor)
+        rand_index = self.engine.np_rng.choice(floor_tile_indexes)
+        print(rand_index)
+        new_pos = rand_index + (offset_x, offset_y)
+
+        consumer.pos = new_pos
+        self.log(
+            f"The air flutters about as suddenly {consumer.name} vanishes and reappears nearby."
+        )
+
         self.consume()
