@@ -5,27 +5,29 @@ from pydantic import BaseModel
 from py_roguelike_tutorial.components.equipment_type import EquipmentType
 
 
-class LightningDamageConsumableConstructorData(BaseModel):
+class BaseConsumableConstructorData(BaseModel):
+    charges: int = 1
+
+class LightningDamageConsumableConstructorData(BaseConsumableConstructorData):
     damage: int
     max_range: int
 
 
-class ConfusionConsumableConstructorData(BaseModel):
+class ConfusionConsumableConstructorData(BaseConsumableConstructorData):
     turns: int
 
 
-class FireballDamageConsumableConstructorData(BaseModel):
+class FireballDamageConsumableConstructorData(BaseConsumableConstructorData):
     damage: int
     radius: int
 
 
-class HealingConsumableConstructorData(BaseModel):
+class HealingConsumableConstructorData(BaseConsumableConstructorData):
     amount: int
 
 
-class TeleportSelfConsumableConstructorData(BaseModel):
+class TeleportSelfConsumableConstructorData(BaseConsumableConstructorData):
     radius: int
-
 
 class LightningDamageConsumableData(BaseModel):
     class_type: Literal["LightningDamageConsumable"]

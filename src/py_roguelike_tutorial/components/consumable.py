@@ -24,6 +24,7 @@ if TYPE_CHECKING:
 
 class Consumable(BaseComponent):
     parent: Item  # type: ignore [reportIncompatibleVariableOverride]
+    charges: int = 1
 
     def get_action(self, consumer: Actor) -> ActionOrHandler | None:
         """Return the action for this item."""
@@ -34,16 +35,21 @@ class Consumable(BaseComponent):
         raise NotImplementedError("Must be implemented by subclass")
 
     def consume(self) -> None:
-        """Remove the used consumable from its containing inventory."""
-        item = self.parent
-        inventory = item.parent
-        if isinstance(inventory, Inventory):
-            inventory.remove(item)
+        """Reduce the amount of charges.
+        If this is the final or only charge, remove the used consumable from its containing inventory.
+        """
+        self.charges -= 1
+        if self.charges <= 0:
+            item = self.parent
+            inventory = item.parent
+            if isinstance(inventory, Inventory):
+                inventory.remove(item)
 
 
 class HealingConsumable(Consumable):
     def __init__(self, data: validators.HealingConsumableConstructorData):
         self.amount = data.amount
+        self.charges = data.charges
 
     def activate(self, ctx: Action) -> None:
         consumer = ctx.entity
@@ -63,6 +69,7 @@ class LightningDamageConsumable(Consumable):
     def __init__(self, data: validators.LightningDamageConsumableConstructorData):
         self.max_range = data.max_range
         self.damage = data.damage
+        self.charges = data.charges
 
     def activate(self, ctx: ItemAction) -> None:  # type: ignore [reportIncompatibleMethodOverride]
         consumer = ctx.entity
@@ -92,6 +99,7 @@ class LightningDamageConsumable(Consumable):
 class ConfusionConsumable(Consumable):
     def __init__(self, data: validators.ConfusionConsumableConstructorData):
         self.turns = data.turns
+        self.charges = data.charges
 
     def get_action(self, consumer: Actor) -> SingleRangedAttackHandler:
         self.engine.message_log.add("Select a target location.", Theme.needs_target)
@@ -128,6 +136,7 @@ class FireballDamageConsumable(Consumable):
     def __init__(self, data: validators.FireballDamageConsumableConstructorData):
         self.damage = data.damage
         self.radius = data.radius
+        self.charges = data.charges
 
     def get_action(self, consumer: Actor) -> AreaRangedAttackHandler | None:
         self.engine.message_log.add("Select a target location.", Theme.needs_target)
@@ -163,6 +172,7 @@ class FireballDamageConsumable(Consumable):
 class TeleportSelfConsumable(Consumable):
     def __init__(self, data: validators.TeleportSelfConsumableConstructorData):
         self.radius = data.radius
+        self.charges = data.charges
 
     def activate(self, ctx: Action) -> None:
         consumer = ctx.entity

@@ -397,7 +397,7 @@ class InventoryEventHandler(AskUserEventHandler):
             0 if player.x > 30 else 40
         )  # render left or right of the player, wherever there's enough space
         y = 0
-        width = len(self.TITLE) + 4
+        width = len(self.TITLE) + 10
 
         console.draw_frame(
             x=x,
@@ -422,12 +422,17 @@ class InventoryEventHandler(AskUserEventHandler):
             for i, item in enumerate(player.inventory.items):
                 item_key = chr(ord("a") + i)
                 item_equipped = " (E)" if player.equipment.is_equipped(item) else ""
+                item_charges = (
+                    f" ({item.consumable.charges}Chg)"
+                    if item.consumable is not None and item.consumable.charges > 1
+                    else ""
+                )
                 console.print(
                     x=x + 1,
                     y=y + i + 1,
                     width=width,
                     height=height,
-                    text=f"[{item_key}] {item.name}{item_equipped}",
+                    text=f"[{item_key}] {item.name}{item_equipped}{item_charges}",
                 )
         else:
             console.print(x=x + 1, y=y + 1, width=width, height=height, text="(Empty)")
