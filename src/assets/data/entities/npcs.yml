@@ -1,6 +1,6 @@
 orc:
   char: "o"
-  color: "#3f7f3f"
+  color: "#00ff00"
   name: "Orc"
   ai:
     class_type: HostileEnemy
@@ -12,6 +12,53 @@ orc:
   level:
     level_up_base: 0
     xp_given: 35
+  equipment: {}
+bijumper:
+  char: "b"
+  color: "#ffff00"
+  name: "Bijumper"
+  ai:
+    class_type: HostileEnemy
+  fighter:
+    max_hp: 7
+    defense: 1
+    power: 2
+  inventory: {}
+  level:
+    level_up_base: 0
+    xp_given: 20
+  equipment: {}
+  move_stepsize: 2
+trijumper:
+  char: "t"
+  color: "#ffff00"
+  name: "Trijumper"
+  ai:
+    class_type: HostileEnemy
+  fighter:
+    max_hp: 7
+    defense: 1
+    power: 2
+  inventory: {}
+  level:
+    level_up_base: 0
+    xp_given: 20
+  equipment: {}
+  move_stepsize: 3
+goblin:
+  char: "g"
+  color: "#3fff3f"
+  name: "Goblin"
+  ai:
+    class_type: HostileEnemy
+  fighter:
+    max_hp: 6
+    defense: 0
+    power: 2
+  inventory: {}
+  level:
+    level_up_base: 0
+    xp_given: 15
   equipment: {}
 troll:
   char: "T"

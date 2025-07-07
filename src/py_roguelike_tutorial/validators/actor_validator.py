@@ -40,3 +40,4 @@ class ActorData(BaseModel):
     inventory: InventoryData
     level: LevelData
     equipment: EquipmentData
+    move_stepsize: int = 1

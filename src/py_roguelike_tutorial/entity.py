@@ -38,6 +38,7 @@ class Entity:
         blocks_movement: bool = False,
         parent: GameMap | None = None,
         render_order: RenderOrder = RenderOrder.CORPSE,
+        move_stepsize: int = 1,
     ) -> None:
         self.x = x
         self.y = y
@@ -46,6 +47,7 @@ class Entity:
         self.name = name
         self.blocks_movement = blocks_movement
         self.render_order = render_order
+        self.move_stepsize = move_stepsize
         if parent:
             self.parent = parent
             parent.entities.add(self)
@@ -77,8 +79,10 @@ class Entity:
             game_map.entities.add(self)
 
     def move(self, dx: int, dy: int) -> None:
-        self.x += dx
-        self.y += dy
+        self.pos = self.test_move(dx, dy)
+
+    def test_move(self, dx: int, dy: int) -> Coord:
+        return self.x + dx * self.move_stepsize, self.y + dy * self.move_stepsize
 
     @property
     def pos(self) -> Coord:
@@ -130,6 +134,7 @@ class Actor(Entity):
         inventory: Inventory,
         level: Level,
         equipment: Equipment,
+        move_stepsize: int = 1,
     ):
         super().__init__(
             x=x,
@@ -139,6 +144,7 @@ class Actor(Entity):
             name=name,
             blocks_movement=True,
             render_order=RenderOrder.ACTOR,
+            move_stepsize=move_stepsize,
         )
         self.level = level
         self.level.parent = self

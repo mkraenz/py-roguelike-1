@@ -41,14 +41,14 @@ floor = new_tile(
     name="Floor",
     walkable=True,
     transparent=True,
-    dark=(ord(" "), Color.WHITE, Color.BLUE_LOCHMARA),
-    light=(ord(" "), Color.WHITE, Color.YELLOW_AUTUMN_GOLD),
+    dark=(ord(" "), Color.WHITE, Color.BLUE_DARK),
+    light=(ord(" "), Color.WHITE, Color.YELLOW_DARK),
 )
 wall = new_tile(
     name="Wall",
     walkable=False,
     transparent=False,
-    dark=(ord(" "), Color.WHITE, Color.BLUE_NAVY),
+    dark=(ord(" "), Color.WHITE, Color.BLUE_NAVY_DARK),
     light=(ord(" "), Color.WHITE, Color.YELLOW_PALE_BROWN),
 )
 down_stairs = new_tile(

@@ -1,7 +1,14 @@
 0:
+  - [orc, 30]
+  - [goblin, 70]
+  - [bijumper, 50]
+  - [trijumper, 50]
+2:
   - [orc, 80]
+  - [goblin, 50]
 3:
   - [troll, 15]
+  - [goblin, 20]
 5:
   - [troll, 30]
 7:

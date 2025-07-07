@@ -89,6 +89,7 @@ def actor_from_dict(data: ActorData, item_prefabs: dict[str, Item]) -> Actor:
         char=data.char,
         color=hex_to_rgb(data.color),
         name=data.name,
+        move_stepsize=data.move_stepsize,
         ai_cls=ai_cls,
         fighter=fighter,
         inventory=inventory,

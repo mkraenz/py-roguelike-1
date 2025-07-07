@@ -89,6 +89,11 @@ class MeleeAction(DirectedAction):
 
 
 class MoveAction(DirectedAction):
+    @property
+    def dest_xy(self) -> Coord:
+        """The destination coordinates."""
+        return self.entity.test_move(self.dx, self.dy)
+
     def perform(self) -> None:
         dest_x, dest_y = self.dest_xy
         if not self.engine.game_map.in_bounds(dest_x, dest_y):
