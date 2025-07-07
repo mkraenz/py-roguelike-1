@@ -31,7 +31,7 @@ def render_hp_bar(
     console.print(x=x + 1, y=y, text=hp, fg=Theme.hp_bar_text)
 
 
-def get_names_at(world_x: int, world_y: int, game_map: GameMap) -> str:
+def _get_names_at(world_x: int, world_y: int, game_map: GameMap) -> str:
     if (
         not game_map.in_bounds(world_x, world_y)
         or not game_map.visible[world_x, world_y]
@@ -69,7 +69,7 @@ def get_names_at(world_x: int, world_y: int, game_map: GameMap) -> str:
 
 def render_names_at(console: Console, x: int, y: int, engine: Engine) -> None:
     mouse_x, mouse_y = engine.mouse_location
-    names = get_names_at(mouse_x, mouse_y, engine.game_map)
+    names = f"({mouse_x},{mouse_y}) {_get_names_at(mouse_x, mouse_y, engine.game_map)}"
     console.print(x=x, y=y, text=names, fg=Theme.hover_over_entity_names)
 
 

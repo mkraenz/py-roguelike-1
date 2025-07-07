@@ -534,7 +534,7 @@ class SelectIndexHandler(AskUserEventHandler):
 
 
 class LookAroundHandler(SelectIndexHandler):
-    """Let's the player look around with the keyboard."""
+    """Lets the player look around with the keyboard."""
 
     def on_index_selected(self, x: int, y: int) -> ActionOrHandler | None:
         return MainGameEventHandler(self.engine)
