@@ -13,6 +13,11 @@ class FighterData(BaseModel):
     power: int
 
 
+class RangedData(BaseModel):
+    power: int
+    range: int
+
+
 class InventoryData(BaseModel):
     capacity: int = 0
     items: list[str] = []
@@ -40,4 +45,5 @@ class ActorData(BaseModel):
     inventory: InventoryData
     level: LevelData
     equipment: EquipmentData
+    ranged: RangedData | None = None
     move_stepsize: int = 1

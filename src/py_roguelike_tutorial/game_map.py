@@ -77,7 +77,7 @@ class GameMap:
 
     @property
     def visible_entities(self) -> Iterable[Entity]:
-        return filter(lambda e: self.visible[e.pos], self.entities)
+        return {e for e in self.entities if self.visible[e.pos]}
 
     def get_blocking_entity_at(self, x: int, y: int) -> Entity | None:
         for entity in self.entities:
@@ -85,7 +85,19 @@ class GameMap:
                 return entity
         return None
 
+    def is_blocked(self, x: int, y: int):
+        if self._is_blocking_tile(x, y):
+            return True
+        entity = self.get_blocking_entity_at(x, y)
+        if entity:
+            return True
+        return False
+
+    def _is_blocking_tile(self, x: int, y: int) -> bool:
+        return not self.tiles[x, y]["walkable"]
+
     def get_item_at_location(self, x: int, y: int) -> Item | None:
         for entity in self.items:
             if entity.pos == (x, y):
                 return entity
+        return None

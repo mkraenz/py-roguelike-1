@@ -88,6 +88,21 @@ class MeleeAction(DirectedAction):
             self.engine.message_log.add(txt, fg=log_color)
 
 
+class RangedAttackAction(Action):
+    def perform(self) -> None:
+        if self.entity.ranged is None:
+            raise Impossible(
+                f"{self.entity.name} does not have know how to use a bow and arrows."
+            )
+
+        target = self.engine.player
+        damage = self.entity.ranged.power - target.fighter.defense
+        target.fighter.take_damage(damage)
+        attack_desc = f"{self.entity.name} hits {target.name}"
+        txt = f"{attack_desc} for {damage} HP damage."
+        self.engine.message_log.add(txt, fg=Theme.enemy_attacks)
+
+
 class MoveAction(DirectedAction):
     @property
     def dest_xy(self) -> Coord:

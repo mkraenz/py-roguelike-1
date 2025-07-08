@@ -15,7 +15,10 @@ graphic_dt = np.dtype(
 
 tile_dt = np.dtype(
     [
-        ("walkable", np.bool),
+        (
+            "walkable",
+            np.bool,
+        ),  # whether the tile can be walk over, and whether it blocks ranged shots
         ("transparent", np.bool),  # whether or not the field is blocking FOV
         ("dark", graphic_dt),  # graphics for when the field is not in FOV
         ("light", graphic_dt),  # graphics for when the field is in FOV

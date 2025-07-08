@@ -32,6 +32,16 @@ class Equipment(BaseComponent):
         return sum(map(get_defense, [self.armor, self.weapon]))
 
     @property
+    def ranged_power(self) -> int:
+        # TODO
+        return 0
+
+    @property
+    def ranged_range(self) -> int:
+        # TODO
+        return 0
+
+    @property
     def power(self) -> int:
         def get_power(item: Item | None, fallback: int = 0):
             if item is not None and item.equippable is not None:

@@ -14,6 +14,7 @@ from py_roguelike_tutorial.components.equippable import Equippable
 from py_roguelike_tutorial.components.fighter import Fighter
 from py_roguelike_tutorial.components.inventory import Inventory
 from py_roguelike_tutorial.components.level import Level
+from py_roguelike_tutorial.components.ranged import Ranged
 from py_roguelike_tutorial.entity import Item, Actor
 from py_roguelike_tutorial.validators.actor_validator import ActorData
 from py_roguelike_tutorial.validators.item_validator import ItemData
@@ -68,6 +69,8 @@ def actor_from_dict(data: ActorData, item_prefabs: dict[str, Item]) -> Actor:
         power=fighter_data.power,
     )
 
+    ranged = Ranged(data.ranged.power, data.ranged.range) if data.ranged else None
+
     inventory = Inventory(data.inventory)
     new_item = lambda key: copy.deepcopy(item_prefabs[key])
     inventory_items = [new_item(item_key) for item_key in data.inventory.items or []]
@@ -95,4 +98,5 @@ def actor_from_dict(data: ActorData, item_prefabs: dict[str, Item]) -> Actor:
         inventory=inventory,
         equipment=equipment,
         level=level,
+        ranged=ranged,
     )

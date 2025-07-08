@@ -12,6 +12,7 @@ from py_roguelike_tutorial.actions import (
     MoveAction,
     WaitAction,
     BumpAction,
+    RangedAttackAction,
 )
 from py_roguelike_tutorial.constants import INTERCARDINAL_DIRECTIONS
 
@@ -43,17 +44,35 @@ class HostileEnemy(BaseAI):
     def __init__(self, entity: Actor):
         super().__init__(entity)
         self.path: list[Coord] = []
+        self.alarmed = False
 
     def perform(self) -> None:
         target = self.engine.player
 
         if self.engine.game_map.visible[self.entity.x, self.entity.y]:
-            (dx, dy) = target.diff_from(self.entity)
+            self.alarmed = True
+
+        if self.alarmed:
             distance = target.dist_chebyshev(self.entity)
             in_melee_range = distance <= 1
             if in_melee_range:
+                (dx, dy) = target.diff_from(self.entity)
                 return MeleeAction(self.entity, dx, dy).perform()
-            self.path = self.get_path_to(target.x, target.y)
+
+            elif self.entity.ranged is not None:
+                in_range = distance <= self.entity.ranged.range
+
+                line_of_sight = tcod.los.bresenham(self.entity.pos, target.pos)[1:-1]
+                has_line_of_sight = all(
+                    not self.engine.game_map.is_blocked(*pos) for pos in line_of_sight
+                )
+
+                if in_range and has_line_of_sight:
+                    return RangedAttackAction(self.entity).perform()
+                else:
+                    self.path = self.get_path_to(target.x, target.y)
+            else:
+                self.path = self.get_path_to(target.x, target.y)
 
         if self.path:
             dest_x, dest_y = self.path.pop(0)

@@ -187,7 +187,6 @@ class TeleportSelfConsumable(Consumable):
         ]
         floor_tile_indexes = np.argwhere(tiles_in_range == tile_types.floor)
         rand_index = self.engine.np_rng.choice(floor_tile_indexes)
-        print(rand_index)
         new_pos = rand_index + (offset_x, offset_y)
 
         consumer.pos = new_pos

@@ -6,6 +6,7 @@ from typing import Type, TYPE_CHECKING
 
 from py_roguelike_tutorial.colors import Color
 from py_roguelike_tutorial.components.faction import Faction
+from py_roguelike_tutorial.components.ranged import Ranged
 from py_roguelike_tutorial.render_order import RenderOrder
 from py_roguelike_tutorial.types import Coord, Rgb
 
@@ -135,6 +136,7 @@ class Actor(Entity):
         level: Level,
         equipment: Equipment,
         move_stepsize: int = 1,
+        ranged: Ranged | None = None,
     ):
         super().__init__(
             x=x,
@@ -146,6 +148,8 @@ class Actor(Entity):
             render_order=RenderOrder.ACTOR,
             move_stepsize=move_stepsize,
         )
+        self.ranged = ranged
+        if self.ranged: self.ranged.parent = self
         self.level = level
         self.level.parent = self
         self.ai: BaseAI | None = ai_cls(self)

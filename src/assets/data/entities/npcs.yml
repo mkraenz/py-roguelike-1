@@ -13,6 +13,28 @@ orc:
     level_up_base: 0
     xp_given: 35
   equipment: {}
+
+orc_archer:
+  char: "a"
+  color: "#00ff00"
+  name: "Orc Archer"
+  ai:
+    # these should check Line of sight, check if arrows and bow equipped, check distance, then attack or move into range`, else run away.
+    # If player too close, try to gain some distance.
+    class_type: HostileEnemy
+  ranged:
+    power: 2
+    range: 5
+  fighter:
+    max_hp: 10
+    defense: 0
+    power: 3
+  inventory: {}
+  level:
+    level_up_base: 0
+    xp_given: 35
+  equipment: {}
+
 bijumper:
   char: "b"
   color: "#ffff00"

@@ -137,8 +137,6 @@ def _generate(tiles: list[_Tile], width: int, height: int) -> _Map:
             west_tile = map[y][x - 1]
             neighbors = _Neighbors(north_tile, east_tile, south_tile, west_tile)
 
-            if x == 5 and y == 10:
-                print("hello")
             candidates = _get_tile_candidates(tiles, neighbors, [all_walls_tile])
             # we try to keep the all_walls tile out of things as much as possible, only falling back to it in the worst case of no other matching tiles.
             candidates_or_fallback = (
@@ -168,12 +166,10 @@ def _draw(map: _Map) -> str:
     room_size_x = len(map[0, 0]["data"].splitlines()[0])
     room_size_y = len(map[0, 0]["data"].splitlines())
     display: list[str] = ["" for _ in range(len(map) * room_size_x)]
-    for y in range(len(map)):
-        for x in range(len(map[0])):
-            tile = map[y][x]
-            room_rows = tile["data"].splitlines()
-            for i, room_row in enumerate(room_rows):
-                display[room_size_y * y + i] += room_row
+    for (y, x), tile in np.ndenumerate(map):
+        room_rows = tile["data"].splitlines()
+        for i, room_row in enumerate(room_rows):
+            display[room_size_y * y + i] += room_row
     return "\n".join(display)
 
 
