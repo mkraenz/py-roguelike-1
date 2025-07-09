@@ -27,21 +27,33 @@ class Blackboard(dict):
 
 
 class BtNode(abc.ABC):
+    # we are injecting blackboard after creating the tree, and propagate it to all children.
+    # The alternative of having blackboard in every single node constructor was too boilerplatey
+    _blackboard: Blackboard
+
     def __init__(
         self,
         type: str,
         children: "list[BtNode]",
-        blackboard: Blackboard,
         max_children: int = INF,
     ) -> None:
         self.max_children: int = max_children
         self.children: "list[BtNode]" = children
         self.type: str = type
-        self.blackboard: Blackboard = blackboard
+
+    @property
+    def blackboard(self) -> Blackboard:
+        return self._blackboard
+
+    @blackboard.setter
+    def blackboard(self, val: Blackboard) -> None:
+        self._blackboard = val
+        for child in self.children:
+            child.blackboard = self._blackboard
 
     @property
     def agent(self) -> Actor:
-        return cast(self.blackboard.get("agent"), Actor)  # type: ignore[reportReturnType]
+        return self.blackboard.get("agent")  # type: ignore[reportReturnType]
 
     @property
     def player(self) -> Actor:
@@ -63,8 +75,8 @@ class BtNode(abc.ABC):
 
 
 class BtRoot(BtNode):
-    def __init__(self, children: list[BtNode], blackboard: Blackboard, params: None):
-        super().__init__(type="root", children=children, blackboard=blackboard)
+    def __init__(self, children: list[BtNode], params: None):
+        super().__init__(type="root", children=children)
 
     def tick(self):
         latest_child_res: BtResult
@@ -83,8 +95,11 @@ class BtSequence(BtNode):
     """Composite node that is basically a logical AND, executing its children serially in order, returning Success if all succeed,
     or stopping execution once the first child fails."""
 
-    def __init__(self, children: list[BtNode], blackboard: Blackboard, params: None):
-        super().__init__(type="sequence", children=children, blackboard=blackboard)
+    def __init__(self, children: list[BtNode], params: None):
+        super().__init__(
+            type="sequence",
+            children=children,
+        )
 
     def tick(self):
         latest_child_res: BtResult
@@ -105,8 +120,8 @@ class BtSelector(BtNode):
     for example, before going to a location check whether you are already at that location.
     """
 
-    def __init__(self, children: list[BtNode], blackboard: Blackboard, params: None):
-        super().__init__(type="selector", children=children, blackboard=blackboard)
+    def __init__(self, children: list[BtNode], params: None):
+        super().__init__(type="selector", children=children)
 
     def tick(self):
         for child in self.children:
@@ -125,8 +140,8 @@ class BtParallel(BtNode):
     ticking all children and returning Success if any of its children returns success,
     or failure if they all failed."""
 
-    def __init__(self, children: list[BtNode], blackboard: Blackboard, params: None):
-        super().__init__(type="parallel", children=children, blackboard=blackboard)
+    def __init__(self, children: list[BtNode], params: None):
+        super().__init__(type="parallel", children=children)
 
     def tick(self):
         res: BtResult = BtResult.Failure
@@ -140,13 +155,15 @@ class BtParallel(BtNode):
 class BtAction(BtNode, abc.ABC):
     """Base class to be implemented with the actual actions performed by the AI"""
 
-    def __init__(self, name: str, blackboard: Blackboard, params: object | None):
+    def __init__(self, name: str, params: object | None):
         """
         Parameters:
             name - display name of this behavior
         """
         super().__init__(
-            type="behavior", children=[], max_children=0, blackboard=blackboard
+            type="behavior",
+            children=[],
+            max_children=0,
         )
         self.name = name
 
@@ -157,13 +174,15 @@ class BtCondition(BtNode, abc.ABC):
     For conditions, tick() must return either Success or Failure. Running is not allowed!
     """
 
-    def __init__(self, name: str, blackboard: Blackboard, params: object | None):
+    def __init__(self, name: str, params: object | None):
         """
         Parameters:
             name - display name of this behavior
         """
         super().__init__(
-            type="condition", children=[], max_children=0, blackboard=blackboard
+            type="condition",
+            children=[],
+            max_children=0,
         )
         self.name = name
 
@@ -173,11 +192,12 @@ class BtDecorator(BtNode, abc.ABC):
         self,
         type: str,
         children: list[BtNode],
-        blackboard: Blackboard,
         params: object | None,
     ):
         super().__init__(
-            type=type, children=children, max_children=1, blackboard=blackboard
+            type=type,
+            children=children,
+            max_children=1,
         )
 
     @property
@@ -186,10 +206,8 @@ class BtDecorator(BtNode, abc.ABC):
 
 
 class BtInverter(BtDecorator):
-    def __init__(self, children: list[BtNode], blackboard: Blackboard, params: None):
-        super().__init__(
-            type="inverter", children=children, blackboard=blackboard, params=params
-        )
+    def __init__(self, children: list[BtNode], params: None):
+        super().__init__(type="inverter", children=children, params=params)
 
     def tick(self) -> BtResult:
         child_res = self.child.tick()
@@ -201,11 +219,10 @@ class BtInverter(BtDecorator):
 
 
 class BtForceFailure(BtDecorator):
-    def __init__(self, children: list[BtNode], blackboard: Blackboard, params: None):
+    def __init__(self, children: list[BtNode], params: None):
         super().__init__(
             type="force-failure",
             children=children,
-            blackboard=blackboard,
             params=params,
         )
 
@@ -215,11 +232,10 @@ class BtForceFailure(BtDecorator):
 
 
 class BtSuccessIsFailure(BtDecorator):
-    def __init__(self, children: list[BtNode], blackboard: Blackboard, params: None):
+    def __init__(self, children: list[BtNode], params: None):
         super().__init__(
             type="success-is-failure",
             children=children,
-            blackboard=blackboard,
             params=params,
         )
 

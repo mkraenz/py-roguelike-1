@@ -91,8 +91,8 @@ def item_from_dict(data: ItemData) -> Item:
 
 
 class SeesPlayer(BtCondition):
-    def __init__(self, children: list[BtNode], blackboard: Blackboard, params: None):
-        super().__init__("sees_player", blackboard=blackboard, params=params)
+    def __init__(self, children: list[BtNode], params: None):
+        super().__init__("sees_player", params=params)
 
     def tick(self) -> BtResult:
         target = self.player
@@ -120,9 +120,9 @@ class MoveTowardsPlayerBehavior(BtAction):
         return [(index[0], index[1]) for index in path]
 
     # TODO consider moving blackboard into a react-style "context", like the BtRoot
-    def __init__(self, children: list[BtNode], blackboard: Blackboard, params: None):
+    def __init__(self, children: list[BtNode], params: None):
         # TODO move name and type into an abstract class var
-        super().__init__("move_towards_player", blackboard=blackboard, params=params)
+        super().__init__("move_towards_player", params=params)
         self.path: list[Coord] = []
 
     def tick(self) -> BtResult:
@@ -138,7 +138,6 @@ class AgentAttributeEquals(BtCondition):
     def __init__(
         self,
         children: list[BtNode],
-        blackboard: Blackboard,
         params: bt_val.ActorAttributeEqualsDataParams,
     ):
         self.attribute_name: str = params.attribute_name
@@ -156,12 +155,10 @@ class BlackboardCondition(BtCondition):
     def __init__(
         self,
         children: list[BtNode],
-        blackboard: Blackboard,
         params: bt_val.BlackboardConditionDataParams,
     ):
         super().__init__(
             name="blackboard_condition",
-            blackboard=blackboard,
             params=params,
         )
         self.key = params.key
@@ -190,12 +187,10 @@ class WriteToBlackboard(BtAction):
     def __init__(
         self,
         children: list[BtNode],
-        blackboard: Blackboard,
         params: bt_val.WriteToBlackboardDataParams,
     ):
         super().__init__(
             name="write_to_blackboard",
-            blackboard=blackboard,
             params=params,
         )
         self.key = params.key
@@ -210,12 +205,10 @@ class MaxDistanceToPlayer(BtCondition):
     def __init__(
         self,
         children: list[BtNode],
-        blackboard: Blackboard,
         params: bt_val.MaxDistanceToPlayerDataParams,
     ):
         super().__init__(
             "max_distance_to_player",
-            blackboard=blackboard,
             params=params,
         )
         self.max_dist = params.max_dist
@@ -227,8 +220,8 @@ class MaxDistanceToPlayer(BtCondition):
 
 
 class WaitBehavior(BtAction):
-    def __init__(self, children: list[BtNode], blackboard: Blackboard, params: None):
-        super().__init__("wait", blackboard=blackboard, params=params)
+    def __init__(self, children: list[BtNode], params: None):
+        super().__init__("wait", params=params)
 
     def tick(self) -> BtResult:
         # intentionally doing nothing
@@ -236,8 +229,8 @@ class WaitBehavior(BtAction):
 
 
 class MeleeAttackBehavior(BtAction):
-    def __init__(self, children: list[BtNode], blackboard: Blackboard, params: None):
-        super().__init__("melee_attack", blackboard, params=params)
+    def __init__(self, children: list[BtNode], params: None):
+        super().__init__("melee_attack", params=params)
 
     def tick(self) -> BtResult:
         (dx, dy) = self.player.diff_from(self.agent)
@@ -313,23 +306,20 @@ _bt_node_class = {
 }
 
 
-def _children_to_bt_node(data: bt_val.BtNodeData, blackboard: Blackboard) -> BtNode:
+def _children_to_bt_node(data: bt_val.BtNodeData) -> BtNode:
     cls = _bt_node_class[data.type]
     return cls(
         children=(
-            [
-                _children_to_bt_node(child, blackboard=blackboard)
-                for child in data.children
-            ]
+            [_children_to_bt_node(child) for child in data.children]
             if data.children is not None
             else []
         ),
-        blackboard=blackboard,
         params=data.params,
     )
 
 
 def behavior_tree_from_dict(data: bt_val.BehaviorTreeData) -> BtNode:
     # the blackboard will be filled after the gamemap finished initialization
-    blackboard = Blackboard()
-    return _children_to_bt_node(data.root, blackboard=blackboard)
+    tree = _children_to_bt_node(data.root)
+    tree.blackboard = Blackboard()
+    return tree
