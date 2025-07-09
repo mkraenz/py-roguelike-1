@@ -4,12 +4,19 @@ import traceback
 from typing import TYPE_CHECKING, Callable, Any
 
 import yaml
+from pydantic import ValidationError
 
+from py_roguelike_tutorial.behavior_trees.behavior_trees import BtNode
 from py_roguelike_tutorial.components.faction import Faction
 from py_roguelike_tutorial.components.procgen_config import DungeonTable, EntityTableRow
-from py_roguelike_tutorial.entity_deserializers import item_from_dict, actor_from_dict
+from py_roguelike_tutorial.entity_deserializers import (
+    item_from_dict,
+    actor_from_dict,
+    behavior_tree_from_dict,
+)
 from py_roguelike_tutorial.utils import assets_filepath
 from py_roguelike_tutorial.validators.actor_validator import ActorData
+from py_roguelike_tutorial.validators.behavior_tree_validator import BehaviorTreeData
 from py_roguelike_tutorial.validators.faction_validator import FactionsData
 from py_roguelike_tutorial.validators.item_validator import ItemData
 
@@ -30,14 +37,16 @@ def _to_entities_or_fail[T, ValidatedData](
     validate: Callable[[Any], ValidatedData],
     create_entity: Callable[[ValidatedData], T],
 ) -> dict[str, T]:
-    # todo consider using pydantic for validation
-
     entities: dict[str, T] = {}
     erroneous_keys: list[str] = []
     for key, val in data.items():
         try:
             validated = validate(val)
             entities[key] = create_entity(validated)
+        except ValidationError as e:
+            traceback.print_exc()
+            print(e.errors())
+            erroneous_keys.append(key)
         except Exception:
             traceback.print_exc()
             erroneous_keys.append(key)
@@ -83,6 +92,19 @@ def load_item_entities() -> dict[str, Item]:
         validate=lambda x: ItemData(**x),
     )
     return entities
+
+
+def load_behavior_trees() -> dict[str, BtNode]:
+    filename = "assets/data/experiments/behavior_trees.yml"
+    data: dict[str, dict] = _load_asset(filename)
+    _behavior_tree_from_dict = lambda val: behavior_tree_from_dict(val)
+    behavior_trees = _to_entities_or_fail(
+        filename,
+        data,
+        create_entity=_behavior_tree_from_dict,
+        validate=lambda x: BehaviorTreeData(**x),
+    )
+    return behavior_trees
 
 
 def load_npcs_entities(item_entities: dict[str, Item]) -> dict[str, Actor]:

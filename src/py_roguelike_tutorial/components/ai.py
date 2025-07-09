@@ -7,17 +7,16 @@ import numpy as np
 import tcod
 
 from py_roguelike_tutorial.actions import (
-    Action,
     MeleeAction,
     MoveAction,
     WaitAction,
     BumpAction,
     RangedAttackAction,
 )
-from py_roguelike_tutorial.behavior_trees.behavior_trees import BtRoot
 from py_roguelike_tutorial.constants import INTERCARDINAL_DIRECTIONS
 
 if TYPE_CHECKING:
+    from py_roguelike_tutorial.behavior_trees.behavior_trees import BtNode
     from py_roguelike_tutorial.entity import Actor
     from py_roguelike_tutorial.types import Coord
     from py_roguelike_tutorial.engine import Engine
@@ -120,7 +119,7 @@ class ConfusedEnemy(BaseAI):
 
 
 class BehaviorTreeAI(BaseAI):
-    def __init__(self, tree: BtRoot):
+    def __init__(self, tree: BtNode):
         self.tree = tree
 
     def perform(self) -> None:

@@ -12,6 +12,7 @@ from py_roguelike_tutorial.components.factions_manager import FactionsManager
 from py_roguelike_tutorial.components.procgen_config import (
     ProcgenConfig as data,
 )
+from py_roguelike_tutorial.entity_factory import EntityPrefabs
 from py_roguelike_tutorial.game_map import GameMap
 from py_roguelike_tutorial.types import Coord, CoordN
 
@@ -121,6 +122,9 @@ def generate_dungeon(
         rooms.append(room)
 
     player.place(*rooms[0].center, dungeon)
+    # leaving here since useful for debugging
+    # loc = (player.x + 5, player.y + 7)
+    # EntityPrefabs.npcs["orc_archer"].spawn(dungeon, loc[0], loc[1])
 
     room_with_stairs = rooms[-1] if not DEBUG_STAIRS_AT_START else rooms[0]
     place_down_stairs(dungeon, room_with_stairs)

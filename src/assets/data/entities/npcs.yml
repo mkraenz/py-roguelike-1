@@ -22,6 +22,8 @@ orc_archer:
     # these should check Line of sight, check if arrows and bow equipped, check distance, then attack or move into range`, else run away.
     # If player too close, try to gain some distance.
     class_type: BehaviorTreeAI
+    behavior_tree_id: melee_attacker
+      
   ranged:
     power: 2
     range: 5

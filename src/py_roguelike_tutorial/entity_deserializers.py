@@ -1,6 +1,7 @@
 from __future__ import annotations
+
 import copy
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import tcod
@@ -14,6 +15,8 @@ from py_roguelike_tutorial.behavior_trees.behavior_trees import (
     Blackboard,
     BtCondition,
     BtSelector,
+    BtNode,
+    BtInverter,
 )
 from py_roguelike_tutorial.colors import hex_to_rgb
 from py_roguelike_tutorial.components.ai import HostileEnemy, BehaviorTreeAI
@@ -31,11 +34,16 @@ from py_roguelike_tutorial.components.inventory import Inventory
 from py_roguelike_tutorial.components.level import Level
 from py_roguelike_tutorial.components.ranged import Ranged
 from py_roguelike_tutorial.entity import Item, Actor
+from py_roguelike_tutorial.entity_factory import EntityPrefabs
+from py_roguelike_tutorial.validators.actor_validator import BehaviorTreeAIData
+import py_roguelike_tutorial.validators.behavior_tree_validator as bt_val
+from py_roguelike_tutorial.validators.behavior_tree_validator import InverterData
 
 if TYPE_CHECKING:
-    from py_roguelike_tutorial.engine import Engine
     from py_roguelike_tutorial.types import Coord
-    from py_roguelike_tutorial.validators.actor_validator import ActorData
+    from py_roguelike_tutorial.validators.actor_validator import (
+        ActorData,
+    )
     from py_roguelike_tutorial.validators.item_validator import ItemData
 
 
@@ -82,7 +90,19 @@ def item_from_dict(data: ItemData) -> Item:
     return item
 
 
-class MoveBehavior(BtAction):
+class SeesPlayer(BtCondition):
+    def __init__(self, children: list[BtNode], blackboard: Blackboard, params: None):
+        super().__init__("sees_player", blackboard=blackboard, params=params)
+
+    def tick(self) -> BtResult:
+        target = self.player
+        agent = self.agent
+        if self.engine.game_map.has_line_of_sight(target, agent):
+            return BtResult.Success
+        return BtResult.Failure
+
+
+class MoveTowardsPlayerBehavior(BtAction):
     def get_path_to(self, dest_x: int, dest_y: int) -> list[Coord]:
         """Returns the list of coordinates to the destination, or an empty list if there is no such path."""
         cost = np.array(self.agent.parent.tiles["walkable"], dtype=np.int8)
@@ -100,9 +120,9 @@ class MoveBehavior(BtAction):
         return [(index[0], index[1]) for index in path]
 
     # TODO consider moving blackboard into a react-style "context", like the BtRoot
-    def __init__(self, blackboard: Blackboard):
+    def __init__(self, children: list[BtNode], blackboard: Blackboard, params: None):
         # TODO move name and type into an abstract class var
-        super().__init__("move", blackboard)
+        super().__init__("move_towards_player", blackboard=blackboard, params=params)
         self.path: list[Coord] = []
 
     def tick(self) -> BtResult:
@@ -114,10 +134,91 @@ class MoveBehavior(BtAction):
         return BtResult.Success
 
 
+class AgentAttributeEquals(BtCondition):
+    def __init__(
+        self,
+        children: list[BtNode],
+        blackboard: Blackboard,
+        params: bt_val.ActorAttributeEqualsDataParams,
+    ):
+        self.attribute_name: str = params.attribute_name
+        self.value: Any = params.value
+
+    def tick(self) -> BtResult:
+        return (
+            BtResult.Success
+            if getattr(self.agent, self.attribute_name) == self.value
+            else BtResult.Failure
+        )
+
+
+class BlackboardCondition(BtCondition):
+    def __init__(
+        self,
+        children: list[BtNode],
+        blackboard: Blackboard,
+        params: bt_val.BlackboardConditionDataParams,
+    ):
+        super().__init__(
+            name="blackboard_condition",
+            blackboard=blackboard,
+            params=params,
+        )
+        self.key = params.key
+        self.comparator = params.comparator
+        self.value = params.value
+
+    def tick(self) -> BtResult:
+        match self.comparator:
+            case "eq":
+                return (
+                    BtResult.Success
+                    if self.blackboard.get(self.key) == self.value
+                    else BtResult.Failure
+                )
+            case "has":
+                return (
+                    BtResult.Success
+                    if self.blackboard.has(self.key)
+                    else BtResult.Failure
+                )
+            case _:
+                raise ValueError(f"Unsupported comparator: {self.comparator}")
+
+
+class WriteToBlackboard(BtAction):
+    def __init__(
+        self,
+        children: list[BtNode],
+        blackboard: Blackboard,
+        params: bt_val.WriteToBlackboardDataParams,
+    ):
+        super().__init__(
+            name="write_to_blackboard",
+            blackboard=blackboard,
+            params=params,
+        )
+        self.key = params.key
+        self.value = params.value
+
+    def tick(self) -> BtResult:
+        self.blackboard.set(self.key, self.value)
+        return BtResult.Success
+
+
 class MaxDistanceToPlayer(BtCondition):
-    def __init__(self, max_dist: int, blackboard: Blackboard):
-        super().__init__("max_distance_to_player", blackboard)
-        self.max_dist = max_dist
+    def __init__(
+        self,
+        children: list[BtNode],
+        blackboard: Blackboard,
+        params: bt_val.MaxDistanceToPlayerDataParams,
+    ):
+        super().__init__(
+            "max_distance_to_player",
+            blackboard=blackboard,
+            params=params,
+        )
+        self.max_dist = params.max_dist
 
     def tick(self) -> BtResult:
         if self.player.dist_chebyshev(self.agent) <= self.max_dist:
@@ -126,8 +227,8 @@ class MaxDistanceToPlayer(BtCondition):
 
 
 class WaitBehavior(BtAction):
-    def __init__(self, blackboard: Blackboard):
-        super().__init__("wait", blackboard)
+    def __init__(self, children: list[BtNode], blackboard: Blackboard, params: None):
+        super().__init__("wait", blackboard=blackboard, params=params)
 
     def tick(self) -> BtResult:
         # intentionally doing nothing
@@ -135,8 +236,8 @@ class WaitBehavior(BtAction):
 
 
 class MeleeAttackBehavior(BtAction):
-    def __init__(self, blackboard: Blackboard):
-        super().__init__("melee_attack", blackboard)
+    def __init__(self, children: list[BtNode], blackboard: Blackboard, params: None):
+        super().__init__("melee_attack", blackboard, params=params)
 
     def tick(self) -> BtResult:
         (dx, dy) = self.player.diff_from(self.agent)
@@ -148,33 +249,13 @@ def actor_from_dict(data: ActorData, item_prefabs: dict[str, Item]) -> Actor:
     ai_cls = AI_CLASSES[data.ai.class_type]
     # TODO continue here by constructing an actual tree that if moves towards the player
 
-    blackboard = Blackboard()
-    behavior_tree = BtRoot(
-        [
-            BtSelector(
-                children=[
-                    BtSequence(
-                        [
-                            MaxDistanceToPlayer(1, blackboard=blackboard),
-                            MeleeAttackBehavior(blackboard=blackboard),
-                        ],
-                        blackboard=blackboard,
-                    ),
-                    BtSequence(
-                        [
-                            MaxDistanceToPlayer(10, blackboard=blackboard),
-                            MoveBehavior(blackboard=blackboard),
-                        ],
-                        blackboard=blackboard,
-                    ),
-                    WaitBehavior(blackboard=blackboard),
-                ],
-                blackboard=blackboard,
-            )
-        ],
-        blackboard=blackboard,
-    )
-    ai = ai_cls() if ai_cls == HostileEnemy else ai_cls(behavior_tree)
+    if ai_cls == HostileEnemy:
+        ai = ai_cls()
+    elif ai_cls == BehaviorTreeAI and isinstance(data.ai, BehaviorTreeAIData):
+        behavior_tree = EntityPrefabs.behavior_trees[data.ai.behavior_tree_id]
+        ai = BehaviorTreeAI(behavior_tree)
+    else:
+        raise Exception("Unhandled actor ai")
 
     fighter_data = data.fighter
     fighter = Fighter(
@@ -215,3 +296,40 @@ def actor_from_dict(data: ActorData, item_prefabs: dict[str, Item]) -> Actor:
         ranged=ranged,
     )
     return actor
+
+
+_bt_node_class = {
+    "Root": BtRoot,
+    "Selector": BtSelector,
+    "Sequence": BtSequence,
+    "Inverter": BtInverter,
+    "MaxDistanceToPlayer": MaxDistanceToPlayer,
+    "MeleeAttack": MeleeAttackBehavior,
+    "MoveTowardsPlayer": MoveTowardsPlayerBehavior,
+    "Wait": WaitBehavior,
+    "BlackboardCondition": BlackboardCondition,
+    "WriteToBlackboard": WriteToBlackboard,
+    "SeesPlayer": SeesPlayer,
+}
+
+
+def _children_to_bt_node(data: bt_val.BtNodeData, blackboard: Blackboard) -> BtNode:
+    cls = _bt_node_class[data.type]
+    return cls(
+        children=(
+            [
+                _children_to_bt_node(child, blackboard=blackboard)
+                for child in data.children
+            ]
+            if data.children is not None
+            else []
+        ),
+        blackboard=blackboard,
+        params=data.params,
+    )
+
+
+def behavior_tree_from_dict(data: bt_val.BehaviorTreeData) -> BtNode:
+    # the blackboard will be filled after the gamemap finished initialization
+    blackboard = Blackboard()
+    return _children_to_bt_node(data.root, blackboard=blackboard)

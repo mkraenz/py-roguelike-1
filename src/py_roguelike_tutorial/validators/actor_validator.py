@@ -3,8 +3,16 @@ from typing import Literal
 from pydantic import BaseModel
 
 
-class AiData(BaseModel):
-    class_type: Literal["HostileEnemy", "BehaviorTreeAI"]
+class BehaviorTreeAIData(BaseModel):
+    class_type: Literal["BehaviorTreeAI"]
+    behavior_tree_id: str
+
+
+class HostileEnemyData(BaseModel):
+    class_type: Literal["HostileEnemy"]
+
+
+AiData = BehaviorTreeAIData | HostileEnemyData
 
 
 class FighterData(BaseModel):

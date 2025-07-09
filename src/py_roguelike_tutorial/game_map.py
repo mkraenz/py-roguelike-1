@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Iterable, Iterator
 
 import numpy as np
+import tcod
 from tcod.console import Console
 
 from py_roguelike_tutorial import tile_types
@@ -111,3 +112,7 @@ class GameMap:
             if entity.pos == (x, y):
                 return entity
         return None
+
+    def has_line_of_sight(self, first: Entity, second: Entity) -> bool:
+        line_of_sight = tcod.los.bresenham(first.pos, second.pos)[1:-1]
+        return all(not self.is_blocked(*pos) for pos in line_of_sight)
