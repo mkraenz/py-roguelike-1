@@ -4,7 +4,7 @@ from pydantic import BaseModel
 
 
 class AiData(BaseModel):
-    class_type: Literal["HostileEnemy"]
+    class_type: Literal["HostileEnemy", "BehaviorTreeAI"]
 
 
 class FighterData(BaseModel):

@@ -49,6 +49,7 @@ def new_game() -> Engine:
         room_min_size=room_min_size,
     )
     engine.game_world.generate_floor()
+    engine.game_map.finalize_init()
     engine.update_fov()
     engine.message_log.add(text="Welcome, adventurer.", fg=Theme.welcome_text)
     return engine

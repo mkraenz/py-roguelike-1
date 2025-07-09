@@ -1,9 +1,9 @@
 0:
   - [orc_archer, 30]
-  - [orc, 30]
-  - [goblin, 70]
-  - [bijumper, 50]
-  - [trijumper, 50]
+#  - [orc, 30]
+#  - [goblin, 70]
+#  - [bijumper, 50]
+#  - [trijumper, 50]
 2:
   - [orc, 80]
   - [goblin, 50]

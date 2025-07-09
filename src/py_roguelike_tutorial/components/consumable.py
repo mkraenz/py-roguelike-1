@@ -124,9 +124,7 @@ class ConfusionConsumable(Consumable):
 
         txt = f"{target.name} starts to stumble around aimlessly."
         self.engine.message_log.add(txt, fg=Theme.status_effect_applied)
-        target.ai = ConfusedEnemy(
-            entity=target, previous_ai=target.ai, turns_remaining=self.turns
-        )
+        target.ai = ConfusedEnemy(previous_ai=target.ai, turns_remaining=self.turns)
         self.consume()
 
 

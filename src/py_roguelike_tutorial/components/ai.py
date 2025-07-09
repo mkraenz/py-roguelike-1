@@ -14,61 +14,71 @@ from py_roguelike_tutorial.actions import (
     BumpAction,
     RangedAttackAction,
 )
+from py_roguelike_tutorial.behavior_trees.behavior_trees import BtRoot
 from py_roguelike_tutorial.constants import INTERCARDINAL_DIRECTIONS
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.entity import Actor
     from py_roguelike_tutorial.types import Coord
+    from py_roguelike_tutorial.engine import Engine
 
 
-class BaseAI(Action):
+class BaseAI:
+    agent: Actor
+    """We assume that the agent gets set from the outside."""
+
+    @property
+    def engine(self) -> Engine:
+        return self.agent.parent.engine
+
+    def perform(self) -> None:
+        raise NotImplementedError("subclasses must implement perform")
 
     def get_path_to(self, dest_x: int, dest_y: int) -> list[Coord]:
         """Returns the list of coordinates to the destination, or an empty list if there is no such path."""
-        cost = np.array(self.entity.parent.tiles["walkable"], dtype=np.int8)
+        cost = np.array(self.agent.parent.tiles["walkable"], dtype=np.int8)
 
-        for entity in self.entity.parent.entities:
+        for entity in self.agent.parent.entities:
             if entity.blocks_movement and cost[entity.x, entity.y]:
                 # we add to the cost of a blocked position. A lower number means more enemies will crowd behind
                 # each other in hallways. Higher number means they will take longer paths towards the destination.
                 cost[entity.x, entity.y] += 10
         graph = tcod.path.SimpleGraph(cost=cost, cardinal=2, diagonal=3)
         pathfinder = tcod.path.Pathfinder(graph)
-        pathfinder.add_root(self.entity.pos)
+        pathfinder.add_root(self.agent.pos)
         # path_to includes the start and ending points. we strip away the start point
         path: list[list[int]] = pathfinder.path_to((dest_x, dest_y))[1:].tolist()
         return [(index[0], index[1]) for index in path]
 
 
 class HostileEnemy(BaseAI):
-    def __init__(self, entity: Actor):
-        super().__init__(entity)
+    def __init__(self):
         self.path: list[Coord] = []
         self.alarmed = False
 
     def perform(self) -> None:
         target = self.engine.player
 
-        if self.engine.game_map.visible[self.entity.x, self.entity.y]:
+        if self.engine.game_map.visible[self.agent.x, self.agent.y]:
             self.alarmed = True
 
         if self.alarmed:
-            distance = target.dist_chebyshev(self.entity)
+            distance = target.dist_chebyshev(self.agent)
             in_melee_range = distance <= 1
             if in_melee_range:
-                (dx, dy) = target.diff_from(self.entity)
-                return MeleeAction(self.entity, dx, dy).perform()
+                (dx, dy) = target.diff_from(self.agent)
+                return MeleeAction(self.agent, dx, dy).perform()
 
-            elif self.entity.ranged is not None:
-                in_range = distance <= self.entity.ranged.range
+            elif self.agent.ranged is not None:
+                in_range = distance <= self.agent.ranged.range
 
-                line_of_sight = tcod.los.bresenham(self.entity.pos, target.pos)[1:-1]
+                line_of_sight = tcod.los.bresenham(self.agent.pos, target.pos)[1:-1]
                 has_line_of_sight = all(
                     not self.engine.game_map.is_blocked(*pos) for pos in line_of_sight
                 )
 
                 if in_range and has_line_of_sight:
-                    return RangedAttackAction(self.entity).perform()
+                    return RangedAttackAction(self.agent).perform()
                 else:
                     self.path = self.get_path_to(target.x, target.y)
             else:
@@ -76,10 +86,10 @@ class HostileEnemy(BaseAI):
 
         if self.path:
             dest_x, dest_y = self.path.pop(0)
-            step_dx, step_dy = dest_x - self.entity.x, dest_y - self.entity.y
-            return MoveAction(self.entity, step_dx, step_dy).perform()
+            step_dx, step_dy = dest_x - self.agent.x, dest_y - self.agent.y
+            return MoveAction(self.agent, step_dx, step_dy).perform()
 
-        return WaitAction(self.entity).perform()
+        return WaitAction(self.agent).perform()
 
 
 class ConfusedEnemy(BaseAI):
@@ -88,8 +98,7 @@ class ConfusedEnemy(BaseAI):
     If an actor occupies the tile the confused enemy moves into it will attack.
     """
 
-    def __init__(self, entity: Actor, previous_ai: BaseAI | None, turns_remaining: int):
-        super().__init__(entity)
+    def __init__(self, previous_ai: BaseAI | None, turns_remaining: int):
         self.turns_remaining = turns_remaining
         self.previous_ai = previous_ai
 
@@ -100,11 +109,19 @@ class ConfusedEnemy(BaseAI):
             self.move_randomly()
 
     def restore_previous_ai(self):
-        txt = f"{self.entity.name} comes to their senses."
+        txt = f"{self.agent.name} comes to their senses."
         self.engine.message_log.add(txt)
-        self.entity.ai = self.previous_ai
+        self.agent.ai = self.previous_ai
 
     def move_randomly(self):
         dir_x, dir_y = random.choice(INTERCARDINAL_DIRECTIONS)
         self.turns_remaining -= 1
-        return BumpAction(self.entity, dir_x, dir_y).perform()
+        return BumpAction(self.agent, dir_x, dir_y).perform()
+
+
+class BehaviorTreeAI(BaseAI):
+    def __init__(self, tree: BtRoot):
+        self.tree = tree
+
+    def perform(self) -> None:
+        self.tree.tick()

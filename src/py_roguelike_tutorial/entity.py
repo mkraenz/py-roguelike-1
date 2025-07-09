@@ -130,7 +130,7 @@ class Actor(Entity):
         char: str,
         color: Rgb = Color.WHITE,
         name: str,
-        ai_cls: Type[BaseAI],
+        ai: BaseAI,
         fighter: Fighter,
         inventory: Inventory,
         level: Level,
@@ -149,10 +149,11 @@ class Actor(Entity):
             move_stepsize=move_stepsize,
         )
         self.ranged = ranged
-        if self.ranged: self.ranged.parent = self
+        if self.ranged:
+            self.ranged.parent = self
         self.level = level
         self.level.parent = self
-        self.ai: BaseAI | None = ai_cls(self)
+        self.ai = ai
         self.fighter = fighter
         self.fighter.parent = self
         self.inventory = inventory
@@ -160,6 +161,16 @@ class Actor(Entity):
         self.equipment = equipment
         self.equipment.parent = self
         self.faction: Faction
+
+    @property
+    def ai(self) -> BaseAI | None:
+        return self._ai
+
+    @ai.setter
+    def ai(self, val: BaseAI | None):
+        self._ai = val
+        if val:
+            val.agent = self
 
     @property
     def is_alive(self) -> bool:

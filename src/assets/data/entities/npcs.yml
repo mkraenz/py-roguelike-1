@@ -21,7 +21,7 @@ orc_archer:
   ai:
     # these should check Line of sight, check if arrows and bow equipped, check distance, then attack or move into range`, else run away.
     # If player too close, try to gain some distance.
-    class_type: HostileEnemy
+    class_type: BehaviorTreeAI
   ranged:
     power: 2
     range: 5
@@ -51,6 +51,7 @@ bijumper:
     xp_given: 20
   equipment: {}
   move_stepsize: 2
+
 trijumper:
   char: "t"
   color: "#ffff00"
@@ -67,6 +68,7 @@ trijumper:
     xp_given: 20
   equipment: {}
   move_stepsize: 3
+
 goblin:
   char: "g"
   color: "#3fff3f"
@@ -82,6 +84,7 @@ goblin:
     level_up_base: 0
     xp_given: 15
   equipment: {}
+
 troll:
   char: "T"
   color: "#008800"

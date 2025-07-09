@@ -6,6 +6,8 @@ import numpy as np
 from tcod.console import Console
 
 from py_roguelike_tutorial import tile_types
+from py_roguelike_tutorial.behavior_trees.behavior_trees import BtRoot
+from py_roguelike_tutorial.components.ai import BehaviorTreeAI
 from py_roguelike_tutorial.entity import Actor, Item
 from py_roguelike_tutorial.types import Coord
 
@@ -27,6 +29,14 @@ class GameMap:
 
         self.entities = set(entities)
         self.downstairs_location: Coord = (0, 0)
+
+    def finalize_init(self):
+        for actor in self.actors:
+            ai = actor.ai
+            if isinstance(ai, BehaviorTreeAI):
+                ai.tree.blackboard["agent"] = actor
+                ai.tree.blackboard["player"] = self.engine.player
+                ai.tree.blackboard["engine"] = self.engine
 
     @property
     def game_map(self) -> GameMap:
