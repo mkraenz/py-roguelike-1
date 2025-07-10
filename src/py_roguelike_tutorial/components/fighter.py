@@ -16,6 +16,10 @@ class Fighter(BaseComponent):
         self._hp = hp if hp else max_hp
         self.base_defense = defense
         self.base_power = power
+        
+    @property
+    def hp_percent(self) -> float:
+        return float(self.hp) / self.max_hp
 
     @property
     def power(self) -> int:

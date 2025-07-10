@@ -186,6 +186,9 @@ class BtCondition(BtNode, abc.ABC):
         )
         self.name = name
 
+    def success_else_fail(self, successful: bool) -> BtResult:
+        return BtResult.Success if successful else BtResult.Failure
+
 
 class BtDecorator(BtNode, abc.ABC):
     def __init__(

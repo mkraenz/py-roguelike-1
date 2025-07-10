@@ -7,7 +7,12 @@ import numpy as np
 import tcod
 
 import py_roguelike_tutorial.validators.behavior_tree_validator as bt_val
-from py_roguelike_tutorial.actions import MoveAction, MeleeAction, RangedAttackAction
+from py_roguelike_tutorial.actions import (
+    MoveAction,
+    MeleeAction,
+    RangedAttackAction,
+    ItemAction,
+)
 from py_roguelike_tutorial.behavior_trees.behavior_trees import (
     BtRoot,
     BtSequence,
@@ -79,6 +84,7 @@ def item_from_dict(data: ItemData) -> Item:
         char=data.char,
         color=hex_to_rgb(data.color),
         name=data.name,
+        kind=data.kind,
         consumable=consumable,
         equippable=equippable,
     )
@@ -89,16 +95,16 @@ def item_from_dict(data: ItemData) -> Item:
     return item
 
 
-class SeesPlayer(BtCondition):
+class SeesPlayerCondition(BtCondition):
     def __init__(self, children: list[BtNode], params: None):
         super().__init__("sees_player", params=params)
 
     def tick(self) -> BtResult:
         target = self.player
         agent = self.agent
-        if self.engine.game_map.has_line_of_sight(target, agent):
-            return BtResult.Success
-        return BtResult.Failure
+        return self.success_else_fail(
+            self.engine.game_map.has_line_of_sight(target, agent)
+        )
 
 
 class MoveTowardsPlayerBehavior(BtAction):
@@ -133,21 +139,29 @@ class MoveTowardsPlayerBehavior(BtAction):
         return BtResult.Success
 
 
-class AgentAttributeEquals(BtCondition):
+class HealthCondition(BtCondition):
+    """Checks the agent's health."""
+
     def __init__(
         self,
         children: list[BtNode],
-        params: bt_val.ActorAttributeEqualsDataParams,
+        params: bt_val.HealthConditionDataParams,
     ):
-        self.attribute_name: str = params.attribute_name
-        self.value: Any = params.value
+        super().__init__(
+            name="health_condition",
+            params=params,
+        )
+        self.comparator = params.comparator
+        self.value_percent = params.value_percent
 
     def tick(self) -> BtResult:
-        return (
-            BtResult.Success
-            if getattr(self.agent, self.attribute_name) == self.value
-            else BtResult.Failure
-        )
+        match self.comparator:
+            case "leq":
+                return self.success_else_fail(
+                    self.agent.fighter.hp_percent <= self.value_percent / 100
+                )
+            case _:
+                raise ValueError(f"Unsupported comparator: {self.comparator}")
 
 
 class BlackboardCondition(BtCondition):
@@ -167,22 +181,16 @@ class BlackboardCondition(BtCondition):
     def tick(self) -> BtResult:
         match self.comparator:
             case "eq":
-                return (
-                    BtResult.Success
-                    if self.blackboard.get(self.key) == self.value
-                    else BtResult.Failure
+                return self.success_else_fail(
+                    self.blackboard.get(self.key) == self.value
                 )
             case "has":
-                return (
-                    BtResult.Success
-                    if self.blackboard.has(self.key)
-                    else BtResult.Failure
-                )
+                return self.success_else_fail(self.blackboard.has(self.key))
             case _:
                 raise ValueError(f"Unsupported comparator: {self.comparator}")
 
 
-class WriteToBlackboard(BtAction):
+class WriteToBlackboardBehavior(BtAction):
     def __init__(
         self,
         children: list[BtNode],
@@ -200,14 +208,11 @@ class WriteToBlackboard(BtAction):
         return BtResult.Success
 
 
-class MaxDistanceToPlayer(BtCondition):
+class DistanceToPlayerCondition(BtCondition):
     def __init__(
         self,
         children: list[BtNode],
-        params: (
-            bt_val.MaxDistanceToPlayerDataParamsA
-            | bt_val.MaxDistanceToPlayerDataParamsB
-        ),
+        params: bt_val.DistanceToPlayerDataParamsA | bt_val.DistanceToPlayerDataParamsB,
     ):
         super().__init__(
             "max_distance_to_player",
@@ -217,9 +222,9 @@ class MaxDistanceToPlayer(BtCondition):
         self.min_dist: int = params.min_dist
 
     def tick(self) -> BtResult:
-        if self.min_dist <= self.player.dist_chebyshev(self.agent) <= self.max_dist:
-            return BtResult.Success
-        return BtResult.Failure
+        return self.success_else_fail(
+            self.min_dist <= self.player.dist_chebyshev(self.agent) <= self.max_dist
+        )
 
 
 class WaitBehavior(BtAction):
@@ -247,6 +252,31 @@ class RangedAttackBehavior(BtAction):
 
     def tick(self) -> BtResult:
         RangedAttackAction(self.agent).perform()
+        return BtResult.Success
+
+
+class HasItemCondition(BtCondition):
+    def __init__(self, children: list[BtNode], params: bt_val.HasItemDataParams):
+        super().__init__("has_item", params=params)
+        self.item_kind = params.item_kind
+
+    def tick(self) -> BtResult:
+        return self.success_else_fail(self.agent.inventory.has(self.item_kind))
+
+
+class UseItemBehavior(BtAction):
+    """For the time being, this only handles items that are used on the agent themself."""
+
+    def __init__(self, children: list[BtNode], params: bt_val.UseItemDataParams):
+        super().__init__("use_item", params=params)
+        self.item_kind = params.item_kind
+
+    def tick(self) -> BtResult:
+        item = self.agent.inventory.get_by_kind(self.item_kind)
+        assert (
+            item
+        ), f"Agent {self.agent.name} does not have item of kind: {self.item_kind}."
+        ItemAction(self.agent, item).perform()
         return BtResult.Success
 
 
@@ -308,14 +338,17 @@ _bt_node_class = {
     "Selector": BtSelector,
     "Sequence": BtSequence,
     "Inverter": BtInverter,
-    "MaxDistanceToPlayer": MaxDistanceToPlayer,
+    "DistanceToPlayer": DistanceToPlayerCondition,
     "MeleeAttack": MeleeAttackBehavior,
     "MoveTowardsPlayer": MoveTowardsPlayerBehavior,
     "Wait": WaitBehavior,
+    "HealthCondition": HealthCondition,
     "BlackboardCondition": BlackboardCondition,
-    "WriteToBlackboard": WriteToBlackboard,
-    "SeesPlayer": SeesPlayer,
+    "WriteToBlackboard": WriteToBlackboardBehavior,
+    "SeesPlayer": SeesPlayerCondition,
     "RangedAttack": RangedAttackBehavior,
+    "HasItem": HasItemCondition,
+    "UseItem": UseItemBehavior,
 }
 
 

@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 type BtChildren = list[
     BtSelectorData
     | BtSequenceData
-    | MaxDistanceToPlayerData
+    | DistanceToPlayerData
     | MeleeAttackBehaviorData
     | RangedAttackBehaviorData
     | MoveTowardsPlayerBehaviorData
@@ -19,6 +19,9 @@ type BtChildren = list[
     | WriteToBlackboardData
     | SeesPlayerData
     | InverterData
+    | HasItemData
+    | UseItemData
+    | HealthConditionData
 ]
 
 
@@ -49,19 +52,19 @@ class BtBehaviorData(BtNodeData):
     children: None = None
 
 
-class MaxDistanceToPlayerDataParamsA(BaseModel):
+class DistanceToPlayerDataParamsA(BaseModel):
     max_dist: int
     min_dist: int = 0
 
 
-class MaxDistanceToPlayerDataParamsB(BaseModel):
+class DistanceToPlayerDataParamsB(BaseModel):
     max_dist: int = 999999999  # de facto infinite
     min_dist: int
 
 
-class MaxDistanceToPlayerData(BtBehaviorData):
-    type: Literal["MaxDistanceToPlayer"]
-    params: MaxDistanceToPlayerDataParamsA | MaxDistanceToPlayerDataParamsB
+class DistanceToPlayerData(BtBehaviorData):
+    type: Literal["DistanceToPlayer"]
+    params: DistanceToPlayerDataParamsA | DistanceToPlayerDataParamsB
     """WORKAROUND: At least one of the params max_dist or min_dist must be provided. 
     Unfortunately, there is no perfect way to do that in pydantic."""
 
@@ -78,8 +81,32 @@ class ActorAttributeEqualsData(BtBehaviorData):
 
 class BlackboardConditionDataParams(BaseModel):
     comparator: Literal["eq", "has"]
+    """The comparison operator: 
+      - eq = equals
+      - has = whether the key exists
+    """
     value: Any
+    """The value that blackboard[key] is being compared to."""
     key: str
+    """The key in the blackboard to access"""
+
+
+class HasItemDataParams(BaseModel):
+    item_kind: str
+
+
+class HasItemData(BtBehaviorData):
+    type: Literal["HasItem"]
+    params: HasItemDataParams
+
+
+class UseItemDataParams(BaseModel):
+    item_kind: str
+
+
+class UseItemData(BtBehaviorData):
+    type: Literal["UseItem"]
+    params: UseItemDataParams
 
 
 class BlackboardConditionData(BtBehaviorData):
@@ -95,6 +122,16 @@ class WriteToBlackboardDataParams(BaseModel):
 class WriteToBlackboardData(BtBehaviorData):
     type: Literal["WriteToBlackboard"]
     params: WriteToBlackboardDataParams
+
+
+class HealthConditionDataParams(BaseModel):
+    value_percent: float = Field(ge=0, le=100)
+    comparator: Literal["leq"]
+
+
+class HealthConditionData(BtBehaviorData):
+    type: Literal["HealthCondition"]
+    params: HealthConditionDataParams
 
 
 class MeleeAttackBehaviorData(BtBehaviorData):

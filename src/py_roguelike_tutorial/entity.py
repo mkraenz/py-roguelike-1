@@ -197,6 +197,7 @@ class Item(Entity):
         char: str = "?",
         color: Rgb = Color.WHITE,
         name: str = "<Unnamed Item>",
+        kind: str = '',
         consumable: Consumable | None = None,
         equippable: Equippable | None = None,
     ):
@@ -209,6 +210,7 @@ class Item(Entity):
             blocks_movement=False,
             render_order=RenderOrder.ITEM,
         )
+        self.kind = kind
         self.equippable = equippable
         self.consumable = consumable
         if self.consumable:

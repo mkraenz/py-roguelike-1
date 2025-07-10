@@ -5,6 +5,19 @@ melee_attacker:
     children:
       - type: Selector
         children:
+          - comment: "Heal if has potion and not at full health"
+            type: Sequence
+            children:
+              - type: HealthCondition
+                params:
+                  comparator: leq
+                  value_percent: 50
+              - type: HasItem
+                params:
+                  item_kind: health_potion
+              - type: UseItem
+                params:
+                  item_kind: health_potion
           - type: Sequence
             children:
               # once alarmed the agent never calms down
@@ -21,7 +34,7 @@ melee_attacker:
                       value: "irrelevant"
                   - type: Sequence
                     children:
-                      - type: MaxDistanceToPlayer
+                      - type: DistanceToPlayer
                         params:
                           max_dist: 10
                       - type: SeesPlayer
@@ -41,7 +54,7 @@ melee_attacker:
                   - comment: "Ranged attack if in range but not too close"
                     type: Sequence
                     children:
-                      - type: MaxDistanceToPlayer
+                      - type: DistanceToPlayer
                         params:
                           max_dist: 10
                           min_dist: 5
@@ -50,13 +63,11 @@ melee_attacker:
                   - comment: "Melee if in close range"
                     type: Sequence
                     children:
-                      - type: MaxDistanceToPlayer
+                      - type: DistanceToPlayer
                         params:
                           max_dist: 1
                       - type: MeleeAttack
                   - type: MoveTowardsPlayer
-
-
 ## naive design
 #example0:
 #  type: Selector

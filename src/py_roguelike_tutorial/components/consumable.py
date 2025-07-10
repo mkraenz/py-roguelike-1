@@ -56,7 +56,7 @@ class HealingConsumable(Consumable):
         amount_recovered = consumer.fighter.heal(self.amount)
 
         if amount_recovered > 0:
-            txt = f"You consume the {self.parent.name}, and recover {amount_recovered} HP (-> {consumer.fighter.hp} HP)."
+            txt = f"{ctx.entity.name} consumes the {self.parent.name}, and recovers {amount_recovered} HP (-> {consumer.fighter.hp} HP)."
             self.engine.message_log.add(text=txt, fg=Theme.health_recovered)
             self.consume()
         else:

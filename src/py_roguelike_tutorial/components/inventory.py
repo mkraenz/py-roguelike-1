@@ -43,3 +43,10 @@ class Inventory(BaseComponent):
 
     def remove(self, item: Item) -> None:
         self.items.remove(item)
+
+    def has(self, kind: str) -> bool:
+        kinds = (item.kind for item in self.items)
+        return kind in kinds
+
+    def get_by_kind(self, kind: str) -> Item | None:
+        return next((item for item in self.items if item.kind == kind), None)
