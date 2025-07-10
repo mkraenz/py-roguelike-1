@@ -11,6 +11,7 @@ type BtChildren = list[
     | BtSequenceData
     | MaxDistanceToPlayerData
     | MeleeAttackBehaviorData
+    | RangedAttackBehaviorData
     | MoveTowardsPlayerBehaviorData
     | WaitBehaviorData
     | ActorAttributeEqualsData
@@ -48,13 +49,21 @@ class BtBehaviorData(BtNodeData):
     children: None = None
 
 
-class MaxDistanceToPlayerDataParams(BaseModel):
+class MaxDistanceToPlayerDataParamsA(BaseModel):
     max_dist: int
+    min_dist: int = 0
+
+
+class MaxDistanceToPlayerDataParamsB(BaseModel):
+    max_dist: int = 999999999  # de facto infinite
+    min_dist: int
 
 
 class MaxDistanceToPlayerData(BtBehaviorData):
     type: Literal["MaxDistanceToPlayer"]
-    params: MaxDistanceToPlayerDataParams
+    params: MaxDistanceToPlayerDataParamsA | MaxDistanceToPlayerDataParamsB
+    """WORKAROUND: At least one of the params max_dist or min_dist must be provided. 
+    Unfortunately, there is no perfect way to do that in pydantic."""
 
 
 class ActorAttributeEqualsDataParams(BaseModel):
@@ -90,6 +99,10 @@ class WriteToBlackboardData(BtBehaviorData):
 
 class MeleeAttackBehaviorData(BtBehaviorData):
     type: Literal["MeleeAttack"]
+
+
+class RangedAttackBehaviorData(BtBehaviorData):
+    type: Literal["RangedAttack"]
 
 
 class MoveTowardsPlayerBehaviorData(BtBehaviorData):

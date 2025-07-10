@@ -35,9 +35,18 @@ melee_attacker:
                   key: alarmed
                   comparator: eq
                   value: True
-              - comment: "Alarmed"
+              - comment: "Alarmed: attack if close enough, else move towards player"
                 type: Selector
                 children:
+                  - comment: "Ranged attack if in range but not too close"
+                    type: Sequence
+                    children:
+                      - type: MaxDistanceToPlayer
+                        params:
+                          max_dist: 10
+                          min_dist: 5
+                      - type: SeesPlayer
+                      - type: RangedAttack
                   - comment: "Melee if in close range"
                     type: Sequence
                     children:

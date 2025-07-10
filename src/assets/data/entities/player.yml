@@ -13,8 +13,8 @@ player:
     items:
       - teleport_scroll
   level:
-    level_up_base: 30
-    level_up_factor: 10
+    level_up_base: 200
+    level_up_factor: 150
   equipment:
     weapon: dagger
 #    armor: leather_armor

@@ -6,7 +6,8 @@ from typing import TYPE_CHECKING, Any
 import numpy as np
 import tcod
 
-from py_roguelike_tutorial.actions import MoveAction, MeleeAction
+import py_roguelike_tutorial.validators.behavior_tree_validator as bt_val
+from py_roguelike_tutorial.actions import MoveAction, MeleeAction, RangedAttackAction
 from py_roguelike_tutorial.behavior_trees.behavior_trees import (
     BtRoot,
     BtSequence,
@@ -36,8 +37,6 @@ from py_roguelike_tutorial.components.ranged import Ranged
 from py_roguelike_tutorial.entity import Item, Actor
 from py_roguelike_tutorial.entity_factory import EntityPrefabs
 from py_roguelike_tutorial.validators.actor_validator import BehaviorTreeAIData
-import py_roguelike_tutorial.validators.behavior_tree_validator as bt_val
-from py_roguelike_tutorial.validators.behavior_tree_validator import InverterData
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.types import Coord
@@ -205,16 +204,20 @@ class MaxDistanceToPlayer(BtCondition):
     def __init__(
         self,
         children: list[BtNode],
-        params: bt_val.MaxDistanceToPlayerDataParams,
+        params: (
+            bt_val.MaxDistanceToPlayerDataParamsA
+            | bt_val.MaxDistanceToPlayerDataParamsB
+        ),
     ):
         super().__init__(
             "max_distance_to_player",
             params=params,
         )
-        self.max_dist = params.max_dist
+        self.max_dist: int = params.max_dist
+        self.min_dist: int = params.min_dist
 
     def tick(self) -> BtResult:
-        if self.player.dist_chebyshev(self.agent) <= self.max_dist:
+        if self.min_dist <= self.player.dist_chebyshev(self.agent) <= self.max_dist:
             return BtResult.Success
         return BtResult.Failure
 
@@ -235,6 +238,15 @@ class MeleeAttackBehavior(BtAction):
     def tick(self) -> BtResult:
         (dx, dy) = self.player.diff_from(self.agent)
         MeleeAction(self.agent, dx, dy).perform()
+        return BtResult.Success
+
+
+class RangedAttackBehavior(BtAction):
+    def __init__(self, children: list[BtNode], params: None):
+        super().__init__("ranged_attack", params=params)
+
+    def tick(self) -> BtResult:
+        RangedAttackAction(self.agent).perform()
         return BtResult.Success
 
 
@@ -303,6 +315,7 @@ _bt_node_class = {
     "BlackboardCondition": BlackboardCondition,
     "WriteToBlackboard": WriteToBlackboard,
     "SeesPlayer": SeesPlayer,
+    "RangedAttack": RangedAttackBehavior,
 }
 
 
