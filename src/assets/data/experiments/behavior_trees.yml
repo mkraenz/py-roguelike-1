@@ -5,13 +5,26 @@ melee_attacker:
     children:
       - type: Selector
         children:
+          - comment: "Emergency exit if has teleport scroll"
+            type: Sequence
+            children:
+              - type: HealthCondition
+                params:
+                  comparator: leq
+                  value_percent: 30
+              - type: HasItem
+                params:
+                  item_kind: teleport_scroll
+              - type: UseItem
+                params:
+                  item_kind: teleport_scroll
           - comment: "Heal if has potion and not at full health"
             type: Sequence
             children:
               - type: HealthCondition
                 params:
                   comparator: leq
-                  value_percent: 50
+                  value_percent: 80
               - type: HasItem
                 params:
                   item_kind: health_potion

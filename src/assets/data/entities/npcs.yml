@@ -36,6 +36,7 @@ orc_archer:
     items:
       - health_potion
       - health_potion
+      - teleport_scroll
   level:
     level_up_base: 0
     xp_given: 35

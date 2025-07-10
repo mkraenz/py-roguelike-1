@@ -189,7 +189,8 @@ class TeleportSelfConsumable(Consumable):
 
         consumer.pos = new_pos
         self.log(
-            f"The air flutters about as suddenly {consumer.name} vanishes and reappears nearby."
+            f"The {self.parent.name} crumbles to pieces."
+            f"Suddenly, the air flutters about as the {consumer.name} vanishes and reappears nearby."
         )
 
         self.consume()

@@ -15,6 +15,6 @@ player:
   level:
     level_up_base: 200
     level_up_factor: 150
-  equipment: {}
+  equipment: { }
 #    weapon: dagger
 #    armor: leather_armor
