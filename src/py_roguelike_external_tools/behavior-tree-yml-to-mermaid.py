@@ -12,7 +12,12 @@ bt = data["melee_attacker"]["root"]
 
 def draw_tree(tree: dict, start_index: int, subtree_root: str | None) -> list[str]:
     maybe_comment = f"<br/>{tree.get('comment')}" if tree.get("comment") else ""
-    current_node = f"{start_index}[{tree['type']} {maybe_comment}]"
+    maybe_params = (
+        f"<br/>{'<br/>'.join((f"{param[0]}: {param[1]}" for param in tree.get('params', {}).items()))}"
+        if tree.get("params")
+        else ""
+    )
+    current_node = f"{start_index}[{tree['type']}<br/>{maybe_comment}{maybe_params}]"
     res: list[str] = (
         [f"{subtree_root} --> {current_node}"]
         if subtree_root is not None
