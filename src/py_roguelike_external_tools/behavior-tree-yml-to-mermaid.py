@@ -11,7 +11,8 @@ bt = data["melee_attacker"]["root"]
 
 
 def draw_tree(tree: dict, start_index: int, subtree_root: str | None) -> list[str]:
-    current_node = f"{start_index}_{tree['type']}"
+    maybe_comment = f"<br/>{tree.get('comment')}" if tree.get("comment") else ""
+    current_node = f"{start_index}[{tree['type']} {maybe_comment}]"
     res: list[str] = (
         [f"{subtree_root} --> {current_node}"]
         if subtree_root is not None

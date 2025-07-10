@@ -39,7 +39,7 @@ melee_attacker:
                 children:
                   # bc alarmed agents never calm down,
                   # we don't need to check this subtree once alarmed has been set to True once
-                  - comment: "optimization: only run expensive siblings (line of sight) when not alarmed yet"
+                  - comment: "optimization: only run expensive siblings, more precisely line of sight, when not alarmed yet"
                     type: BlackboardCondition
                     params:
                       key: alarmed
