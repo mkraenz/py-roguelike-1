@@ -1,6 +1,7 @@
 """Unlike ./behavior_trees.py, the functionality in this file is customized towards our particular game."""
 
 import copy
+import random
 
 import numpy as np
 import tcod
@@ -12,7 +13,10 @@ from py_roguelike_tutorial.actions import (
     ItemAction,
 )
 import py_roguelike_tutorial.behavior_trees.behavior_trees as bt
+from py_roguelike_tutorial.behavior_trees.behavior_trees import BtResult
+from py_roguelike_tutorial.constants import INTERCARDINAL_DIRECTIONS
 from py_roguelike_tutorial.entity_factory import EntityPrefabs
+from py_roguelike_tutorial.exceptions import Impossible
 from py_roguelike_tutorial.types import Coord
 from py_roguelike_tutorial.behavior_trees import validators as bt_val
 
@@ -178,6 +182,16 @@ class Subtree(bt.BtNode):
         return bt.BtResult.Success
 
 
+class RandomMoveBehavior(bt.BtAction):
+    def tick(self) -> BtResult:
+        dir_x, dir_y = random.choice(INTERCARDINAL_DIRECTIONS)
+        try:
+            MoveAction(self.agent, dir_x, dir_y).perform()
+        except Impossible:
+            pass  # ignore
+        return bt.BtResult.Success
+
+
 BT_NODE_NAME_TO_CLASS = {
     "Root": bt.BtRoot,
     "Selector": bt.BtSelector,
@@ -195,4 +209,5 @@ BT_NODE_NAME_TO_CLASS = {
     "HasItem": HasItemCondition,
     "UseItem": UseItemBehavior,
     "Subtree": Subtree,
+    "RandomMove": RandomMoveBehavior,
 }

@@ -16,6 +16,38 @@ emergency_teleport:
             params:
               item_kind: teleport_scroll
 
+use_heal_potion:
+  root:
+    comment: "Emergency exit if has teleport scroll"
+    type: Root
+    children:
+      - comment: "Heal if has potion and not at full health"
+        type: Sequence
+        children:
+          - type: HealthCondition
+            params:
+              comparator: leq
+              value_percent: 80
+          - type: HasItem
+            params:
+              item_kind: health_potion
+          - type: UseItem
+            params:
+              item_kind: health_potion
+
+flee:
+  root:
+    comment: "Run away at low health"
+    type: Root
+    children:
+      - type: Sequence
+        children:
+          - type: HealthCondition
+            params:
+              comparator: leq
+              value_percent: 20
+          - type: RandomMove
+
 melee_attacker:
   root:
     comment: "Melee attacker"
@@ -26,19 +58,12 @@ melee_attacker:
           - type: Subtree
             params:
               id: emergency_teleport
-          - comment: "Heal if has potion and not at full health"
-            type: Sequence
-            children:
-              - type: HealthCondition
-                params:
-                  comparator: leq
-                  value_percent: 80
-              - type: HasItem
-                params:
-                  item_kind: health_potion
-              - type: UseItem
-                params:
-                  item_kind: health_potion
+          - type: Subtree
+            params:
+              id: use_heal_potion
+          - type: Subtree
+            params:
+              id: flee
           - type: Sequence
             children:
               # once alarmed the agent never calms down
@@ -89,6 +114,8 @@ melee_attacker:
                           max_dist: 1
                       - type: MeleeAttack
                   - type: MoveTowardsPlayer
+          - comment: "Else its calm"
+            type: RandomMove
 ## naive design
 #example0:
 #  type: Selector

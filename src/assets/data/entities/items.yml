@@ -85,4 +85,4 @@ teleport_scroll:
     class_type: TeleportSelfConsumable
     constructor_args:
       radius: 10
-      charges: 3
+      charges: 1

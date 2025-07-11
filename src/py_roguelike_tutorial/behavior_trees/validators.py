@@ -10,14 +10,10 @@ type BtChildren = list[
     BtSelectorData
     | BtSequenceData
     | DistanceToPlayerData
-    | MeleeAttackBehaviorData
-    | RangedAttackBehaviorData
-    | MoveTowardsPlayerBehaviorData
-    | WaitBehaviorData
+    | SimpleBehaviorData
     | ActorAttributeEqualsData
     | BlackboardConditionData
     | WriteToBlackboardData
-    | SeesPlayerData
     | InverterData
     | HasItemData
     | UseItemData
@@ -138,24 +134,15 @@ class HealthConditionData(BtBehaviorData):
     params: HealthConditionDataParams
 
 
-class MeleeAttackBehaviorData(BtBehaviorData):
-    type: Literal["MeleeAttack"]
-
-
-class RangedAttackBehaviorData(BtBehaviorData):
-    type: Literal["RangedAttack"]
-
-
-class MoveTowardsPlayerBehaviorData(BtBehaviorData):
-    type: Literal["MoveTowardsPlayer"]
-
-
-class SeesPlayerData(BtBehaviorData):
-    type: Literal["SeesPlayer"]
-
-
-class WaitBehaviorData(BtBehaviorData):
-    type: Literal["Wait"]
+class SimpleBehaviorData(BtBehaviorData):
+    type: Literal[
+        "MeleeAttack",
+        "RangedAttack",
+        "MoveTowardsPlayer",
+        "SeesPlayer",
+        "Wait",
+        "RandomMove",
+    ]
 
 
 class SubtreeDataParams(BaseModel):
