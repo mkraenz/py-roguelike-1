@@ -79,14 +79,10 @@ class BtRoot(BtNode):
         super().__init__(type="root", children=children)
 
     def tick(self):
-        latest_child_res: BtResult
         for child in self.children:
-            latest_child_res = child.tick()
-            if (
-                latest_child_res == BtResult.Failure
-                or latest_child_res == BtResult.Running
-            ):
-                return latest_child_res
+            child_res = child.tick()
+            if child_res == BtResult.Failure or child_res == BtResult.Running:
+                return child_res
         return BtResult.Success
 
 
@@ -102,14 +98,10 @@ class BtSequence(BtNode):
         )
 
     def tick(self):
-        latest_child_res: BtResult
         for child in self.children:
-            latest_child_res = child.tick()
-            if (
-                latest_child_res == BtResult.Failure
-                or latest_child_res == BtResult.Running
-            ):
-                return latest_child_res
+            child_res = child.tick()
+            if child_res == BtResult.Failure or child_res == BtResult.Running:
+                return child_res
         return BtResult.Success
 
 

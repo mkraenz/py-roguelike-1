@@ -22,6 +22,7 @@ type BtChildren = list[
     | HasItemData
     | UseItemData
     | HealthConditionData
+    | SubtreeData
 ]
 
 
@@ -152,6 +153,15 @@ class SeesPlayerData(BtBehaviorData):
 
 class WaitBehaviorData(BtBehaviorData):
     type: Literal["Wait"]
+
+
+class SubtreeDataParams(BaseModel):
+    id: str
+
+
+class SubtreeData(BtNodeData):
+    type: Literal["Subtree"]
+    params: SubtreeDataParams
 
 
 class BehaviorTreeData(BaseModel):

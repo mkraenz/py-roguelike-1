@@ -1,3 +1,21 @@
+emergency_teleport:
+  root:
+    comment: "Emergency exit if has teleport scroll"
+    type: Root
+    children:
+      - type: Sequence
+        children:
+          - type: HealthCondition
+            params:
+              comparator: leq
+              value_percent: 30
+          - type: HasItem
+            params:
+              item_kind: teleport_scroll
+          - type: UseItem
+            params:
+              item_kind: teleport_scroll
+
 melee_attacker:
   root:
     comment: "Melee attacker"
@@ -5,19 +23,9 @@ melee_attacker:
     children:
       - type: Selector
         children:
-          - comment: "Emergency exit if has teleport scroll"
-            type: Sequence
-            children:
-              - type: HealthCondition
-                params:
-                  comparator: leq
-                  value_percent: 30
-              - type: HasItem
-                params:
-                  item_kind: teleport_scroll
-              - type: UseItem
-                params:
-                  item_kind: teleport_scroll
+          - type: Subtree
+            params:
+              id: emergency_teleport
           - comment: "Heal if has potion and not at full health"
             type: Sequence
             children:
@@ -125,47 +133,3 @@ melee_attacker:
 #                  towards: blackboard.get('player')
 #    - type: Action
 #      action: wait
-#
-#
-#
-#
-#example1:
-#  type: Selector
-#  condition:
-#    type: max_distance
-#    parameters:
-#      from: player.position
-#      to: actor.position
-#      max: 10
-#  children:
-#    - type: Sequence
-#      children:
-#        - type: Action
-#          data:
-#            action: move
-#            parameters:
-#              to: player.position
-#        - type: Action
-#          data:
-#            action: melee
-#            parameters:
-#              target: player
-#    - type: Condition
-#      condition: below_ratio
-#      parameters:
-#        from: actor.fighter.hp
-#        to: actor.fighter.max_hp
-#        ratio: 0.5
-#        children:
-#          - type: Condition
-#            condition:
-#              type: has_item
-#              parameters:
-#                item: healing_potion
-#            children:
-#              - type: Action
-#                data:
-#                  action: use_item
-#                  parameters:
-#                    item: "healing_potion"
-#

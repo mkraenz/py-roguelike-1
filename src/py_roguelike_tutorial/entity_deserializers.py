@@ -95,6 +95,59 @@ def item_from_dict(data: ItemData) -> Item:
     return item
 
 
+def actor_from_dict(data: ActorData, item_prefabs: dict[str, Item]) -> Actor:
+    ai_cls = AI_CLASSES[data.ai.class_type]
+    # TODO continue here by constructing an actual tree that if moves towards the player
+
+    if ai_cls == HostileEnemy:
+        ai = ai_cls()
+    elif ai_cls == BehaviorTreeAI and isinstance(data.ai, BehaviorTreeAIData):
+        behavior_tree = EntityPrefabs.behavior_trees[data.ai.behavior_tree_id]
+        ai = BehaviorTreeAI(behavior_tree)
+    else:
+        raise Exception("Unhandled actor ai")
+
+    fighter_data = data.fighter
+    fighter = Fighter(
+        max_hp=fighter_data.max_hp,
+        defense=fighter_data.defense,
+        power=fighter_data.power,
+    )
+
+    ranged = Ranged(data.ranged.power, data.ranged.range) if data.ranged else None
+
+    inventory = Inventory(data.inventory)
+    new_item = lambda key: copy.deepcopy(item_prefabs[key])
+    inventory_items = [new_item(item_key) for item_key in data.inventory.items or []]
+    inventory.add_many(inventory_items)
+
+    equipment_data = data.equipment
+    weapon = new_item(equipment_data.weapon) if equipment_data.weapon else None
+    armor = new_item(equipment_data.armor) if equipment_data.armor else None
+    equipment = Equipment(weapon=weapon, armor=armor)
+    if weapon:
+        inventory.add(weapon)
+    if armor:
+        inventory.add(armor)
+
+    level_data = data.level
+    level = Level(level_data)
+
+    actor = Actor(
+        char=data.char,
+        color=hex_to_rgb(data.color),
+        name=data.name,
+        move_stepsize=data.move_stepsize,
+        ai=ai,
+        fighter=fighter,
+        inventory=inventory,
+        equipment=equipment,
+        level=level,
+        ranged=ranged,
+    )
+    return actor
+
+
 class SeesPlayerCondition(BtCondition):
     def __init__(self, children: list[BtNode], params: None):
         super().__init__("sees_player", params=params)
@@ -280,57 +333,21 @@ class UseItemBehavior(BtAction):
         return BtResult.Success
 
 
-def actor_from_dict(data: ActorData, item_prefabs: dict[str, Item]) -> Actor:
-    ai_cls = AI_CLASSES[data.ai.class_type]
-    # TODO continue here by constructing an actual tree that if moves towards the player
+class Subtree(BtNode):
+    def __init__(self, children: list[BtNode], params: bt_val.SubtreeDataParams):
+        super().__init__(
+            "subtree",
+            children=[copy.deepcopy(EntityPrefabs.behavior_trees[params.id])],
+            max_children=1,
+        )
+        self.id = params.id
 
-    if ai_cls == HostileEnemy:
-        ai = ai_cls()
-    elif ai_cls == BehaviorTreeAI and isinstance(data.ai, BehaviorTreeAIData):
-        behavior_tree = EntityPrefabs.behavior_trees[data.ai.behavior_tree_id]
-        ai = BehaviorTreeAI(behavior_tree)
-    else:
-        raise Exception("Unhandled actor ai")
-
-    fighter_data = data.fighter
-    fighter = Fighter(
-        max_hp=fighter_data.max_hp,
-        defense=fighter_data.defense,
-        power=fighter_data.power,
-    )
-
-    ranged = Ranged(data.ranged.power, data.ranged.range) if data.ranged else None
-
-    inventory = Inventory(data.inventory)
-    new_item = lambda key: copy.deepcopy(item_prefabs[key])
-    inventory_items = [new_item(item_key) for item_key in data.inventory.items or []]
-    inventory.add_many(inventory_items)
-
-    equipment_data = data.equipment
-    weapon = new_item(equipment_data.weapon) if equipment_data.weapon else None
-    armor = new_item(equipment_data.armor) if equipment_data.armor else None
-    equipment = Equipment(weapon=weapon, armor=armor)
-    if weapon:
-        inventory.add(weapon)
-    if armor:
-        inventory.add(armor)
-
-    level_data = data.level
-    level = Level(level_data)
-
-    actor = Actor(
-        char=data.char,
-        color=hex_to_rgb(data.color),
-        name=data.name,
-        move_stepsize=data.move_stepsize,
-        ai=ai,
-        fighter=fighter,
-        inventory=inventory,
-        equipment=equipment,
-        level=level,
-        ranged=ranged,
-    )
-    return actor
+    def tick(self) -> BtResult:
+        for child in self.children:
+            child_res = child.tick()
+            if child_res == BtResult.Failure or child_res == BtResult.Running:
+                return child_res
+        return BtResult.Success
 
 
 _bt_node_class = {
@@ -349,6 +366,7 @@ _bt_node_class = {
     "RangedAttack": RangedAttackBehavior,
     "HasItem": HasItemCondition,
     "UseItem": UseItemBehavior,
+    "Subtree": Subtree,
 }
 
 

@@ -35,14 +35,41 @@ def _to_entities_or_fail[T, ValidatedData](
     filename: str,
     data: dict,
     validate: Callable[[Any], ValidatedData],
-    create_entity: Callable[[ValidatedData], T],
+    create_entity: Callable[[ValidatedData, str], T],
 ) -> dict[str, T]:
     entities: dict[str, T] = {}
     erroneous_keys: list[str] = []
     for key, val in data.items():
         try:
             validated = validate(val)
-            entities[key] = create_entity(validated)
+            entities[key] = create_entity(validated, key)
+        except ValidationError as e:
+            traceback.print_exc()
+            print(e.errors())
+            erroneous_keys.append(key)
+        except Exception:
+            traceback.print_exc()
+            erroneous_keys.append(key)
+    if erroneous_keys:
+        error_keys = ", ".join(erroneous_keys)
+        raise SystemError(
+            f"Error loading {filename}. Entity definitions malformed: {error_keys}"
+        )
+    return entities
+
+
+def _to_entities_or_failWIP[T, ValidatedData](
+    filename: str,
+    data: dict,
+    validate: Callable[[Any], ValidatedData],
+    create_entity: Callable[[ValidatedData, str], T],
+) -> dict[str, T]:
+    entities: dict[str, T] = {}
+    erroneous_keys: list[str] = []
+    for key, val in data.items():
+        try:
+            validated = validate(val)
+            entities[key] = create_entity(validated, key)
         except ValidationError as e:
             traceback.print_exc()
             print(e.errors())
@@ -88,20 +115,29 @@ def load_item_entities() -> dict[str, Item]:
     entities = _to_entities_or_fail(
         filename,
         data,
-        create_entity=item_from_dict,
+        create_entity=lambda val, key: item_from_dict(val),
         validate=lambda x: ItemData(**x),
     )
     return entities
 
 
-def load_behavior_trees() -> dict[str, BtNode]:
+def load_behavior_trees(behavior_tree_prefabs: dict) -> dict[str, BtNode]:
     filename = "assets/data/experiments/behavior_trees.yml"
     data: dict[str, dict] = _load_asset(filename)
+
+    def create_behavior_tree_with_side_effects(val, key):
+        tree = behavior_tree_from_dict(val)
+        # FIXME: it would be nice if we can run this function side-effect free, postponing assignment to the prefabs.
+        # The problem is that due to the Subtree node, we need the previously parsed behavior subtree prefab.
+        # we could collect all of those in a temporary dict but haven't implemented yet.
+        behavior_tree_prefabs[key] = tree
+        return tree
+
     _behavior_tree_from_dict = lambda val: behavior_tree_from_dict(val)
     behavior_trees = _to_entities_or_fail(
         filename,
         data,
-        create_entity=_behavior_tree_from_dict,
+        create_entity=create_behavior_tree_with_side_effects,
         validate=lambda x: BehaviorTreeData(**x),
     )
     return behavior_trees
@@ -110,7 +146,7 @@ def load_behavior_trees() -> dict[str, BtNode]:
 def load_npcs_entities(item_entities: dict[str, Item]) -> dict[str, Actor]:
     filename = "assets/data/entities/npcs.yml"
     data: dict[str, dict] = _load_asset(filename)
-    partial_actor_from_dict = lambda val: actor_from_dict(val, item_entities)
+    partial_actor_from_dict = lambda val, key: actor_from_dict(val, item_entities)
     entities = _to_entities_or_fail(
         filename,
         data,
@@ -123,7 +159,7 @@ def load_npcs_entities(item_entities: dict[str, Item]) -> dict[str, Actor]:
 def load_player_entity(item_entities: dict[str, Item]) -> Actor:
     filename = "assets/data/entities/player.yml"
     data: dict[str, dict] = _load_asset(filename)
-    partial_actor_from_dict = lambda val: actor_from_dict(val, item_entities)
+    partial_actor_from_dict = lambda val, key: actor_from_dict(val, item_entities)
     entities = _to_entities_or_fail(
         filename,
         data,
