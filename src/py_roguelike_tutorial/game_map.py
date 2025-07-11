@@ -7,9 +7,10 @@ import tcod
 from tcod.console import Console
 
 from py_roguelike_tutorial import tile_types
-from py_roguelike_tutorial.behavior_trees.behavior_trees import BtRoot
+from py_roguelike_tutorial.colors import Color
 from py_roguelike_tutorial.components.ai import BehaviorTreeAI
 from py_roguelike_tutorial.entity import Actor, Item
+from py_roguelike_tutorial.tile_types import SHROUD, floor, graphic_dt
 from py_roguelike_tutorial.types import Coord
 
 if TYPE_CHECKING:
@@ -30,6 +31,9 @@ class GameMap:
 
         self.entities = set(entities)
         self.downstairs_location: Coord = (0, 0)
+        self.dijkstra_map: np.ndarray = np.zeros(
+            self.tiles.shape, dtype=np.int32, order="F"
+        )
 
     def finalize_init(self):
         for actor in self.actors:
@@ -38,6 +42,8 @@ class GameMap:
                 ai.tree.blackboard["agent"] = actor
                 ai.tree.blackboard["player"] = self.engine.player
                 ai.tree.blackboard["engine"] = self.engine
+
+        self.update_dijkstra_map()
 
     @property
     def game_map(self) -> GameMap:
@@ -62,6 +68,14 @@ class GameMap:
     def items(self) -> Iterator[Item]:
         yield from (entity for entity in self.entities if isinstance(entity, Item))
 
+    def update_dijkstra_map(self):
+        # https://python-tcod.readthedocs.io/en/latest/tcod/path.html#tcod.path.dijkstra2d
+        cost = self.tiles["walkable"].astype(np.uint32)
+        distance = tcod.path.maxarray(self.tiles.shape, dtype=np.int32, order="F")
+        distance[self.engine.player.pos] = 0
+        tcod.path.dijkstra2d(distance, cost, 1, 1, out=distance)
+        self.dijkstra_map = distance
+
     def get_actor_at_location(self, x: int, y: int) -> Actor | None:
         for entity in self.actors:
             if entity.x == x and entity.y == y:
@@ -73,11 +87,68 @@ class GameMap:
         return 0 <= x < self.width and 0 <= y < self.height
 
     def render(self, console: Console) -> None:
-        console.rgb[0 : self.width, 0 : self.height] = np.select(
-            condlist=[self.visible, self.explored],
-            choicelist=[self.tiles["light"], self.tiles["dark"]],
-            default=tile_types.SHROUD,
+        excluded_value = np.iinfo(np.int32).max
+        masked_dijkstra_map = np.ma.masked_equal(self.dijkstra_map, excluded_value)
+        max_distance = (
+            masked_dijkstra_map.max()
+        )  # Calculate the max excluding the masked value
+        vec = np.vectorize(
+            # TODO need to parametrize this correctly, so we get black for all wall tiles,
+            #  red for very close to player
+            #  (distance close to 0) and
+            #  a gradient towards blue for further away tiles (distance close to max distance except max_int32)
+            # lambda distance: (
+            #     255 * (max(min(10 - distance, 0), 0)),
+            #     0,
+            #     min(distance * 30, 255),
+            # )
+            lambda distance: (
+                max(
+                    0, 255 - int((distance / max_distance) * 255)
+                ),  # Red decreases as normalized distance increases
+                0,  # Green remains constant
+                min(
+                    255, int((distance / max_distance) * 255)
+                ),  # Blue increases as normalized distance increases
+            )
         )
+
+        x = vec(self.dijkstra_map)
+        y = np.transpose(
+            x, axes=(1, 2, 0)
+        )  # Change shape from (3, 20, 15) to (20, 15, 3)
+        console.rgb["bg"][0 : self.width, 0 : self.height] = y
+
+        # condlist = [
+        #     self.dijkstra_map == 0,  # Bright red for 0
+        #     (self.dijkstra_map > 0) & (self.dijkstra_map <= 3),  # Orange for 1-3
+        #     (self.dijkstra_map > 3) & (self.dijkstra_map <= 6),  # Yellow for 4-6
+        #     (self.dijkstra_map > 6) & (self.dijkstra_map <= 10),  # Blue for 7-10
+        #     self.dijkstra_map > 10,  # Dark blue for values > 10
+        # ]
+        # shape = self.dijkstra_map.shape
+        # to_tile = np.vectorize(lambda _: SHROUD)  # np.array((),dtype=graphic_dt))
+        # choicelist = [
+        #     to_tile(self.dijkstra_map),
+        #     to_tile(self.dijkstra_map),
+        #     to_tile(self.dijkstra_map),
+        #     to_tile(self.dijkstra_map),
+        #     to_tile(self.dijkstra_map),
+        # ]
+        #
+        # choicelist = [
+        #     self.tiles["light"],
+        #     self.tiles["dark"],
+        #     self.tiles["light"],
+        #     self.tiles["light"],
+        #     self.tiles["light"],
+        # ]
+        #
+        # console.rgb[0 : self.width, 0 : self.height] = np.select(
+        #     condlist=condlist,
+        #     choicelist=choicelist,
+        #     default=tile_types.SHROUD,
+        # )
         sorted_entities = sorted(
             self.visible_entities, key=lambda x: x.render_order.value
         )

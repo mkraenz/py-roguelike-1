@@ -143,7 +143,7 @@ class EventHandler(BaseEventHandler):
         except exceptions.Impossible as exc:
             self.engine.message_log.add(text=exc.args[0], fg=Theme.impossible)
             return False
-
+        self.engine.game_map.update_dijkstra_map()
         self.engine.handle_npc_turns()
         self.engine.update_fov()
         return True
