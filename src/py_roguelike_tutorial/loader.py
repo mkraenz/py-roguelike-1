@@ -16,7 +16,7 @@ from py_roguelike_tutorial.entity_deserializers import (
 )
 from py_roguelike_tutorial.utils import assets_filepath
 from py_roguelike_tutorial.validators.actor_validator import ActorData
-from py_roguelike_tutorial.validators.behavior_tree_validator import BehaviorTreeData
+from py_roguelike_tutorial.behavior_trees.validators import BehaviorTreeData
 from py_roguelike_tutorial.validators.faction_validator import FactionsData
 from py_roguelike_tutorial.validators.item_validator import ItemData
 

@@ -63,6 +63,9 @@ class DistanceToPlayerDataParamsB(BaseModel):
     min_dist: int
 
 
+DistanceToPlayerDataParams = DistanceToPlayerDataParamsA | DistanceToPlayerDataParamsB
+
+
 class DistanceToPlayerData(BtBehaviorData):
     type: Literal["DistanceToPlayer"]
     params: DistanceToPlayerDataParamsA | DistanceToPlayerDataParamsB
