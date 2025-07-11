@@ -6,7 +6,7 @@ authors = [
     {name = "Mirco Kraenz",email = "software@kraenz.eu"}
 ]
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 dependencies = [
     "pydantic>=2.11.7",
     "pyyaml>=6.0.2",
