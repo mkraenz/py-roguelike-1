@@ -19,6 +19,7 @@ type BtChildren = list[
     | UseItemData
     | HealthConditionData
     | SubtreeData
+    | WriteItemPosInVicinityData
 ]
 
 
@@ -47,6 +48,19 @@ class BtSequenceData(BtNodeData):
 
 class BtBehaviorData(BtNodeData):
     children: None = None
+
+
+class SimpleBehaviorData(BtBehaviorData):
+    type: Literal[
+        "MeleeAttack",
+        "RangedAttack",
+        "MoveTowardsPlayer",
+        "SeesPlayer",
+        "Wait",
+        "RandomMove",
+        "HasItemAtPosition",
+        "PickUpItem",
+    ]
 
 
 class DistanceToPlayerDataParamsA(BaseModel):
@@ -134,17 +148,6 @@ class HealthConditionData(BtBehaviorData):
     params: HealthConditionDataParams
 
 
-class SimpleBehaviorData(BtBehaviorData):
-    type: Literal[
-        "MeleeAttack",
-        "RangedAttack",
-        "MoveTowardsPlayer",
-        "SeesPlayer",
-        "Wait",
-        "RandomMove",
-    ]
-
-
 class SubtreeDataParams(BaseModel):
     id: str
 
@@ -154,10 +157,21 @@ class SubtreeData(BtNodeData):
     params: SubtreeDataParams
 
 
-class BehaviorTreeData(BaseModel):
-    root: BtRootData
-
-
 class InverterData(BtNodeData):
     type: Literal["Inverter"]
     children: BtChildren = Field(max_length=1, min_length=1)
+
+
+class WriteItemPosInVicinityDataParams(BaseModel):
+    write_to_blackboard_key: str
+    look_for_kind: str
+    radius: int
+
+
+class WriteItemPosInVicinityData(BtBehaviorData):
+    type: Literal["WriteItemPosInVicinity"]
+    params: WriteItemPosInVicinityDataParams
+
+
+class BehaviorTreeData(BaseModel):
+    root: BtRootData

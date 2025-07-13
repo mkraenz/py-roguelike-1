@@ -6,13 +6,14 @@ import re
 
 import numpy as np
 
+__all__ = ["load_wang_tiles", "generate_map"]
 
-type _Tile = np.ndarray
+type Tile = np.ndarray
 
-type _Map = np.ndarray[tuple[int, int], Any]
+type Map = np.ndarray[tuple[int, int], Any]
 
 
-class _Bitmasks:
+class Bitmasks:
     NORTH = 0b1000
     EAST = 0b0100
     SOUTH = 0b0010
@@ -20,33 +21,33 @@ class _Bitmasks:
 
 
 @dataclasses.dataclass
-class _Neighbors:
-    north: _Tile
-    east: _Tile
-    south: _Tile
-    west: _Tile
+class Neighbors:
+    north: Tile
+    east: Tile
+    south: Tile
+    west: Tile
 
 
-_wang_tile_dt = np.dtype(
+wang_tile_dt = np.dtype(
     [("bitmask", np.int32), ("data", np.dtypes.StringDType), ("empty", np.bool)]
 )
 
 
-def _new_wang_tile(bitmask: int, data: str, empty: bool = False) -> _Tile:
+def new_wang_tile(bitmask: int, data: str, empty: bool = False) -> Tile:
     if not empty:
         if not re.match("^[w.\n]+$", data):
             VALID_CHARS = ["w", "."]
             raise ValueError(
                 f"Found unsupported character. Allowed chars are empty lines and: {' '.join(VALID_CHARS)}"
             )
-    return np.array((bitmask, data, empty), dtype=_wang_tile_dt)
+    return np.array((bitmask, data, empty), dtype=wang_tile_dt)
 
 
-def _is_empty_wang_tile(tile: _Tile):
+def is_empty_wang_tile(tile: Tile):
     return tile["empty"]
 
 
-def _read_next_tile(file: TextIOWrapper):
+def read_next_tile(file: TextIOWrapper):
     """We are very strict with our requirements on the file format.
     Each block must be separated by an empty line.
     At the end of the file, we need another empty line.
@@ -70,7 +71,7 @@ def _read_next_tile(file: TextIOWrapper):
             bitmask_str, *room_data = current_tile_lines
             try:
                 # TODO validation?
-                tile = _new_wang_tile(int(bitmask_str.strip(), 2), "".join(room_data))
+                tile = new_wang_tile(int(bitmask_str.strip(), 2), "".join(room_data))
                 yield tile
                 current_tile_lines = []
                 tile_starts_at_line = -1
@@ -81,42 +82,42 @@ def _read_next_tile(file: TextIOWrapper):
                 raise
 
 
-def load_wang_tiles(filepath: str) -> list[_Tile]:
+def load_wang_tiles(filepath: str) -> list[Tile]:
     with open(filepath) as file:
-        return [tile for tile in _read_next_tile(file)]
+        return [tile for tile in read_next_tile(file)]
 
 
-def _test_north_south_compatible(north_tile: _Tile, south_tile: _Tile) -> bool:
+def is_north_south_compatible(north_tile: Tile, south_tile: Tile) -> bool:
     # None-Tiles are always compatible
-    if _is_empty_wang_tile(north_tile) or _is_empty_wang_tile(south_tile):
+    if is_empty_wang_tile(north_tile) or is_empty_wang_tile(south_tile):
         return True
     a = (
-        south_tile["bitmask"] & _Bitmasks.NORTH
+        south_tile["bitmask"] & Bitmasks.NORTH
     )  # pick the north bit, bitmask abcd becomes a000
-    b = north_tile["bitmask"] & _Bitmasks.SOUTH  # abcd becomes 00c0
+    b = north_tile["bitmask"] & Bitmasks.SOUTH  # abcd becomes 00c0
     c = a >> 2  # a000 becomes 00a0
     # if the two values are equal now, we know they are compatible (both have walls, or both entrances)
     return c == b
 
 
-def _test_east_west_compatible(east_tile: _Tile, west_tile: _Tile) -> bool:
+def is_east_west_compatible(east_tile: Tile, west_tile: Tile) -> bool:
     # Empty Tiles are always compatible
-    if _is_empty_wang_tile(east_tile) or _is_empty_wang_tile(west_tile):
+    if is_empty_wang_tile(east_tile) or is_empty_wang_tile(west_tile):
         return True
 
-    a = west_tile["bitmask"] & _Bitmasks.EAST  # abcd becomes 0b00
-    b = east_tile["bitmask"] & _Bitmasks.WEST  # abcd becomes 000d
+    a = west_tile["bitmask"] & Bitmasks.EAST  # abcd becomes 0b00
+    b = east_tile["bitmask"] & Bitmasks.WEST  # abcd becomes 000d
     c = a >> 2  # 0b00 becomes 000b
     return c == b
 
 
-def _generate(tiles: list[_Tile], width: int, height: int) -> _Map:
+def generate(tiles: list[Tile], width: int, height: int) -> Map:
     """Procedurally generate a filled map with all borders being all-walls wang tiles.
     The map will have dimensions width+2, height+2."""
     outer_width = width + 2
     outer_height = height + 2
-    map: _Map = np.full(
-        (outer_height, outer_width), fill_value=_new_wang_tile(0, "", True)
+    map: Map = np.full(
+        (outer_height, outer_width), fill_value=new_wang_tile(0, "", True)
     )
 
     # prefill map borders
@@ -135,9 +136,9 @@ def _generate(tiles: list[_Tile], width: int, height: int) -> _Map:
             east_tile = map[y][x + 1]
             south_tile = map[y + 1][x]
             west_tile = map[y][x - 1]
-            neighbors = _Neighbors(north_tile, east_tile, south_tile, west_tile)
+            neighbors = Neighbors(north_tile, east_tile, south_tile, west_tile)
 
-            candidates = _get_tile_candidates(tiles, neighbors, [all_walls_tile])
+            candidates = get_tile_candidates(tiles, neighbors, [all_walls_tile])
             # we try to keep the all_walls tile out of things as much as possible, only falling back to it in the worst case of no other matching tiles.
             candidates_or_fallback = (
                 candidates if len(candidates) != 0 else [all_walls_tile]
@@ -147,38 +148,38 @@ def _generate(tiles: list[_Tile], width: int, height: int) -> _Map:
     return map
 
 
-def _get_tile_candidates(
-    tiles: list[_Tile], neighbors: _Neighbors, excluded_tiles: list[_Tile]
+def get_tile_candidates(
+    tiles: list[Tile], neighbors: Neighbors, excluded_tiles: list[Tile]
 ):
     return [
         tile
         for tile in tiles
-        if _test_east_west_compatible(tile, neighbors.west)
-        and _test_east_west_compatible(neighbors.east, tile)
-        and _test_north_south_compatible(neighbors.north, tile)
-        and _test_north_south_compatible(tile, neighbors.south)
+        if is_east_west_compatible(tile, neighbors.west)
+        and is_east_west_compatible(neighbors.east, tile)
+        and is_north_south_compatible(neighbors.north, tile)
+        and is_north_south_compatible(tile, neighbors.south)
         and not tile in excluded_tiles
     ]
 
 
-def _draw(map: _Map) -> str:
+def draw(map: Map) -> str:
     # assuming square rooms
     room_size_x = len(map[0, 0]["data"].splitlines()[0])
     room_size_y = len(map[0, 0]["data"].splitlines())
     display: list[str] = ["" for _ in range(len(map) * room_size_x)]
-    for (y, x), tile in np.ndenumerate(map):
+    for (y, _), tile in np.ndenumerate(map):
         room_rows = tile["data"].splitlines()
         for i, room_row in enumerate(room_rows):
             display[room_size_y * y + i] += room_row
     return "\n".join(display)
 
 
-def generate_map(tiles: list[_Tile], width: int, height: int) -> str:
-    map = _generate(tiles, width, height)
-    return _draw(map)
+def generate_map(tiles: list[Tile], width: int, height: int) -> str:
+    map = generate(tiles, width, height)
+    return draw(map)
 
 
-if __name__ == "__main__":
+def main():
     # random.seed(14)
     # filename = "/home/mirco/programming/py-roguelike-tutorial/src/assets/data/rooms/3x3rooms-test.txt"
     _filename = "/home/mirco/programming/py-roguelike-tutorial/src/assets/data/rooms/5x5rooms.txt"
@@ -186,6 +187,9 @@ if __name__ == "__main__":
     _tiles = load_wang_tiles(_filename)
     _width, _height = 30, 8
     # NOTE: map is actually _width+2, _height+2 due to all walls borders
-    _map = _generate(_tiles, _width, _height)
-    _rendered_map = _draw(_map)
-    print(_rendered_map)
+    _map = generate(_tiles, _width, _height)
+    _rendered_map = draw(_map)
+
+
+if __name__ == "__main__":
+    main()

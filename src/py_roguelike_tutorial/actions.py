@@ -161,7 +161,7 @@ class PickupAction(Action):
         self.entity.inventory.add(item)
         self.engine.game_map.entities.remove(item)
 
-        txt = f"You pick up the {item.name}."
+        txt = f"{self.entity.name} picked up the {item.name}."
         self.engine.message_log.add(txt)
 
 

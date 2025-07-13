@@ -14,9 +14,11 @@ from py_roguelike_tutorial.actions import (
     RangedAttackAction,
 )
 from py_roguelike_tutorial.constants import INTERCARDINAL_DIRECTIONS
+from py_roguelike_tutorial.entity import Entity
+from py_roguelike_tutorial.math import Math
 
 if TYPE_CHECKING:
-    from py_roguelike_tutorial.behavior_trees.behavior_trees import BtNode
+    from py_roguelike_tutorial.behavior_trees.behavior_trees import BtNode, Blackboard
     from py_roguelike_tutorial.entity import Actor
     from py_roguelike_tutorial.types import Coord
     from py_roguelike_tutorial.engine import Engine
@@ -123,4 +125,29 @@ class BehaviorTreeAI(BaseAI):
         self.tree = tree
 
     def perform(self) -> None:
+        # TODO consider adding a Sensor step here that collects info about the environment of the agent
+        # TODO other decorators like AlwaysSucceed (which makes the subtree optional), or SetPropertyOnFail, or OnlyOnce
         self.tree.tick()
+
+
+class VisualSense:
+    def __init__(self, agent: Actor, blackboard: Blackboard):
+        self.agent = agent
+        self.blackboard = blackboard
+
+    def update(self):
+        pass
+
+
+class Interests:
+    def __init__(self, agent_pos: Coord, range: int):
+        self.agent_pos = agent_pos
+        self.range = range
+
+    def is_interesting(self, object: Entity):
+        if self.is_within_range(object.pos):
+            return True
+        return False
+
+    def is_within_range(self, pos: Coord):
+        return Math.pos_diff(pos, self.agent_pos)
