@@ -28,6 +28,17 @@ sensoring:
 
 ```
 
-Hey, which items Am I interested in? 
-Which items are around me? 
-Which items of those in my vicinity are interesting? 
+Hey, which items Am I interested in?
+Which items are around me?
+Which items of those in my vicinity are interesting?
+
+```log
+interests = static, predefined in npcs.yml
+
+blackboard (= runtime state)
+
+each turn:
+- Sensing -> what is around me? Given Interests, write into the blackboard where each point of interest is within some range.
+- Planning -> Given priority given by Interests and the sensing results (and maybe blackboard as memory/previous knowledge!), decide on a course of action
+- Execution -> do actions according to highest priority
+```

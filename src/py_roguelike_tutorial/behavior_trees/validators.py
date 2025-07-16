@@ -20,6 +20,9 @@ type BtChildren = list[
     | HealthConditionData
     | SubtreeData
     | WriteItemPosInVicinityData
+    | MoveToEntityData
+    | PickUpItemData
+    | EquipItemData
 ]
 
 
@@ -59,7 +62,6 @@ class SimpleBehaviorData(BtBehaviorData):
         "Wait",
         "RandomMove",
         "HasItemAtPosition",
-        "PickUpItem",
     ]
 
 
@@ -123,6 +125,24 @@ class UseItemData(BtBehaviorData):
     params: UseItemDataParams
 
 
+class PickUpItemDataParams(BaseModel):
+    key: str
+
+
+class PickUpItemData(BtBehaviorData):
+    type: Literal["PickUpItem"]
+    params: PickUpItemDataParams
+
+
+class EquipItemDataParams(BaseModel):
+    id: str
+
+
+class EquipItemData(BtBehaviorData):
+    type: Literal["EquipItem"]
+    params: EquipItemDataParams
+
+
 class BlackboardConditionData(BtBehaviorData):
     type: Literal["BlackboardCondition"]
     params: BlackboardConditionDataParams
@@ -171,6 +191,15 @@ class WriteItemPosInVicinityDataParams(BaseModel):
 class WriteItemPosInVicinityData(BtBehaviorData):
     type: Literal["WriteItemPosInVicinity"]
     params: WriteItemPosInVicinityDataParams
+
+
+class MoveToEntityDataParams(BaseModel):
+    to: str
+
+
+class MoveToEntityData(BtBehaviorData):
+    type: Literal["MoveToEntity"]
+    params: MoveToEntityDataParams
 
 
 class BehaviorTreeData(BaseModel):

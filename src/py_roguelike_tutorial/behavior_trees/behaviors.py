@@ -2,11 +2,13 @@
 
 import copy
 import random
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 import tcod
 
 from py_roguelike_tutorial.actions import (
+    EquipAction,
     MoveAction,
     MeleeAction,
     PickupAction,
@@ -14,12 +16,16 @@ from py_roguelike_tutorial.actions import (
     ItemAction,
 )
 import py_roguelike_tutorial.behavior_trees.behavior_trees as bt
-from py_roguelike_tutorial.behavior_trees.behavior_trees import BtResult
+from py_roguelike_tutorial.behavior_trees.behavior_trees import Blackboard, BtResult
 from py_roguelike_tutorial.constants import INTERCARDINAL_DIRECTIONS
 from py_roguelike_tutorial.entity_factory import EntityPrefabs
 from py_roguelike_tutorial.exceptions import Impossible
 from py_roguelike_tutorial.types import Coord
 from py_roguelike_tutorial.behavior_trees import validators as bt_val
+from py_roguelike_tutorial.entity import Entity
+
+if TYPE_CHECKING:
+    pass
 
 
 class SeesPlayerCondition(bt.BtCondition):
@@ -160,17 +166,50 @@ class UseItemBehavior(bt.BtAction):
 
     def tick(self) -> bt.BtResult:
         item = self.agent.inventory.get_by_kind(self.item_kind)
-        assert (
-            item
-        ), f"Agent {self.agent.name} does not have item of kind: {self.item_kind}."
+        assert item, f"{self.agent.name} does not have item of kind: {self.item_kind}."
         ItemAction(self.agent, item).perform()
         return bt.BtResult.Success
 
 
-class PickUpItemBehavior(bt.BtAction):
+class EquipItemBehavior(bt.BtAction):
+    def __init__(self, args: bt.BtConstructorArgs[bt_val.EquipItemDataParams]):
+        super().__init__(args)
+        self.id_raw = args.params.id
+
     def tick(self) -> bt.BtResult:
         try:
+            id, loaded = self.maybe_read_blackboard(self.id_raw)
+            item = self.agent.inventory.get_by_id(id)
+            if item is None:
+                raise AssertionError(
+                    f"{self.agent.name} tried to equip an item with id {id}, but it does not have such an item."
+                )
+            EquipAction(entity=self.agent, item=item).perform()
+            if loaded:
+                self.remove_from_blackboard(self.id_raw)
+            return bt.BtResult.Success
+        except Impossible:
+            # TODO implement. maybe write that inventory is full or sth. also we should check the inventory before trying to pick up sth
+            pass
+
+        return bt.BtResult.Success
+
+
+class PickUpItemBehavior(bt.BtAction):
+    def __init__(self, args: bt.BtConstructorArgs[bt_val.PickUpItemDataParams]):
+        super().__init__(args)
+        self.key = args.params.key
+
+    def tick(self) -> bt.BtResult:
+        try:
+            # item must be selected before picking because pickup action will remove the item
+            item = self.engine.game_map.get_item_at_location(*self.agent.pos)
             PickupAction(self.agent).perform()
+            if item is None:
+                raise AssertionError(
+                    f"Agent {self.agent.name} tried to pick up an item at its position, but there is no item there."
+                )
+            self.blackboard.set(self.key, item.id)
         except Impossible:
             # TODO implement. maybe write that inventory is full or sth. also we should check the inventory before trying to pick up sth
             # ignore for the time being
@@ -234,6 +273,40 @@ class WriteItemPosInVicinity(bt.BtAction):
         return bt.BtResult.Failure
 
 
+class MoveToEntityBehavior(bt.BtAction):
+    def __init__(self, args: bt.BtConstructorArgs[bt_val.MoveToEntityDataParams]):
+        super().__init__(args)
+        self.to_raw = args.params.to
+
+    def get_path_to(self, dest_x: int, dest_y: int) -> list[Coord]:
+        """Returns the list of coordinates to the destination, or an empty list if there is no such path."""
+        cost = np.array(self.agent.parent.tiles["walkable"], dtype=np.int8)
+
+        for entity in self.agent.parent.entities:
+            if entity.blocks_movement and cost[entity.x, entity.y]:
+                # we add to the cost of a blocked position. A lower number means more enemies will crowd behind
+                # each other in hallways. Higher number means they will take longer paths towards the destination.
+                cost[entity.x, entity.y] += 10
+        graph = tcod.path.SimpleGraph(cost=cost, cardinal=2, diagonal=3)
+        pathfinder = tcod.path.Pathfinder(graph)
+        pathfinder.add_root(self.agent.pos)
+        # path_to includes the start and ending points. we strip away the start point
+        path: list[list[int]] = pathfinder.path_to((dest_x, dest_y))[1:].tolist()
+        return [(index[0], index[1]) for index in path]
+
+    def tick(self) -> BtResult:
+        target, _ = self.maybe_read_blackboard(self.to_raw)
+        if not isinstance(target, Entity):
+            raise AssertionError("Expected target to be an Entity.")
+        path = self.get_path_to(target.x, target.y)
+        if len(path) == 0:
+            return bt.BtResult.Failure
+        dest_x, dest_y = path.pop(0)
+        step_dx, step_dy = dest_x - self.agent.x, dest_y - self.agent.y
+        MoveAction(self.agent, step_dx, step_dy).perform()
+        return bt.BtResult.Success
+
+
 BT_NODE_NAME_TO_CLASS = {
     "Root": bt.BtRoot,
     "Selector": bt.BtSelector,
@@ -255,4 +328,6 @@ BT_NODE_NAME_TO_CLASS = {
     "HasItemAtPosition": HasItemAtPosition,
     "WriteItemPosInVicinity": WriteItemPosInVicinity,
     "PickUpItem": PickUpItemBehavior,
+    "MoveToEntity": MoveToEntityBehavior,
+    "EquipItem": EquipItemBehavior,
 }

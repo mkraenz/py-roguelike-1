@@ -87,43 +87,49 @@ class GameMap:
         return 0 <= x < self.width and 0 <= y < self.height
 
     def render(self, console: Console) -> None:
-        excluded_value = np.iinfo(np.int32).max
-        masked_dijkstra_map = np.ma.masked_equal(self.dijkstra_map, excluded_value)
-        print(masked_dijkstra_map)
-        max_distance = (
-            masked_dijkstra_map.max()
-        )  # Calculate the max excluding the masked value
+        # excluded_value = np.iinfo(np.int32).max
+        # masked_dijkstra_map = np.ma.masked_equal(self.dijkstra_map, excluded_value)
+        # print(masked_dijkstra_map)
+        # max_distance = (
+        #     masked_dijkstra_map.max()
+        # )  # Calculate the max excluding the masked value
 
-        def distance_to_color(distance: int) -> Rgb:
-            if distance == excluded_value:
-                return (0, 0, 0)
-            return (
-                # Transition logic
-                # Normalize distance to [0, 1]
-                (
-                    int(255 * (1 - distance / max_distance))
-                    if float(distance) / max_distance <= 0.5
-                    else 0
-                ),  # Red
-                (
-                    int(255 * (distance / (max_distance / 2)))
-                    if distance / max_distance <= 0.5
-                    else int(255 * (1 - distance / (max_distance / 2)))
-                ),  # Green
-                (
-                    int(255 * (distance / max_distance))
-                    if float(distance) / max_distance > 0.5
-                    else 0
-                ),  # Blue
-            )
+        # def distance_to_color(distance: int) -> Rgb:
+        #     if distance == excluded_value:
+        #         return (0, 0, 0)
+        #     return (
+        #         # Transition logic
+        #         # Normalize distance to [0, 1]
+        #         (
+        #             int(255 * (1 - distance / max_distance))
+        #             if float(distance) / max_distance <= 0.5
+        #             else 0
+        #         ),  # Red
+        #         (
+        #             int(255 * (distance / (max_distance / 2)))
+        #             if distance / max_distance <= 0.5
+        #             else int(255 * (1 - distance / (max_distance / 2)))
+        #         ),  # Green
+        #         (
+        #             int(255 * (distance / max_distance))
+        #             if float(distance) / max_distance > 0.5
+        #             else 0
+        #         ),  # Blue
+        #     )
 
-        vec = np.vectorize(distance_to_color)
+        # vec = np.vectorize(distance_to_color)
 
-        color_map_wrong_axes = vec(self.dijkstra_map)
-        color_map = np.transpose(
-            color_map_wrong_axes, axes=(1, 2, 0)
-        )  # Change shape from (3, 20, 15) to (20, 15, 3)
-        console.rgb["bg"][0 : self.width, 0 : self.height] = color_map
+        # color_map_wrong_axes = vec(self.dijkstra_map)
+        # color_map = np.transpose(
+        #     color_map_wrong_axes, axes=(1, 2, 0)
+        # )  # Change shape from (3, 20, 15) to (20, 15, 3)
+        # console.rgb["bg"][0 : self.width, 0 : self.height] = color_map
+
+        console.rgb[0 : self.width, 0 : self.height] = np.select(
+            condlist=[self.visible, self.explored],
+            choicelist=[self.tiles["light"], self.tiles["dark"]],
+            default=tile_types.SHROUD,
+        )
 
         sorted_entities = sorted(
             self.visible_entities, key=lambda x: x.render_order.value

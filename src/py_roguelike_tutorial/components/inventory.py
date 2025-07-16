@@ -16,6 +16,13 @@ class Inventory(BaseComponent):
         self._capacity = data.capacity
         self.items: list[Item] = []
 
+    def get_by_id(self, item_id: str) -> Item | None:
+        """Retrieve an item by its ID."""
+        for item in self.items:
+            if item.id == item_id:
+                return item
+        return None
+
     def drop(self, item: Item) -> None:
         """Removes the item from the inventory and drops it at the parents location."""
         self.items.remove(item)

@@ -50,21 +50,54 @@ flee:
 
 equip_item:
   root:
-    comment: "Equips an weapon if in vicinity"
+    comment: "Equips a weapon if in vicinity"
     type: Root
     children:
-      - type: Sequence
+      - type: Selector
         children:
-          - type: HasItemAtPosition
-            # TODO check if nearest weapon pos is already set. if yes, check whether the item is still there.
-            # if not, we need to switch targets
-            # TODO This should be moved into the sensor
-          - type: WriteItemPosInVicinity
-            params:
-              radius: 5
-              look_for_kind: dagger
-              write_to_blackboard_key: nearest_weapon_position
-              # todo we need another selector above this to separate each action (avoid double actions by the AI)
+          - type: Sequence
+            children:
+              - type: Inverter
+                children:
+                  - type: HasItem
+                    params:
+                      item_kind: dagger
+              - type: BlackboardCondition
+                params:
+                  comparator: has
+                  key: dagger
+                  value: irrelevant
+              - type: Selector
+                children:
+                  - type: MoveToEntity
+                    params:
+                      to: $dagger
+                  - type: PickUpItem
+                    params:
+                      key: picked_up_equipment_id
+          - type: Sequence
+            children:
+              - type: BlackboardCondition
+                params:
+                  comparator: has
+                  key: picked_up_equipment_id
+                  value: irrelevant
+              - type: EquipItem
+                params:
+                  id: $picked_up_equipment_id
+
+# - type: MoveToEntity
+#   params:
+#     to: "{dagger}"
+# TODO check if nearest weapon pos is already set. if yes, check whether the item is still there.
+# if not, we need to switch targets
+# TODO This should be moved into the sensor
+# - type: WriteItemPosInVicinity
+#   params:
+#     radius: 5
+#     look_for_kind: dagger
+#     write_to_blackboard_key: nearest_weapon_position
+# todo we need another selector above this to separate each action (avoid double actions by the AI)
 #          - type: Selector
 #            children:
 #              - type: IsAt
@@ -73,9 +106,9 @@ equip_item:
 #              - type: MoveTo
 #                params:
 #                  to: "{nearest_weapon_position}"
-          - type: PickUpItem
+# - type: PickUpItem
 #          - type: Selector
-#            children:  
+#            children:
 #              - type: HasEquipped
 #                params:
 #                  kind: dagger
@@ -126,26 +159,16 @@ melee_attacker:
             children:
               # once alarmed the agent never calms down
               - comment: "Maybe set alarmed"
-                type: Selector
+                type: Sequence
                 children:
-                  # bc alarmed agents never calm down,
-                  # we don't need to check this subtree once alarmed has been set to True once
-                  - comment: "optimization: only run expensive siblings, more precisely line of sight, when not alarmed yet"
-                    type: BlackboardCondition
+                  - type: DistanceToPlayer
+                    params:
+                      max_dist: 10
+                  - type: SeesPlayer
+                  - type: WriteToBlackboard
                     params:
                       key: alarmed
-                      comparator: has
-                      value: "irrelevant"
-                  - type: Sequence
-                    children:
-                      - type: DistanceToPlayer
-                        params:
-                          max_dist: 10
-                      - type: SeesPlayer
-                      - type: WriteToBlackboard
-                        params:
-                          key: alarmed
-                          value: True
+                      value: True
               - comment: "If alarmed"
                 type: BlackboardCondition
                 params:

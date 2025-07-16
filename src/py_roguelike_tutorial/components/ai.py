@@ -7,21 +7,21 @@ import numpy as np
 import tcod
 
 from py_roguelike_tutorial.actions import (
+    BumpAction,
     MeleeAction,
     MoveAction,
-    WaitAction,
-    BumpAction,
     RangedAttackAction,
+    WaitAction,
 )
 from py_roguelike_tutorial.constants import INTERCARDINAL_DIRECTIONS
 from py_roguelike_tutorial.entity import Entity
 from py_roguelike_tutorial.math import Math
 
 if TYPE_CHECKING:
-    from py_roguelike_tutorial.behavior_trees.behavior_trees import BtNode, Blackboard
+    from py_roguelike_tutorial.behavior_trees.behavior_trees import Blackboard, BtNode
+    from py_roguelike_tutorial.engine import Engine
     from py_roguelike_tutorial.entity import Actor
     from py_roguelike_tutorial.types import Coord
-    from py_roguelike_tutorial.engine import Engine
 
 
 class BaseAI:
@@ -123,31 +123,46 @@ class ConfusedEnemy(BaseAI):
 class BehaviorTreeAI(BaseAI):
     def __init__(self, tree: BtNode):
         self.tree = tree
+        self.visual_sense: VisualSense
 
     def perform(self) -> None:
-        # TODO consider adding a Sensor step here that collects info about the environment of the agent
-        # TODO other decorators like AlwaysSucceed (which makes the subtree optional), or SetPropertyOnFail, or OnlyOnce
+        if not hasattr(self, "visual_sense"):
+            self.visual_sense = VisualSense(
+                self.agent, self.tree.blackboard, self.engine
+            )
+        self.visual_sense.sense()
         self.tree.tick()
 
 
 class VisualSense:
-    def __init__(self, agent: Actor, blackboard: Blackboard):
+    def __init__(self, agent: Actor, blackboard: Blackboard, engine: Engine):
         self.agent = agent
         self.blackboard = blackboard
+        self.engine = engine
+        self.interests = ["Player", "dagger"]
 
-    def update(self):
-        pass
+    def sense(self):
+        items = self.engine.game_map.items
+        for item in items:
+            if (
+                item.kind in self.interests
+                and self.agent.dist_chebyshev(item) <= 10
+                and self.engine.game_map.has_line_of_sight(self.agent, item)
+            ):
+                self.blackboard.set(item.kind, item)
+            else:
+                self.blackboard.remove(item.kind)
 
+        for actor in self.engine.game_map.actors:
+            # TODO give npcs and players a 'category', 'archetype', 'type', or 'kind' attribute
+            if actor.is_alive and actor.name in self.interests and self.can_see(actor):
+                self.blackboard.set(actor.name, actor)
+            else:
+                self.blackboard.remove(actor.name)
 
-class Interests:
-    def __init__(self, agent_pos: Coord, range: int):
-        self.agent_pos = agent_pos
-        self.range = range
-
-    def is_interesting(self, object: Entity):
-        if self.is_within_range(object.pos):
-            return True
-        return False
-
-    def is_within_range(self, pos: Coord):
-        return Math.pos_diff(pos, self.agent_pos)
+    def can_see(self, other: Entity) -> bool:
+        """Check if the agent can see the entity."""
+        # TODO remove hard coding
+        return self.agent.dist_chebyshev(
+            other
+        ) <= 10 and self.engine.game_map.has_line_of_sight(self.agent, other)

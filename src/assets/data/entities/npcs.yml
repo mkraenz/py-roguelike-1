@@ -8,11 +8,11 @@ orc:
     max_hp: 10
     defense: 0
     power: 3
-  inventory: { }
+  inventory: {}
   level:
     level_up_base: 0
     xp_given: 35
-  equipment: { }
+  equipment: {}
 
 orc_archer:
   char: "a"
@@ -23,6 +23,10 @@ orc_archer:
     # If player too close, try to gain some distance.
     class_type: BehaviorTreeAI
     behavior_tree_id: melee_attacker
+  # interests:
+  #   - enemy
+  #   - teleport_scroll
+  #   - dagger
   ranged:
     power: 2
     range: 5
@@ -37,7 +41,7 @@ orc_archer:
   level:
     level_up_base: 0
     xp_given: 35
-  equipment: { }
+  equipment: {}
 
 bijumper:
   char: "b"
@@ -49,11 +53,11 @@ bijumper:
     max_hp: 7
     defense: 1
     power: 2
-  inventory: { }
+  inventory: {}
   level:
     level_up_base: 0
     xp_given: 20
-  equipment: { }
+  equipment: {}
   move_stepsize: 2
 
 trijumper:
@@ -66,11 +70,11 @@ trijumper:
     max_hp: 7
     defense: 1
     power: 2
-  inventory: { }
+  inventory: {}
   level:
     level_up_base: 0
     xp_given: 20
-  equipment: { }
+  equipment: {}
   move_stepsize: 3
 
 goblin:
@@ -83,11 +87,11 @@ goblin:
     max_hp: 6
     defense: 0
     power: 2
-  inventory: { }
+  inventory: {}
   level:
     level_up_base: 0
     xp_given: 15
-  equipment: { }
+  equipment: {}
 
 troll:
   char: "T"
@@ -99,8 +103,8 @@ troll:
     max_hp: 16
     defense: 1
     power: 4
-  inventory: { }
+  inventory: {}
   level:
     level_up_base: 0
     xp_given: 35
-  equipment: { }
+  equipment: {}

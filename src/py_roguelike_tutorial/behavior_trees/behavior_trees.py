@@ -2,11 +2,11 @@ from __future__ import annotations
 
 import abc
 from enum import StrEnum
-from typing import TYPE_CHECKING, Any, Generic, TypeVar, NamedTuple
+from typing import TYPE_CHECKING, Any, Generic, NamedTuple, TypeVar
 
 if TYPE_CHECKING:
-    from py_roguelike_tutorial.entity import Actor
     from py_roguelike_tutorial.engine import Engine
+    from py_roguelike_tutorial.entity import Actor
 
 __all__ = [
     "BtResult",
@@ -35,12 +35,16 @@ class BtResult(StrEnum):
 INF = 999999  # for our purposes this is unreachably high
 
 
-class Blackboard(dict):
+class Blackboard(dict[str, Any]):
     def set(self, key: str, val: Any) -> None:
         self[key] = val
 
     def has(self, key: str) -> bool:
         return key in self
+
+    def remove(self, key: str) -> None:
+        if key in self:
+            del self[key]
 
 
 T = TypeVar("T")
@@ -98,6 +102,14 @@ class BtNode(abc.ABC):
     @abc.abstractmethod
     def tick(self) -> BtResult:
         pass
+
+    def maybe_read_blackboard(self, input: Any) -> tuple[Any, bool]:
+        if isinstance(input, str) and input.startswith("$"):
+            return self.blackboard.get(input[1:]), True
+        return input, False
+
+    def remove_from_blackboard(self, input: Any) -> None:
+        self.blackboard.remove(input[1:])
 
 
 class BtRoot(BtNode):

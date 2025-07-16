@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import math
 from typing import Type, TYPE_CHECKING
+import uuid
 
 from py_roguelike_tutorial.colors import Color
 from py_roguelike_tutorial.components.faction import Faction
@@ -41,6 +42,7 @@ class Entity:
         render_order: RenderOrder = RenderOrder.CORPSE,
         move_stepsize: int = 1,
     ) -> None:
+        self.id = uuid.uuid4()
         self.x = x
         self.y = y
         self.char = char
@@ -197,7 +199,7 @@ class Item(Entity):
         char: str = "?",
         color: Rgb = Color.WHITE,
         name: str = "<Unnamed Item>",
-        kind: str = '',
+        kind: str = "",
         consumable: Consumable | None = None,
         equippable: Equippable | None = None,
     ):

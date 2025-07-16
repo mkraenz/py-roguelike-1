@@ -54,10 +54,10 @@ class Equipment(BaseComponent):
         return self.weapon == item or self.armor == item
 
     def _unequip_message(self, item_name: str) -> None:
-        self.engine.message_log.add(f"You unequip the {item_name}.")
+        self.engine.message_log.add(f"{self.parent.name} unequips the {item_name}.")
 
     def _equip_message(self, item_name: str) -> None:
-        self.engine.message_log.add(f"You equip the {item_name}.")
+        self.engine.message_log.add(f"{self.parent.name} equips the {item_name}.")
 
     def _equip(self, slot: Slot, item: Item, show_message: bool) -> None:
         if self._slot_taken(slot):
