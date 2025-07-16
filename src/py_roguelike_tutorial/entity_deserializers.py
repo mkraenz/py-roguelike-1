@@ -11,7 +11,11 @@ from py_roguelike_tutorial.behavior_trees.behavior_trees import (
 )
 from py_roguelike_tutorial.behavior_trees.behaviors import BT_NODE_NAME_TO_CLASS
 from py_roguelike_tutorial.colors import hex_to_rgb
-from py_roguelike_tutorial.components.ai import HostileEnemy, BehaviorTreeAI
+from py_roguelike_tutorial.components.ai import (
+    HostileEnemy,
+    BehaviorTreeAI,
+    VisualSense,
+)
 from py_roguelike_tutorial.components.consumable import (
     HealingConsumable,
     LightningDamageConsumable,
@@ -88,7 +92,11 @@ def actor_from_dict(data: ActorData, item_prefabs: dict[str, Item]) -> Actor:
         ai = ai_cls()
     elif ai_cls == BehaviorTreeAI and isinstance(data.ai, BehaviorTreeAIData):
         behavior_tree = EntityPrefabs.behavior_trees[data.ai.behavior_tree_id]
-        ai = BehaviorTreeAI(behavior_tree)
+        interests = data.ai.interests
+        vision = VisualSense(
+            behavior_tree.blackboard, interests=interests, range=data.ai.vision.range
+        )
+        ai = BehaviorTreeAI(behavior_tree, vision)
     else:
         raise Exception("Unhandled actor ai")
 

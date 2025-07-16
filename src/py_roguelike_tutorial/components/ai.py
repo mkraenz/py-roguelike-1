@@ -15,7 +15,6 @@ from py_roguelike_tutorial.actions import (
 )
 from py_roguelike_tutorial.constants import INTERCARDINAL_DIRECTIONS
 from py_roguelike_tutorial.entity import Entity
-from py_roguelike_tutorial.math import Math
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.behavior_trees.behavior_trees import Blackboard, BtNode
@@ -25,12 +24,20 @@ if TYPE_CHECKING:
 
 
 class BaseAI:
-    agent: Actor
-    """We assume that the agent gets set from the outside."""
+    def __init__(self):
+        self._agent: Actor = None  # type: ignore
+
+    @property
+    def agent(self):
+        return self._agent
 
     @property
     def engine(self) -> Engine:
         return self.agent.parent.engine
+
+    @agent.setter
+    def agent(self, value: Actor):
+        self._agent = value
 
     def perform(self) -> None:
         raise NotImplementedError("subclasses must implement perform")
@@ -121,34 +128,41 @@ class ConfusedEnemy(BaseAI):
 
 
 class BehaviorTreeAI(BaseAI):
-    def __init__(self, tree: BtNode):
+    def __init__(self, tree: BtNode, visual_sense: VisualSense):
+        super().__init__()
         self.tree = tree
-        self.visual_sense: VisualSense
+        self.visual_sense: VisualSense = visual_sense
 
     def perform(self) -> None:
-        if not hasattr(self, "visual_sense"):
-            self.visual_sense = VisualSense(
-                self.agent, self.tree.blackboard, self.engine
-            )
         self.visual_sense.sense()
         self.tree.tick()
 
+    @property
+    def agent(self) -> Actor:
+        return self._agent
+
+    @agent.setter
+    def agent(self, value: Actor):
+        self._agent = value
+        self.visual_sense.agent = value
+
 
 class VisualSense:
-    def __init__(self, agent: Actor, blackboard: Blackboard, engine: Engine):
-        self.agent = agent
+    agent: Actor
+
+    def __init__(self, blackboard: Blackboard, interests: list[str], range: int):
         self.blackboard = blackboard
-        self.engine = engine
-        self.interests = ["Player", "dagger"]
+        self.interests = interests
+        self.range = range
+
+    @property
+    def engine(self):
+        return self.agent.parent.engine
 
     def sense(self):
         items = self.engine.game_map.items
         for item in items:
-            if (
-                item.kind in self.interests
-                and self.agent.dist_chebyshev(item) <= 10
-                and self.engine.game_map.has_line_of_sight(self.agent, item)
-            ):
+            if item.kind in self.interests and self.can_see(item):
                 self.blackboard.set(item.kind, item)
             else:
                 self.blackboard.remove(item.kind)
@@ -165,4 +179,4 @@ class VisualSense:
         # TODO remove hard coding
         return self.agent.dist_chebyshev(
             other
-        ) <= 10 and self.engine.game_map.has_line_of_sight(self.agent, other)
+        ) <= self.range and self.engine.game_map.has_line_of_sight(self.agent, other)

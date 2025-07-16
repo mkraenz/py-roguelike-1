@@ -3,9 +3,15 @@ from typing import Literal
 from pydantic import BaseModel
 
 
+class VisionData(BaseModel):
+    range: int
+
+
 class BehaviorTreeAIData(BaseModel):
     class_type: Literal["BehaviorTreeAI"]
     behavior_tree_id: str
+    vision: VisionData
+    interests: list[str]
 
 
 class HostileEnemyData(BaseModel):

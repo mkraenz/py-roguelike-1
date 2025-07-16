@@ -23,10 +23,11 @@ orc_archer:
     # If player too close, try to gain some distance.
     class_type: BehaviorTreeAI
     behavior_tree_id: melee_attacker
-  # interests:
-  #   - enemy
-  #   - teleport_scroll
-  #   - dagger
+    vision:
+      range: 1
+    interests:
+      - Player
+      - dagger
   ranged:
     power: 2
     range: 5
