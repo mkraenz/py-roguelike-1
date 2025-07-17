@@ -59,6 +59,13 @@ equip_item:
             children:
               - type: Inverter
                 children:
+                  - type: BlackboardCondition
+                    params:
+                      compared_to: eq
+                      key: inventory_full
+                      value: False
+              - type: Inverter
+                children:
                   - type: HasItem
                     params:
                       item_kind: dagger

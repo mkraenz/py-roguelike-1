@@ -124,7 +124,6 @@ class BtRoot(BtNode):
         return BtResult.Success
 
 
-# TODO: consider Reactive Sequence node to add ability for prioritization
 class BtSequence(BtNode):
     """Composite node that is basically a logical AND, executing its children serially in order, returning Success if all succeed,
     or stopping execution once the first child fails."""
@@ -155,10 +154,6 @@ class BtSelector(BtNode):
             child_res = child.tick()
             if child_res == BtResult.Success:
                 return BtResult.Success
-            # TODO how to handle running?
-            # while child_res == BtResult.Running:
-            #     yield BtResult.Running
-
         return BtResult.Failure
 
 

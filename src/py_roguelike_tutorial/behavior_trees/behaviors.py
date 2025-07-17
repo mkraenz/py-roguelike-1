@@ -2,11 +2,12 @@
 
 import copy
 import random
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING
 
 import numpy as np
 import tcod
 
+import py_roguelike_tutorial.behavior_trees.behavior_trees as bt
 from py_roguelike_tutorial.actions import (
     EquipAction,
     MoveAction,
@@ -15,14 +16,13 @@ from py_roguelike_tutorial.actions import (
     RangedAttackAction,
     ItemAction,
 )
-import py_roguelike_tutorial.behavior_trees.behavior_trees as bt
-from py_roguelike_tutorial.behavior_trees.behavior_trees import Blackboard, BtResult
+from py_roguelike_tutorial.behavior_trees import validators as bt_val
+from py_roguelike_tutorial.behavior_trees.behavior_trees import BtResult
 from py_roguelike_tutorial.constants import INTERCARDINAL_DIRECTIONS
+from py_roguelike_tutorial.entity import Entity
 from py_roguelike_tutorial.entity_factory import EntityPrefabs
 from py_roguelike_tutorial.exceptions import Impossible
 from py_roguelike_tutorial.types import Coord
-from py_roguelike_tutorial.behavior_trees import validators as bt_val
-from py_roguelike_tutorial.entity import Entity
 
 if TYPE_CHECKING:
     pass

@@ -14,7 +14,6 @@ from py_roguelike_tutorial.colors import hex_to_rgb
 from py_roguelike_tutorial.components.ai import (
     HostileEnemy,
     BehaviorTreeAI,
-    VisualSense,
 )
 from py_roguelike_tutorial.components.consumable import (
     HealingConsumable,
@@ -29,6 +28,7 @@ from py_roguelike_tutorial.components.fighter import Fighter
 from py_roguelike_tutorial.components.inventory import Inventory
 from py_roguelike_tutorial.components.level import Level
 from py_roguelike_tutorial.components.ranged import Ranged
+from py_roguelike_tutorial.components.vision import VisualSense
 from py_roguelike_tutorial.entity import Item, Actor
 from py_roguelike_tutorial.entity_factory import EntityPrefabs
 from py_roguelike_tutorial.validators.actor_validator import BehaviorTreeAIData
@@ -86,7 +86,6 @@ def item_from_dict(data: ItemData) -> Item:
 
 def actor_from_dict(data: ActorData, item_prefabs: dict[str, Item]) -> Actor:
     ai_cls = AI_CLASSES[data.ai.class_type]
-    # TODO continue here by constructing an actual tree that if moves towards the player
 
     if ai_cls == HostileEnemy:
         ai = ai_cls()

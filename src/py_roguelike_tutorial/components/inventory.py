@@ -37,6 +37,9 @@ class Inventory(BaseComponent):
     def has_capacity(self, items_to_add: int) -> bool:
         return self._capacity - self.len >= items_to_add
 
+    def is_full(self) -> bool:
+        return self._capacity == self.len
+
     def add(self, item: Item):
         self.items.append(item)
         item.parent = self
