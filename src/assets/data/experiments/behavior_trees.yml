@@ -86,56 +86,6 @@ equip_item:
                 params:
                   id: $picked_up_equipment_id
 
-# - type: MoveToEntity
-#   params:
-#     to: "{dagger}"
-# TODO check if nearest weapon pos is already set. if yes, check whether the item is still there.
-# if not, we need to switch targets
-# TODO This should be moved into the sensor
-# - type: WriteItemPosInVicinity
-#   params:
-#     radius: 5
-#     look_for_kind: dagger
-#     write_to_blackboard_key: nearest_weapon_position
-# todo we need another selector above this to separate each action (avoid double actions by the AI)
-#          - type: Selector
-#            children:
-#              - type: IsAt
-#                params:
-#                  at: "{nearest_weapon_position}"
-#              - type: MoveTo
-#                params:
-#                  to: "{nearest_weapon_position}"
-# - type: PickUpItem
-#          - type: Selector
-#            children:
-#              - type: HasEquipped
-#                params:
-#                  kind: dagger
-#              - type: HasItem
-#                params:
-#                  kind: dagger
-#              - type: EquipItem
-#                params:
-#                  kind: dagger
-# - type: Selector
-#   children:
-#     - type: MoveTowards
-#       params:
-#         target_position: "{nearest_weapon_position}"
-#     - type: Sequence
-#       children:
-#         - type: HasItemAtPosition
-#         - type: GetItemAtPosition
-#           params:
-#             write_to_blackboard_key: picked_up_item_id
-#     - type: EquipItem
-#       params:
-#         id: "{picked_up_item_id}"
-#     - type: RemoveBlackboardKey
-#       params:
-#         key: picked_up_item_id
-
 melee_attacker:
   root:
     comment: "Melee attacker"
