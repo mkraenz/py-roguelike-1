@@ -19,7 +19,6 @@ type BtChildren = list[
     | UseItemData
     | HealthConditionData
     | SubtreeData
-    | WriteItemPosInVicinityData
     | MoveToEntityData
     | PickUpItemData
     | EquipItemData
@@ -180,17 +179,6 @@ class SubtreeData(BtNodeData):
 class InverterData(BtNodeData):
     type: Literal["Inverter"]
     children: BtChildren = Field(max_length=1, min_length=1)
-
-
-class WriteItemPosInVicinityDataParams(BaseModel):
-    write_to_blackboard_key: str
-    look_for_kind: str
-    radius: int
-
-
-class WriteItemPosInVicinityData(BtBehaviorData):
-    type: Literal["WriteItemPosInVicinity"]
-    params: WriteItemPosInVicinityDataParams
 
 
 class MoveToEntityDataParams(BaseModel):

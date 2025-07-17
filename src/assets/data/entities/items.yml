@@ -16,6 +16,16 @@ sword:
     slot: weapon
     power: 4
 
+bow:
+  kind: bow
+  char: "("
+  color: "#00bfff"
+  name: "Bow"
+  equippable:
+    slot: weapon
+    ranged_power: 2
+    range: 5
+
 leather_armor:
   kind: leather_armor
   char: "["

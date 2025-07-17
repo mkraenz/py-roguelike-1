@@ -177,21 +177,15 @@ class EquipItemBehavior(bt.BtAction):
         self.id_raw = args.params.id
 
     def tick(self) -> bt.BtResult:
-        try:
-            id, loaded = self.maybe_read_blackboard(self.id_raw)
-            item = self.agent.inventory.get_by_id(id)
-            if item is None:
-                raise AssertionError(
-                    f"{self.agent.name} tried to equip an item with id {id}, but it does not have such an item."
-                )
-            EquipAction(entity=self.agent, item=item).perform()
-            if loaded:
-                self.remove_from_blackboard(self.id_raw)
-            return bt.BtResult.Success
-        except Impossible:
-            # TODO implement. maybe write that inventory is full or sth. also we should check the inventory before trying to pick up sth
-            pass
-
+        id, loaded = self.maybe_read_blackboard(self.id_raw)
+        item = self.agent.inventory.get_by_id(id)
+        if item is None:
+            raise AssertionError(
+                f"{self.agent.name} tried to equip an item with id {id}, but it does not have such an item."
+            )
+        EquipAction(entity=self.agent, item=item).perform()
+        if loaded:
+            self.remove_from_blackboard(self.id_raw)
         return bt.BtResult.Success
 
 
@@ -201,19 +195,14 @@ class PickUpItemBehavior(bt.BtAction):
         self.key = args.params.key
 
     def tick(self) -> bt.BtResult:
-        try:
-            # item must be selected before picking because pickup action will remove the item
-            item = self.engine.game_map.get_item_at_location(*self.agent.pos)
-            PickupAction(self.agent).perform()
-            if item is None:
-                raise AssertionError(
-                    f"Agent {self.agent.name} tried to pick up an item at its position, but there is no item there."
-                )
-            self.blackboard.set(self.key, item.id)
-        except Impossible:
-            # TODO implement. maybe write that inventory is full or sth. also we should check the inventory before trying to pick up sth
-            # ignore for the time being
-            pass
+        # item must be selected before picking because pickup action will remove the item
+        item = self.engine.game_map.get_item_at_location(*self.agent.pos)
+        PickupAction(self.agent).perform()
+        if item is None:
+            raise AssertionError(
+                f"Agent {self.agent.name} tried to pick up an item at its position, but there is no item there."
+            )
+        self.blackboard.set(self.key, item.id)
         return bt.BtResult.Success
 
 
@@ -249,26 +238,6 @@ class HasItemAtPosition(bt.BtCondition):
         item = self.engine.game_map.get_item_at_location(*self.agent.pos)
         if item is not None:
             if item.kind == "dagger":
-                return bt.BtResult.Success
-        return bt.BtResult.Failure
-
-
-class WriteItemPosInVicinity(bt.BtAction):
-    def __init__(
-        self, args: bt.BtConstructorArgs[bt_val.WriteItemPosInVicinityDataParams]
-    ):
-        super().__init__(args)
-        self.radius = args.params.radius
-        self.look_for_kind = args.params.look_for_kind
-        self.write_to_blackboard_key = args.params.write_to_blackboard_key
-
-    def tick(self) -> BtResult:
-        # TODO ideally we have a has item in vicinity with these params first.
-        # TODO currently we only look at this specific position
-        item = self.engine.game_map.get_item_at_location(*self.agent.pos)
-        if item is not None:
-            if item.kind == "dagger":
-                self.blackboard.set(self.write_to_blackboard_key, item.pos)
                 return bt.BtResult.Success
         return bt.BtResult.Failure
 
@@ -326,7 +295,6 @@ BT_NODE_NAME_TO_CLASS = {
     "Subtree": Subtree,
     "RandomMove": RandomMoveBehavior,
     "HasItemAtPosition": HasItemAtPosition,
-    "WriteItemPosInVicinity": WriteItemPosInVicinity,
     "PickUpItem": PickUpItemBehavior,
     "MoveToEntity": MoveToEntityBehavior,
     "EquipItem": EquipItemBehavior,

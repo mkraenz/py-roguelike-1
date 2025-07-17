@@ -11,6 +11,15 @@ if TYPE_CHECKING:
 type Slot = Literal["weapon", "armor"]
 
 
+def get_attribute(attribute_name: str):
+    def internal(item: Item | None, fallback: int = 0):
+        if item is not None and item.equippable is not None:
+            return getattr(item.equippable, attribute_name)
+        return fallback
+
+    return internal
+
+
 class Equipment(BaseComponent):
     parent: Actor  # type: ignore [reportIncompatibleVariableOverride]
 
@@ -24,31 +33,22 @@ class Equipment(BaseComponent):
 
     @property
     def defense(self) -> int:
-        def get_defense(item: Item | None, fallback: int = 0):
-            if item is not None and item.equippable is not None:
-                return item.equippable.defense
-            return fallback
-
-        return sum(map(get_defense, [self.armor, self.weapon]))
+        return self.sum_attributes("defense")
 
     @property
     def ranged_power(self) -> int:
-        # TODO
-        return 0
+        return self.sum_attributes("ranged_power")
 
     @property
     def ranged_range(self) -> int:
-        # TODO
-        return 0
+        return self.sum_attributes("range")
 
     @property
     def power(self) -> int:
-        def get_power(item: Item | None, fallback: int = 0):
-            if item is not None and item.equippable is not None:
-                return item.equippable.power
-            return fallback
+        return self.sum_attributes("power")
 
-        return sum(map(get_power, [self.armor, self.weapon]))
+    def sum_attributes(self, attribute_name: str):
+        return sum(map(get_attribute(attribute_name), [self.armor, self.weapon]))
 
     def is_equipped(self, item: Item) -> bool:
         return self.weapon == item or self.armor == item

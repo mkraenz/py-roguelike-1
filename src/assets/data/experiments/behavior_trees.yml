@@ -138,8 +138,8 @@ melee_attacker:
                     children:
                       - type: DistanceToPlayer
                         params:
-                          max_dist: 10
-                          min_dist: 5
+                          max_dist: 7
+                          min_dist: 3
                       - type: SeesPlayer
                       - type: RangedAttack
                   - comment: "Melee if in close range"
