@@ -32,8 +32,7 @@ def new_game() -> Engine:
     room_min_size = 6
     max_rooms = 30
 
-    player = copy.deepcopy(EntityPrefabs.player)
-    initial_equip_and_items(player)
+    player = EntityPrefabs.player.duplicate()
 
     np_rng = np.random.default_rng(RNG_SEED)
     engine = Engine(player=player, np_rng=np_rng)
@@ -53,15 +52,6 @@ def new_game() -> Engine:
     engine.update_fov()
     engine.message_log.add(text="Welcome, adventurer.", fg=Theme.welcome_text)
     return engine
-
-
-def initial_equip_and_items(player):
-    # dagger = copy.deepcopy(EntityPrefabs.dagger)
-    # leather_armor = copy.deepcopy(EntityPrefabs.leather_armor)
-    # player.inventory.add_many((dagger, leather_armor))
-    # player.equipment.toggle_equippable(dagger, show_message=False)
-    # player.equipment.toggle_equippable(leather_armor, show_message=False)
-    pass
 
 
 def load_game(filepath: str):

@@ -42,7 +42,7 @@ class Entity:
         render_order: RenderOrder = RenderOrder.CORPSE,
         move_stepsize: int = 1,
     ) -> None:
-        self.id = uuid.uuid4()
+        self.id: uuid.UUID = uuid.UUID("{00000000-0000-0000-0000-000000000000}")
         self.x = x
         self.y = y
         self.char = char
@@ -64,12 +64,21 @@ class Entity:
         """Returns a clone of this entity that has been added to the map.
         (Think like the spawning entity as the blueprint)
         """
-        clone = copy.deepcopy(self)
+        clone = self.duplicate()
         clone.x = x
         clone.y = y
         clone.parent = game_map
         game_map.entities.add(clone)
         return clone
+
+    def duplicate(self):
+        clone = copy.deepcopy(self)
+        clone.randomize_id()
+        return clone
+
+    def randomize_id(self) -> None:
+        """Assigns a new random UUID to the entity."""
+        self.id = uuid.uuid4()
 
     def place(self, x: int, y: int, game_map: GameMap | None = None) -> None:
         """Places the entity at a new location. Handles movement across maps."""

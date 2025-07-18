@@ -109,7 +109,7 @@ def actor_from_dict(data: ActorData, item_prefabs: dict[str, Item]) -> Actor:
     ranged = Ranged(data.ranged.power, data.ranged.range) if data.ranged else None
 
     inventory = Inventory(data.inventory)
-    new_item = lambda key: copy.deepcopy(item_prefabs[key])
+    new_item = lambda key: item_prefabs[key].duplicate()
     inventory_items = [new_item(item_key) for item_key in data.inventory.items or []]
     inventory.add_many(inventory_items)
 
