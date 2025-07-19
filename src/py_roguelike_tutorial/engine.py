@@ -16,6 +16,7 @@ from py_roguelike_tutorial.render_functions import (
     render_dungeon_level,
     render_xp,
 )
+from py_roguelike_tutorial.screen_stack import ScreenStack
 from py_roguelike_tutorial.types import Coord
 
 _FOV_RADIUS = 8
@@ -26,11 +27,14 @@ class Engine:
     game_world: GameWorld
     np_rng: np.random.Generator
 
-    def __init__(self, *, player: Actor, np_rng: np.random.Generator) -> None:
+    def __init__(
+        self, *, player: Actor, np_rng: np.random.Generator, stack: ScreenStack
+    ) -> None:
         self.message_log = MessageLog()
         self.mouse_location: Coord = (0, 0)
         self.player = player
         self.np_rng = np_rng
+        self.stack = stack
 
     def render(self, console: Console) -> None:
         self.game_map.render(console)

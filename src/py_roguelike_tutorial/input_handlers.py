@@ -1,28 +1,27 @@
 from __future__ import annotations
 
 import os.path
-import sys
-import time
 from typing import TYPE_CHECKING, Callable, Type
 
 import tcod
 from tcod.console import Console
-from tcod.event import KeySym as Key, Quit, EventDispatch, KeyDown, Modifier
+from tcod.event import KeySym as Key, Quit, KeyDown, Modifier
 
-from py_roguelike_tutorial import exceptions, setup_game
+from py_roguelike_tutorial import setup_game
 from py_roguelike_tutorial.actions import (
     Action,
-    EscapeAction,
-    BumpAction,
-    WaitAction,
-    PickupAction,
     DropItemAction,
-    TakeStairsAction,
     EquipAction,
 )
 from py_roguelike_tutorial.colors import Theme, Color
 from py_roguelike_tutorial.constants import AUTOSAVE_FILENAME
 from py_roguelike_tutorial.exceptions import QuitWithoutSaving
+from py_roguelike_tutorial.handlers.base_event_handler import (
+    ActionOrHandler,
+    BaseEventHandler,
+)
+from py_roguelike_tutorial.handlers.ingame_event_handler import IngameEventHandler
+from py_roguelike_tutorial.handlers.main_game_event_handler import MainGameEventHandler
 from py_roguelike_tutorial.render_functions import (
     print_aligned_texts_center,
     render_you_died,
@@ -30,14 +29,13 @@ from py_roguelike_tutorial.render_functions import (
     print_text_center,
     IngameMenuConsole,
 )
+from py_roguelike_tutorial.screen_stack import ScreenStack
 from py_roguelike_tutorial.types import Coord
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.engine import Engine
     from py_roguelike_tutorial.entity import Item
 
-# nuitka really didn't like the version without quotes around the type bc BaseEventHandler is not yet defined (which in turn depends on ActionOrHandler). But this finally works!
-type ActionOrHandler = "Action | BaseEventHandler"
 
 _MOVE_KEYS = {
     # numpad
@@ -83,113 +81,8 @@ _CONFIRM_KEYS = {
     Key.KP_ENTER,
 }
 
-"""An event handler return type which can trigger an action or switch active event handlers.
 
-If a handler is returned, then it will become the active event handler for future events.
-If an action is returned, then it will be attempted and if it is valid, 
-then MainGameEventHandler will become the active handler
-"""
-
-
-class BaseEventHandler(EventDispatch[ActionOrHandler]):
-    def handle_events(self, event: tcod.event.Event) -> BaseEventHandler:
-        state = self.dispatch(event)
-        if isinstance(state, BaseEventHandler):
-            return state
-        assert not isinstance(state, Action), f"{self!r} cannot handle actions."
-        return self
-
-    def on_render(self, console: Console, delta_time: float) -> None:
-        raise NotImplementedError("Must be implemented in subclass.")
-
-    def ev_quit(self, event: tcod.event.Quit, /):
-        sys.exit()
-
-
-class EventHandler(BaseEventHandler):
-    def __init__(self, engine: Engine):
-        self.engine = engine
-
-    @property
-    def player(self):
-        return self.engine.player
-
-    def ev_quit(self, event: Quit):
-        raise SystemExit()
-
-    def handle_events(self, event: tcod.event.Event) -> BaseEventHandler:
-        """Handle events for input handlers with an engine."""
-        action_or_state = self.dispatch(event)
-        if not action_or_state:
-            return self
-        if isinstance(action_or_state, BaseEventHandler):
-            return action_or_state
-        #
-        if self.handle_action(action_or_state):
-            if not self.player.is_alive:
-                return GameOverEventHandler(self.engine)
-            if self.player.level.requires_level_up:
-                return LevelUpMenu(self.engine)
-            return MainGameEventHandler(self.engine)
-        return self
-
-    def handle_action(self, action: Action | None) -> bool:
-        """Handle actions returned from event methods.
-
-        Returns True if the action will advance a turn."""
-        if action is None:
-            return False
-        try:
-            action.perform()
-        except exceptions.Impossible as exc:
-            self.engine.message_log.add(text=exc.args[0], fg=Theme.impossible)
-            return False
-        self.engine.game_map.update_dijkstra_map()
-        self.engine.handle_npc_turns()
-        self.engine.update_fov()
-        return True
-
-    def on_render(self, console: Console, delta_time: float) -> None:
-        self.engine.render(console)
-
-    def ev_mousemotion(self, event: tcod.event.MouseMotion, /) -> None:
-        if self.engine.game_map.in_bounds(int(event.position.x), int(event.position.y)):
-            self.engine.mouse_location = int(event.position.x), int(event.position.y)
-
-
-class MainGameEventHandler(EventHandler):
-    def ev_keydown(self, event: KeyDown) -> ActionOrHandler | None:
-        key = event.sym
-        player = self.player
-
-        match key:
-            case _ if key in _MOVE_KEYS:
-                dx, dy = _MOVE_KEYS[key]
-                return BumpAction(player, dx, dy)
-            case _ if key in _CONFIRM_KEYS:
-                return TakeStairsAction(player)
-            case _ if key in _WAIT_KEYS:
-                return WaitAction(player)
-            case Key.ESCAPE:
-                return EscapeAction(player)
-            case Key.V:
-                return RangedAttackHandler(self.engine, (0, 0), (100, 100))
-                # return LogHistoryMenu(self.engine, MainGameEventHandler)
-            case Key.I:
-                return InventoryActivateHandler(self.engine)
-            case Key.P:
-                return InventoryDropHandler(self.engine)
-            case Key.C:
-                return CharacterSheetMenu(self.engine)
-            case Key.G:
-                return PickupAction(player)
-            case Key.K:
-                return LookAroundHandler(self.engine)
-            case _:
-                return None
-
-
-class GameOverEventHandler(EventHandler):
+class GameOverEventHandler(IngameEventHandler):
 
     def on_render(self, console: Console, delta_time: float) -> None:
         super().on_render(console, delta_time)
@@ -211,7 +104,8 @@ class GameOverEventHandler(EventHandler):
                 return None
 
     def on_confirm(self) -> None | ActionOrHandler:
-        return setup_game.MainMenu()
+        self.engine.stack.pop()
+        return setup_game.MainMenu(self.engine.stack)
 
     def on_quit(self) -> None:
         """Handle exiting out of a finished game."""
@@ -224,7 +118,7 @@ class GameOverEventHandler(EventHandler):
         self.on_quit()
 
 
-class LevelUpMenu(EventHandler):
+class LevelUpMenu(IngameEventHandler):
     def on_render(self, console: Console, delta_time: float) -> None:
         title = "New Level"
         super().on_render(console, delta_time)
@@ -248,30 +142,30 @@ class LevelUpMenu(EventHandler):
         def on_confirm(cb: Callable[[], None]):
             def inner():
                 cb()
-                return (
-                    MainGameEventHandler(self.engine)
-                    if not self.player.level.requires_level_up
-                    else self
-                )
+                if self.player.level.requires_level_up:
+                    return self
+                self.engine.stack.pop()
+                # Todo This needs some more
+                return MainGameEventHandler(self.engine)
 
             return inner
 
         match key:
             case Key.S:
                 return ConfirmationPopup(
-                    self,
+                    self.engine.stack,
                     "Increase strength?",
                     callback=on_confirm(self.player.level.increase_power),
                 )
             case Key.A:
                 return ConfirmationPopup(
-                    self,
+                    self.engine.stack,
                     "Increase agility?",
                     callback=on_confirm(self.player.level.increase_defense),
                 )
             case Key.C:
                 return ConfirmationPopup(
-                    self,
+                    self.engine.stack,
                     "Increase constitution?",
                     callback=on_confirm(self.player.level.increase_max_hp),
                 )
@@ -279,7 +173,8 @@ class LevelUpMenu(EventHandler):
                 pass
         # there may be multiple level ups at once necessary, e.g. if the player killed a super high-EXP boss
         if not self.player.level.requires_level_up:
-            return MainGameEventHandler(self.engine)
+            self.engine.stack.pop()
+            return None
         return super().ev_keydown(event)
 
     def ev_mousebuttondown(
@@ -289,7 +184,7 @@ class LevelUpMenu(EventHandler):
         return None
 
 
-class CharacterSheetMenu(EventHandler):
+class CharacterSheetMenu(IngameEventHandler):
     def on_render(self, console: Console, delta_time: float) -> None:
         super().on_render(console, delta_time)  # draw main state as background
         child_console, blit = IngameMenuConsole(console, "Character Details")
@@ -309,10 +204,11 @@ class CharacterSheetMenu(EventHandler):
         blit()
 
     def ev_keydown(self, event: tcod.event.KeyDown, /) -> ActionOrHandler | None:
-        return MainGameEventHandler(self.engine)
+        self.engine.stack.pop()
+        return None
 
 
-class RangedAttackHandler(EventHandler):
+class RangedAttackHandler(IngameEventHandler):
     def __init__(
         self,
         engine: Engine,
@@ -327,24 +223,26 @@ class RangedAttackHandler(EventHandler):
         self.path = tcod.los.bresenham(from_pos, to)
 
     def on_render(self, console: Console, delta_time: float) -> None:
+
+        super().on_render(console, delta_time)
         self.elapsed += delta_time
         ticks = int(self.elapsed / self.animation_tick_time_sec)
+        if ticks >= len(self.path):
+            self.engine.stack.pop()
+            return
         pos = self.path[ticks] if ticks < len(self.path) else self.path[-1]
-        print(pos)
         child_console = Console(console.width, console.height)
-        child_console.print(
-            x=pos[0], y=pos[1], fg=Color.WHITE, bg=Color.WHITE, text="x"
-        )
-        child_console.blit(console)
+        child_console.print(x=pos[0], y=pos[1], fg=Color.WHITE, text="x")
+        child_console.blit(console, bg_alpha=0)
 
     def ev_keydown(self, event: tcod.event.KeyDown, /) -> ActionOrHandler | None:
-        return MainGameEventHandler(self.engine)
+        return None  # no key input while the animation is running for the time being. Maybe allow skipping
 
 
-class LogHistoryMenu(EventHandler):
+class LogHistoryMenu(IngameEventHandler):
     """Print the history on a larger window which can be scrolled."""
 
-    def __init__(self, engine: Engine, on_back_cls: Type[EventHandler]):
+    def __init__(self, engine: Engine, on_back_cls: Type[IngameEventHandler]):
         super().__init__(engine)
         self.log_length = len(engine.message_log.messages)
         self.cursor = self.log_length - 1
@@ -384,11 +282,12 @@ class LogHistoryMenu(EventHandler):
             case Key.END:
                 self.cursor = end  # move to last message
             case _:  # if no key matches, return to the main game
-                return self.on_back_cls(self.engine)
+                self.engine.stack.pop()
+                return None
         return None
 
 
-class AskUserEventHandler(EventHandler):
+class AskUserEventHandler(IngameEventHandler):
     """Handles user input for actions that require some special input."""
 
     def ev_keydown(self, event: tcod.event.KeyDown, /) -> ActionOrHandler | None:
@@ -404,14 +303,16 @@ class AskUserEventHandler(EventHandler):
         self, event: tcod.event.MouseButtonDown, /
     ) -> ActionOrHandler | None:
         """By default, any mouse click exists the menu."""
-        return MainGameEventHandler(self.engine)
+        self.engine.stack.pop()
+        return None
 
     def on_exit(self) -> ActionOrHandler | None:
         """Called when the user is trying to exit or cancel an action.
 
         By default this returns to the main event handler.
         """
-        return MainGameEventHandler(self.engine)
+        self.engine.stack.pop()
+        return None
 
 
 class InventoryEventHandler(AskUserEventHandler):
@@ -492,8 +393,10 @@ class InventoryActivateHandler(InventoryEventHandler):
 
     def on_item_selected(self, selected_item: Item) -> ActionOrHandler | None:
         if selected_item.consumable:
+            self.engine.stack.pop()
             return selected_item.consumable.get_action(self.player)
         if selected_item.equippable:
+            self.engine.stack.pop()
             return EquipAction(self.player, selected_item)
         return None
 
@@ -568,7 +471,8 @@ class LookAroundHandler(SelectIndexHandler):
     """Lets the player look around with the keyboard."""
 
     def on_index_selected(self, x: int, y: int) -> ActionOrHandler | None:
-        return MainGameEventHandler(self.engine)
+        self.engine.stack.pop()
+        return None
 
 
 class SingleRangedAttackHandler(SelectIndexHandler):
@@ -579,6 +483,7 @@ class SingleRangedAttackHandler(SelectIndexHandler):
         self.callback = callback
 
     def on_index_selected(self, x: int, y: int) -> Action | None:
+        self.engine.stack.pop()
         return self.callback((x, y))
 
 
@@ -608,6 +513,7 @@ class AreaRangedAttackHandler(SelectIndexHandler):
         )
 
     def on_index_selected(self, x: int, y: int) -> Action | None:
+        self.engine.stack.pop()
         return self.callback((x, y))
 
 
@@ -634,16 +540,15 @@ class ConfirmationPopup(BaseEventHandler):
 
     def __init__(
         self,
-        parent_handler: BaseEventHandler,
+        stack: ScreenStack,
         text: str,
         callback: Callable[[], BaseEventHandler],
     ):
-        self.parent = parent_handler
         self.text = text
         self.callback = callback
+        self.stack = stack
 
     def on_render(self, console: Console, delta_time: float) -> None:
-        self.parent.on_render(console, delta_time)
         dim_console(console)
 
         texts = [self.text, "", "[Y] Confirm", "[*] Cancel"]
@@ -651,8 +556,9 @@ class ConfirmationPopup(BaseEventHandler):
 
     def ev_keydown(self, event: tcod.event.KeyDown, /) -> ActionOrHandler | None:
         key = event.sym
+        self.stack.pop()
         match key:
             case Key.Y:
                 return self.callback()
             case _:
-                return self.parent
+                return None

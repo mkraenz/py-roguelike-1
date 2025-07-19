@@ -1,4 +1,3 @@
-import copy
 import lzma
 import os
 import pickle
@@ -19,13 +18,14 @@ from py_roguelike_tutorial.constants import AUTOSAVE_FILENAME, RNG_SEED
 from py_roguelike_tutorial.engine import Engine
 from py_roguelike_tutorial.entity_factory import EntityPrefabs
 from py_roguelike_tutorial.game_world import GameWorld
+from py_roguelike_tutorial.screen_stack import ScreenStack
 from py_roguelike_tutorial.utils import assets_filepath
 
 filepath = assets_filepath("assets/menu_background.png")
 background_image = tcod.image.load(filepath)[:, :, :3]
 
 
-def new_game() -> Engine:
+def new_game(stack: ScreenStack) -> Engine:
     map_width = 80
     map_height = 43
     room_max_size = 10
@@ -35,7 +35,7 @@ def new_game() -> Engine:
     player = EntityPrefabs.player.duplicate()
 
     np_rng = np.random.default_rng(RNG_SEED)
-    engine = Engine(player=player, np_rng=np_rng)
+    engine = Engine(player=player, np_rng=np_rng, stack=stack)
 
     factions = FactionsManager(EntityPrefabs.factions)
     engine.game_world = GameWorld(
@@ -64,6 +64,9 @@ def load_game(filepath: str):
 
 class MainMenu(input_handlers.BaseEventHandler):
     """Handle the main menu rendering and input."""
+
+    def __init__(self, stack: ScreenStack):
+        self.stack = stack
 
     def on_render(self, console: Console, delta_time: float) -> None:
         TITLE = "TSTT's PYTYFYL Roguelike"
@@ -117,14 +120,20 @@ class MainMenu(input_handlers.BaseEventHandler):
             case Key.N:
                 if not os.path.exists(AUTOSAVE_FILENAME):
                     return input_handlers.MainGameEventHandler(
-                        new_game(),
+                        new_game(self.stack),
                     )
-                return input_handlers.ConfirmationPopup(
-                    self,
-                    text="Your existing progress will be lost. Continue?",
-                    callback=lambda: input_handlers.MainGameEventHandler(
-                        new_game(),
-                    ),
+
+                def _new_game_callback():
+                    return input_handlers.MainGameEventHandler(
+                        new_game(self.stack),
+                    )
+
+                self.stack.push(
+                    input_handlers.ConfirmationPopup(
+                        stack=self.stack,
+                        text="Your existing progress will be lost. Continue?",
+                        callback=_new_game_callback,
+                    )
                 )
             case _:
                 return None

@@ -11,15 +11,21 @@ class ScreenStack:
         self.items: list[BaseEventHandler] = (
             []
         )  # Initialize an empty list to store stack elements
+        self.debug = True
 
     def push(self, item: BaseEventHandler):
         """Add an item to the top of the stack."""
         self.items.append(item)
+        if self.debug:
+            print(f"Pushed {item}")
 
     def pop(self):
         """Remove and return the item from the top of the stack."""
         if not self.is_empty():
-            return self.items.pop()
+            item = self.items.pop()
+            if self.debug:
+                print(f"Popped {item}")
+            return item
         raise IndexError("Pop from an empty stack")
 
     def peek(self):

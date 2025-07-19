@@ -13,14 +13,15 @@ from py_roguelike_tutorial.constants import AUTOSAVE_FILENAME, RNG_SEED
 from py_roguelike_tutorial.entity_factory import EntityPrefabs
 from py_roguelike_tutorial.input_handlers import (
     BaseEventHandler,
-    EventHandler,
+    IngameEventHandler,
 )
 import py_roguelike_tutorial.loader as loader
+from py_roguelike_tutorial.screen_stack import ScreenStack
 from py_roguelike_tutorial.utils import assets_filepath
 
 
 def save_game(handler: BaseEventHandler, filename: str):
-    if isinstance(handler, EventHandler):
+    if isinstance(handler, IngameEventHandler):
         handler.engine.save_to_file(filename)
         print(f"Game saved to {filename}.")
 
@@ -55,8 +56,9 @@ def main():
     )
 
     load_data_files()
-
-    handler: BaseEventHandler = setup_game.MainMenu()
+    stack = ScreenStack()
+    stack.push(setup_game.MainMenu(stack))
+    handler = stack.peek()
 
     with tcod.context.new(
         columns=screen_width,
@@ -80,17 +82,20 @@ def main():
                 delta = current_timestamp - previous_timestamp
                 previous_timestamp = current_timestamp
 
+                handler = stack.peek()
                 handler.on_render(console=root_console, delta_time=delta)
                 context.present(root_console)
                 try:
                     for event in tcod.event.wait(max_frame_time):
                         converted_event = context.convert_event(event)
-                        handler = handler.handle_events(converted_event)
+                        next_handler = handler.handle_events(converted_event)
+                        if next_handler is not handler:
+                            stack.push(next_handler)
                 except exceptions.QuitWithoutSaving:
                     raise
                 except Exception:  # ingame exceptions
                     traceback.print_exc()
-                    if isinstance(handler, EventHandler):
+                    if isinstance(handler, IngameEventHandler):
                         handler.engine.message_log.add(
                             traceback.format_exc(), fg=Theme.error
                         )
