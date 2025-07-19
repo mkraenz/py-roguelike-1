@@ -7,11 +7,9 @@ import tcod
 from tcod.console import Console
 
 from py_roguelike_tutorial import tile_types
-from py_roguelike_tutorial.colors import Color
 from py_roguelike_tutorial.components.ai import BehaviorTreeAI
 from py_roguelike_tutorial.entity import Actor, Item
-from py_roguelike_tutorial.tile_types import SHROUD, floor, graphic_dt
-from py_roguelike_tutorial.types import Coord, Rgb
+from py_roguelike_tutorial.types import Coord
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.engine import Engine

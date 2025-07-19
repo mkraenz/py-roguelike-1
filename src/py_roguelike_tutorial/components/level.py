@@ -13,11 +13,6 @@ class Level(BaseComponent):
     parent: Actor  # type: ignore [reportIncompatibleVariableOverride]
 
     def __init__(self, data: LevelData):
-        """
-        Parameters:
-            level_up_base: If set to 0, the parent will NOT be able to level up! Enemies will have level_up_base=0.
-            xp_given: The amount of EXP given to the player on death of the parent.
-        """
         self.current_level = data.current_level
         self.current_xp = data.current_xp
         self.level_up_base = data.level_up_base

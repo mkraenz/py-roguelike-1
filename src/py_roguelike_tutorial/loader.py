@@ -58,33 +58,6 @@ def _to_entities_or_fail[T, ValidatedData](
     return entities
 
 
-def _to_entities_or_failWIP[T, ValidatedData](
-    filename: str,
-    data: dict,
-    validate: Callable[[Any], ValidatedData],
-    create_entity: Callable[[ValidatedData, str], T],
-) -> dict[str, T]:
-    entities: dict[str, T] = {}
-    erroneous_keys: list[str] = []
-    for key, val in data.items():
-        try:
-            validated = validate(val)
-            entities[key] = create_entity(validated, key)
-        except ValidationError as e:
-            traceback.print_exc()
-            print(e.errors())
-            erroneous_keys.append(key)
-        except Exception:
-            traceback.print_exc()
-            erroneous_keys.append(key)
-    if erroneous_keys:
-        error_keys = ", ".join(erroneous_keys)
-        raise SystemError(
-            f"Error loading {filename}. Entity definitions malformed: {error_keys}"
-        )
-    return entities
-
-
 def load_item_drops_rates(item_prefabs: dict[str, Item]) -> DungeonTable:
     filename = "assets/data/tables/dungeon_item_drops.yml"
     item_drops_data: _SpawnRateTable = _load_asset(filename)

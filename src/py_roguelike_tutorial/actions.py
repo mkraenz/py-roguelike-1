@@ -90,7 +90,7 @@ class MeleeAction(DirectedAction):
 
 class RangedAttackAction(Action):
     def __init__(self, entity: Actor, on_complete: Callable[[Coord, Coord], None]):
-        self.entity = entity
+        super().__init__(entity)
         self.on_complete = on_complete
 
     def perform(self) -> None:

@@ -10,7 +10,6 @@ from py_roguelike_tutorial.actions import (
     BumpAction,
     MeleeAction,
     MoveAction,
-    RangedAttackAction,
     WaitAction,
 )
 from py_roguelike_tutorial.components.vision import VisualSense
@@ -61,6 +60,7 @@ class BaseAI:
 
 class HostileEnemy(BaseAI):
     def __init__(self):
+        super().__init__()
         self.path: list[Coord] = []
         self.alarmed = False
 

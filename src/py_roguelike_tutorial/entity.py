@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import copy
 import math
-from typing import Type, TYPE_CHECKING
 import uuid
+from typing import TYPE_CHECKING
 
 from py_roguelike_tutorial.colors import Color
 from py_roguelike_tutorial.components.faction import Faction

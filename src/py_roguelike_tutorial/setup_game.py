@@ -131,12 +131,10 @@ class MainMenu(BaseEventHandler):
                         new_game(self.stack),
                     )
 
-                self.stack.push(
-                    ConfirmationPopup(
-                        stack=self.stack,
-                        text="Your existing progress will be lost. Continue?",
-                        callback=_new_game_callback,
-                    )
+                return ConfirmationPopup(
+                    stack=self.stack,
+                    text="Your existing progress will be lost. Continue?",
+                    callback=_new_game_callback,
                 )
             case _:
                 return None

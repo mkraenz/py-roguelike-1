@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import copy
 from typing import TYPE_CHECKING
 
 import py_roguelike_tutorial.behavior_trees.validators as bt_val
