@@ -4,6 +4,13 @@ from typing import TYPE_CHECKING
 
 import numpy as np
 
+from py_roguelike_tutorial.handlers.area_ranged_attack_handler import (
+    AreaRangedAttackHandler,
+)
+from py_roguelike_tutorial.handlers.base_event_handler import ActionOrHandler
+from py_roguelike_tutorial.handlers.single_ranged_attack_handler import (
+    SingleRangedAttackHandler,
+)
 import py_roguelike_tutorial.validators.item_validator as validators
 from py_roguelike_tutorial import tile_types
 from py_roguelike_tutorial.actions import Action, ItemAction
@@ -12,11 +19,6 @@ from py_roguelike_tutorial.components.ai import ConfusedEnemy
 from py_roguelike_tutorial.components.base_components import BaseComponent
 from py_roguelike_tutorial.components.inventory import Inventory
 from py_roguelike_tutorial.exceptions import Impossible
-from py_roguelike_tutorial.input_handlers import (
-    SingleRangedAttackHandler,
-    AreaRangedAttackHandler,
-    ActionOrHandler,
-)
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.entity import Actor, Item

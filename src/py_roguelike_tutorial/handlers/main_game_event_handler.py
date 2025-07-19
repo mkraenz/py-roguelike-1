@@ -14,39 +14,17 @@ from py_roguelike_tutorial.actions import (
 from py_roguelike_tutorial.handlers.base_event_handler import (
     ActionOrHandler,
 )
+from py_roguelike_tutorial.handlers.character_sheet_menu import CharacterSheetMenu
 from py_roguelike_tutorial.handlers.ingame_event_handler import IngameEventHandler
+from py_roguelike_tutorial.handlers.inventory_activate_handler import (
+    InventoryActivateHandler,
+)
+from py_roguelike_tutorial.handlers.inventory_drop_handler import InventoryDropHandler
+from py_roguelike_tutorial.handlers.key_map import _CONFIRM_KEYS, _MOVE_KEYS, _WAIT_KEYS
+from py_roguelike_tutorial.handlers.log_history_menu import LogHistoryMenu
 
 if TYPE_CHECKING:
     pass
-
-_MOVE_KEYS = {
-    # numpad
-    Key.KP_1: (-1, 1),
-    Key.KP_2: (0, 1),
-    Key.KP_3: (1, 1),
-    Key.KP_4: (-1, 0),
-    Key.KP_6: (1, 0),
-    Key.KP_7: (-1, -1),
-    Key.KP_8: (0, -1),
-    Key.KP_9: (1, -1),
-    # wasd
-    Key.Z: (-1, 1),
-    Key.S: (0, 1),
-    Key.X: (1, 1),
-    Key.A: (-1, 0),
-    Key.D: (1, 0),
-    Key.Q: (-1, -1),
-    Key.W: (0, -1),
-    Key.E: (1, -1),
-}
-
-_WAIT_KEYS = {Key.KP_5, Key.PERIOD, Key.SPACE}
-
-
-_CONFIRM_KEYS = {
-    Key.RETURN,
-    Key.KP_ENTER,
-}
 
 
 class MainGameEventHandler(IngameEventHandler):
@@ -65,27 +43,19 @@ class MainGameEventHandler(IngameEventHandler):
             case Key.ESCAPE:
                 return EscapeAction(player)
             case Key.V:
-                from py_roguelike_tutorial.input_handlers import LogHistoryMenu
-
-                return LogHistoryMenu(self.engine, MainGameEventHandler)
+                return LogHistoryMenu(self.engine)
             case Key.I:
-                from py_roguelike_tutorial.input_handlers import (
-                    InventoryActivateHandler,
-                )
-
                 return InventoryActivateHandler(self.engine)
             case Key.P:
-                from py_roguelike_tutorial.input_handlers import InventoryDropHandler
-
                 return InventoryDropHandler(self.engine)
             case Key.C:
-                from py_roguelike_tutorial.input_handlers import CharacterSheetMenu
-
                 return CharacterSheetMenu(self.engine)
             case Key.G:
                 return PickupAction(player)
             case Key.K:
-                from py_roguelike_tutorial.input_handlers import LookAroundHandler
+                from py_roguelike_tutorial.handlers.look_around_handler import (
+                    LookAroundHandler,
+                )
 
                 return LookAroundHandler(self.engine)
             case _:

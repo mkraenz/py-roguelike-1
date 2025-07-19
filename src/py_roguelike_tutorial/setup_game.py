@@ -11,18 +11,21 @@ from tcod.constants import CENTER
 from tcod.event import KeySym as Key
 from tcod.libtcodpy import BKGND_ALPHA
 
-from py_roguelike_tutorial import input_handlers
 from py_roguelike_tutorial.colors import Theme
 from py_roguelike_tutorial.components.factions_manager import FactionsManager
 from py_roguelike_tutorial.constants import AUTOSAVE_FILENAME, RNG_SEED
 from py_roguelike_tutorial.engine import Engine
 from py_roguelike_tutorial.entity_factory import EntityPrefabs
 from py_roguelike_tutorial.game_world import GameWorld
+from py_roguelike_tutorial.handlers.base_event_handler import BaseEventHandler
+from py_roguelike_tutorial.handlers.confirmation_popup import ConfirmationPopup
+from py_roguelike_tutorial.handlers.main_game_event_handler import MainGameEventHandler
+from py_roguelike_tutorial.handlers.popup_message import PopupMessage
 from py_roguelike_tutorial.screen_stack import ScreenStack
 from py_roguelike_tutorial.utils import assets_filepath
 
 filepath = assets_filepath("assets/menu_background.png")
-background_image = tcod.image.load(filepath)[:, :, :3]
+background_image = tcod.image.load(filepath)[:, :, :3]  # type: ignore [reportDeprecated]
 
 
 def new_game(stack: ScreenStack) -> Engine:
@@ -62,7 +65,7 @@ def load_game(filepath: str):
     return engine
 
 
-class MainMenu(input_handlers.BaseEventHandler):
+class MainMenu(BaseEventHandler):
     """Handle the main menu rendering and input."""
 
     def __init__(self, stack: ScreenStack):
@@ -108,9 +111,7 @@ class MainMenu(input_handlers.BaseEventHandler):
             fg=Theme.menu_title,
         )
 
-    def ev_keydown(
-        self, event: tcod.event.KeyDown, /
-    ) -> input_handlers.BaseEventHandler | None:
+    def ev_keydown(self, event: tcod.event.KeyDown, /) -> BaseEventHandler | None:
         key = event.sym
         match key:
             case _ if key in {Key.ESCAPE, Key.Q}:
@@ -119,17 +120,19 @@ class MainMenu(input_handlers.BaseEventHandler):
                 return self.try_load_game()
             case Key.N:
                 if not os.path.exists(AUTOSAVE_FILENAME):
-                    return input_handlers.MainGameEventHandler(
+                    self.stack.pop()
+                    return MainGameEventHandler(
                         new_game(self.stack),
                     )
 
                 def _new_game_callback():
-                    return input_handlers.MainGameEventHandler(
+                    self.stack.pop()
+                    return MainGameEventHandler(
                         new_game(self.stack),
                     )
 
                 self.stack.push(
-                    input_handlers.ConfirmationPopup(
+                    ConfirmationPopup(
                         stack=self.stack,
                         text="Your existing progress will be lost. Continue?",
                         callback=_new_game_callback,
@@ -140,13 +143,15 @@ class MainMenu(input_handlers.BaseEventHandler):
 
     def try_load_game(self):
         try:
-            return input_handlers.MainGameEventHandler(load_game(AUTOSAVE_FILENAME))
+            engine = load_game(AUTOSAVE_FILENAME)
+            engine.stack = self.stack
+            self.stack.pop()
+            return MainGameEventHandler(engine)
         except FileNotFoundError:
-            return input_handlers.PopupMessage(
-                self, f"No save file named {AUTOSAVE_FILENAME} found."
+            # todo make this work
+            return PopupMessage(
+                self.stack, f"No save file named {AUTOSAVE_FILENAME} found."
             )
         except Exception as exc:
             traceback.print_exc()
-            return input_handlers.PopupMessage(
-                self, f"Failed to load save file:\n{exc}"
-            )
+            return PopupMessage(self.stack, f"Failed to load save file:\n{exc}")

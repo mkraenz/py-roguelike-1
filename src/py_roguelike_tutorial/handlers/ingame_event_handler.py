@@ -39,11 +39,13 @@ class IngameEventHandler(BaseEventHandler):
             return action_or_state
         if self.handle_action(action_or_state):
             if not self.player.is_alive:
-                from py_roguelike_tutorial.input_handlers import GameOverEventHandler
+                from py_roguelike_tutorial.handlers.game_over_event_handler import (
+                    GameOverEventHandler,
+                )
 
                 return GameOverEventHandler(self.engine)
             if self.player.level.requires_level_up:
-                from py_roguelike_tutorial.input_handlers import LevelUpMenu
+                from py_roguelike_tutorial.handlers.level_up_menu import LevelUpMenu
 
                 return LevelUpMenu(self.engine)
             from py_roguelike_tutorial.handlers.main_game_event_handler import (

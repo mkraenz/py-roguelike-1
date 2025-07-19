@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import sys
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Callable
 
 from py_roguelike_tutorial import exceptions
 from py_roguelike_tutorial.colors import Theme
@@ -89,6 +89,10 @@ class MeleeAction(DirectedAction):
 
 
 class RangedAttackAction(Action):
+    def __init__(self, entity: Actor, on_complete: Callable[[Coord, Coord], None]):
+        self.entity = entity
+        self.on_complete = on_complete
+
     def perform(self) -> None:
         if self.entity.ranged is None:
             raise Impossible(
@@ -101,6 +105,8 @@ class RangedAttackAction(Action):
         attack_desc = f"{self.entity.name} hits {target.name}"
         txt = f"{attack_desc} for {damage} HP damage."
         self.engine.message_log.add(txt, fg=Theme.enemy_attacks)
+
+        self.on_complete(self.entity.pos, target.pos)
 
 
 class MoveAction(DirectedAction):

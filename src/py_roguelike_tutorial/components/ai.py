@@ -77,18 +77,6 @@ class HostileEnemy(BaseAI):
                 (dx, dy) = target.diff_from(self.agent)
                 return MeleeAction(self.agent, dx, dy).perform()
 
-            elif self.agent.ranged is not None:
-                in_range = distance <= self.agent.ranged.range
-
-                line_of_sight = tcod.los.bresenham(self.agent.pos, target.pos)[1:-1]
-                has_line_of_sight = all(
-                    not self.engine.game_map.is_blocked(*pos) for pos in line_of_sight
-                )
-
-                if in_range and has_line_of_sight:
-                    return RangedAttackAction(self.agent).perform()
-                else:
-                    self.path = self.get_path_to(target.x, target.y)
             else:
                 self.path = self.get_path_to(target.x, target.y)
 

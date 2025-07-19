@@ -11,10 +11,8 @@ from py_roguelike_tutorial.components.procgen_config import (
 )
 from py_roguelike_tutorial.constants import AUTOSAVE_FILENAME, RNG_SEED
 from py_roguelike_tutorial.entity_factory import EntityPrefabs
-from py_roguelike_tutorial.input_handlers import (
-    BaseEventHandler,
-    IngameEventHandler,
-)
+from py_roguelike_tutorial.handlers.base_event_handler import BaseEventHandler
+from py_roguelike_tutorial.handlers.ingame_event_handler import IngameEventHandler
 import py_roguelike_tutorial.loader as loader
 from py_roguelike_tutorial.screen_stack import ScreenStack
 from py_roguelike_tutorial.utils import assets_filepath

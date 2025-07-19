@@ -144,7 +144,14 @@ class MeleeAttackBehavior(bt.BtAction):
 
 class RangedAttackBehavior(bt.BtAction):
     def tick(self) -> bt.BtResult:
-        RangedAttackAction(self.agent).perform()
+        def callback(from_: Coord, to: Coord) -> None:
+            from py_roguelike_tutorial.handlers.ranged_attack_animation import (
+                RangedAttackAnimation,
+            )
+
+            self.engine.stack.push(RangedAttackAnimation(self.engine, from_, to, 0.05))
+
+        RangedAttackAction(self.agent, callback).perform()
         return bt.BtResult.Success
 
 
