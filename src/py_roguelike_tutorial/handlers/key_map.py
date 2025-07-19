@@ -1,7 +1,7 @@
 from tcod.event import KeySym as Key
 
 
-_MOVE_KEYS = {
+MOVE_KEYS = {
     # numpad
     Key.KP_1: (-1, 1),
     Key.KP_2: (0, 1),
@@ -22,9 +22,9 @@ _MOVE_KEYS = {
     Key.E: (1, -1),
 }
 
-_WAIT_KEYS = {Key.KP_5, Key.PERIOD, Key.SPACE}
+WAIT_KEYS = {Key.KP_5, Key.PERIOD, Key.SPACE}
 
-_CURSOR_Y_KEYS = {
+CURSOR_Y_KEYS = {
     Key.UP: -1,
     Key.DOWN: 1,
     Key.PAGEUP: -10,
@@ -32,12 +32,12 @@ _CURSOR_Y_KEYS = {
 }
 
 
-_CONFIRM_KEYS = {
+CONFIRM_KEYS = {
     Key.RETURN,
     Key.KP_ENTER,
 }
 
-_MODIFIER_KEYS = {
+MODIFIER_KEYS = {
     Key.LSHIFT,
     Key.RSHIFT,
     Key.LCTRL,

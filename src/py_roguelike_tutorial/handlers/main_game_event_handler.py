@@ -20,7 +20,7 @@ from py_roguelike_tutorial.handlers.inventory_activate_handler import (
     InventoryActivateHandler,
 )
 from py_roguelike_tutorial.handlers.inventory_drop_handler import InventoryDropHandler
-from py_roguelike_tutorial.handlers.key_map import _CONFIRM_KEYS, _MOVE_KEYS, _WAIT_KEYS
+from py_roguelike_tutorial.handlers.key_map import CONFIRM_KEYS, MOVE_KEYS, WAIT_KEYS
 from py_roguelike_tutorial.handlers.log_history_menu import LogHistoryMenu
 
 if TYPE_CHECKING:
@@ -33,12 +33,12 @@ class MainGameEventHandler(IngameEventHandler):
         player = self.player
 
         match key:
-            case _ if key in _MOVE_KEYS:
-                dx, dy = _MOVE_KEYS[key]
+            case _ if key in MOVE_KEYS:
+                dx, dy = MOVE_KEYS[key]
                 return BumpAction(player, dx, dy)
-            case _ if key in _CONFIRM_KEYS:
+            case _ if key in CONFIRM_KEYS:
                 return TakeStairsAction(player)
-            case _ if key in _WAIT_KEYS:
+            case _ if key in WAIT_KEYS:
                 return WaitAction(player)
             case Key.ESCAPE:
                 return EscapeAction(player)

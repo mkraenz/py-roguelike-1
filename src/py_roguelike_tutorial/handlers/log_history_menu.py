@@ -10,7 +10,7 @@ from py_roguelike_tutorial.handlers.base_event_handler import (
     ActionOrHandler,
 )
 from py_roguelike_tutorial.handlers.ingame_event_handler import IngameEventHandler
-from py_roguelike_tutorial.handlers.key_map import _CURSOR_Y_KEYS
+from py_roguelike_tutorial.handlers.key_map import CURSOR_Y_KEYS
 from py_roguelike_tutorial.render_functions import (
     IngameMenuConsole,
 )
@@ -45,8 +45,8 @@ class LogHistoryMenu(IngameEventHandler):
     def ev_keydown(self, event: tcod.event.KeyDown, /) -> ActionOrHandler | None:
         end = self.log_length - 1
         match event.sym:
-            case _ if event.sym in _CURSOR_Y_KEYS:
-                adjust = _CURSOR_Y_KEYS[event.sym]
+            case _ if event.sym in CURSOR_Y_KEYS:
+                adjust = CURSOR_Y_KEYS[event.sym]
                 match adjust:
                     case _ if adjust < 0 and self.cursor == 0:
                         # we wrap around to the bottom if we are at the top and continue going upwards

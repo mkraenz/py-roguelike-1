@@ -11,7 +11,7 @@ from py_roguelike_tutorial.handlers.ask_user_event_handler import AskUserEventHa
 from py_roguelike_tutorial.handlers.base_event_handler import (
     ActionOrHandler,
 )
-from py_roguelike_tutorial.handlers.key_map import _CONFIRM_KEYS, _MOVE_KEYS
+from py_roguelike_tutorial.handlers.key_map import CONFIRM_KEYS, MOVE_KEYS
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.engine import Engine
@@ -37,7 +37,7 @@ class SelectIndexHandler(AskUserEventHandler):
         key = event.sym
         x, y = self.engine.mouse_location
         match key:
-            case _ if key in _MOVE_KEYS:
+            case _ if key in MOVE_KEYS:
                 # holding modifier keys will speed up movement, e.g. 5 tiles at a time when holding shift.
                 modifier = 1
                 if event.mod & (Modifier.LSHIFT | Modifier.RSHIFT):
@@ -47,7 +47,7 @@ class SelectIndexHandler(AskUserEventHandler):
                 if event.mod & (Modifier.LALT | Modifier.RALT):
                     modifier *= 20
 
-                dx, dy = _MOVE_KEYS[key]
+                dx, dy = MOVE_KEYS[key]
                 x += dx * modifier
                 y += dy * modifier
                 # cursor should not leave the map, thus clamp
@@ -55,7 +55,7 @@ class SelectIndexHandler(AskUserEventHandler):
                 y = max(0, min(y, self.engine.game_map.height - 1))
                 self.engine.mouse_location = x, y
                 return None
-            case _ if key in _CONFIRM_KEYS:
+            case _ if key in CONFIRM_KEYS:
                 return self.on_index_selected(x, y)
             case _:
                 return super().ev_keydown(event)

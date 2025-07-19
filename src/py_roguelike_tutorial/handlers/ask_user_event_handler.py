@@ -7,7 +7,7 @@ from py_roguelike_tutorial.handlers.base_event_handler import (
     ActionOrHandler,
 )
 from py_roguelike_tutorial.handlers.ingame_event_handler import IngameEventHandler
-from py_roguelike_tutorial.handlers.key_map import _MODIFIER_KEYS
+from py_roguelike_tutorial.handlers.key_map import MODIFIER_KEYS
 
 
 class AskUserEventHandler(IngameEventHandler):
@@ -17,7 +17,7 @@ class AskUserEventHandler(IngameEventHandler):
         """By default, any unhandled key cancels the menu."""
         key = event.sym
         match key:
-            case _ if key in _MODIFIER_KEYS:
+            case _ if key in MODIFIER_KEYS:
                 return None  # ignore modifiers
             case _:
                 return self.on_exit()
