@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import os.path
 import sys
+import time
 from typing import TYPE_CHECKING, Callable, Type
 
 import tcod
@@ -98,7 +99,7 @@ class BaseEventHandler(EventDispatch[ActionOrHandler]):
         assert not isinstance(state, Action), f"{self!r} cannot handle actions."
         return self
 
-    def on_render(self, console: Console) -> None:
+    def on_render(self, console: Console, delta_time: float) -> None:
         raise NotImplementedError("Must be implemented in subclass.")
 
     def ev_quit(self, event: tcod.event.Quit, /):
@@ -148,7 +149,7 @@ class EventHandler(BaseEventHandler):
         self.engine.update_fov()
         return True
 
-    def on_render(self, console: Console) -> None:
+    def on_render(self, console: Console, delta_time: float) -> None:
         self.engine.render(console)
 
     def ev_mousemotion(self, event: tcod.event.MouseMotion, /) -> None:
@@ -172,7 +173,8 @@ class MainGameEventHandler(EventHandler):
             case Key.ESCAPE:
                 return EscapeAction(player)
             case Key.V:
-                return LogHistoryMenu(self.engine, MainGameEventHandler)
+                return RangedAttackHandler(self.engine, (0, 0), (100, 100))
+                # return LogHistoryMenu(self.engine, MainGameEventHandler)
             case Key.I:
                 return InventoryActivateHandler(self.engine)
             case Key.P:
@@ -189,8 +191,8 @@ class MainGameEventHandler(EventHandler):
 
 class GameOverEventHandler(EventHandler):
 
-    def on_render(self, console: Console) -> None:
-        super().on_render(console)
+    def on_render(self, console: Console, delta_time: float) -> None:
+        super().on_render(console, delta_time)
         dim_console(console)
         render_you_died(console, 2, console.height // 2 - 7 // 2 - 1)
         texts = ["[F] Back to title menu", "[V] View combat log"]
@@ -223,9 +225,9 @@ class GameOverEventHandler(EventHandler):
 
 
 class LevelUpMenu(EventHandler):
-    def on_render(self, console: Console) -> None:
+    def on_render(self, console: Console, delta_time: float) -> None:
         title = "New Level"
-        super().on_render(console)
+        super().on_render(console, delta_time)
         child_console, blit = IngameMenuConsole(console, title)
 
         stats = self.player.fighter
@@ -288,8 +290,8 @@ class LevelUpMenu(EventHandler):
 
 
 class CharacterSheetMenu(EventHandler):
-    def on_render(self, console: Console) -> None:
-        super().on_render(console)  # draw main state as background
+    def on_render(self, console: Console, delta_time: float) -> None:
+        super().on_render(console, delta_time)  # draw main state as background
         child_console, blit = IngameMenuConsole(console, "Character Details")
 
         p = self.player
@@ -310,6 +312,35 @@ class CharacterSheetMenu(EventHandler):
         return MainGameEventHandler(self.engine)
 
 
+class RangedAttackHandler(EventHandler):
+    def __init__(
+        self,
+        engine: Engine,
+        from_pos: Coord,
+        to: Coord,
+        animation_tick_time_sec: float = 0.1,
+    ):
+        super().__init__(engine)
+        self.animation_tick_time_sec = animation_tick_time_sec
+        self.elapsed: float = 0
+
+        self.path = tcod.los.bresenham(from_pos, to)
+
+    def on_render(self, console: Console, delta_time: float) -> None:
+        self.elapsed += delta_time
+        ticks = int(self.elapsed / self.animation_tick_time_sec)
+        pos = self.path[ticks] if ticks < len(self.path) else self.path[-1]
+        print(pos)
+        child_console = Console(console.width, console.height)
+        child_console.print(
+            x=pos[0], y=pos[1], fg=Color.WHITE, bg=Color.WHITE, text="x"
+        )
+        child_console.blit(console)
+
+    def ev_keydown(self, event: tcod.event.KeyDown, /) -> ActionOrHandler | None:
+        return MainGameEventHandler(self.engine)
+
+
 class LogHistoryMenu(EventHandler):
     """Print the history on a larger window which can be scrolled."""
 
@@ -319,8 +350,8 @@ class LogHistoryMenu(EventHandler):
         self.cursor = self.log_length - 1
         self.on_back_cls = on_back_cls
 
-    def on_render(self, console: Console) -> None:
-        super().on_render(console)
+    def on_render(self, console: Console, delta_time: float) -> None:
+        super().on_render(console, delta_time)
 
         child_console, blit = IngameMenuConsole(console, "Message History")
 
@@ -388,8 +419,8 @@ class InventoryEventHandler(AskUserEventHandler):
 
     TITLE = "<missing title>"
 
-    def on_render(self, console: Console) -> None:
-        super().on_render(console)
+    def on_render(self, console: Console, delta_time: float) -> None:
+        super().on_render(console, delta_time)
         player = self.player
         carried_items = player.inventory.len
         height = max(carried_items + 2, 3)
@@ -482,9 +513,9 @@ class SelectIndexHandler(AskUserEventHandler):
         super().__init__(engine)
         engine.mouse_location = self.player.x, self.player.y
 
-    def on_render(self, console: Console) -> None:
+    def on_render(self, console: Console, delta_time: float) -> None:
         """Highlight the tile under the cursor."""
-        super().on_render(console)
+        super().on_render(console, delta_time)
         x, y = self.engine.mouse_location
         console.rgb["bg"][x, y] = Color.WHITE
         console.rgb["fg"][x, y] = Color.BLACK
@@ -561,9 +592,9 @@ class AreaRangedAttackHandler(SelectIndexHandler):
         self.callback = callback
         self.radius = radius
 
-    def on_render(self, console: Console) -> None:
+    def on_render(self, console: Console, delta_time: float) -> None:
         """Highlight the area around the cursor"""
-        super().on_render(console)
+        super().on_render(console, delta_time)
 
         cursor_x, cursor_y = self.engine.mouse_location
         # enemies on the border will not be included in the radius
@@ -588,8 +619,8 @@ class PopupMessage(BaseEventHandler):
         self.parent = parent_handler
         self.text = text
 
-    def on_render(self, console: Console) -> None:
-        self.parent.on_render(console)  # in background, display the parent
+    def on_render(self, console: Console, delta_time: float) -> None:
+        self.parent.on_render(console, delta_time)  # in background, display the parent
         dim_console(console)
         print_text_center(console, self.text, console.height // 2)
 
@@ -611,8 +642,8 @@ class ConfirmationPopup(BaseEventHandler):
         self.text = text
         self.callback = callback
 
-    def on_render(self, console: Console) -> None:
-        self.parent.on_render(console)
+    def on_render(self, console: Console, delta_time: float) -> None:
+        self.parent.on_render(console, delta_time)
         dim_console(console)
 
         texts = [self.text, "", "[Y] Confirm", "[*] Cancel"]

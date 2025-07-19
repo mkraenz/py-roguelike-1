@@ -1,8 +1,8 @@
 import random
+import time
 import traceback
 
 import tcod
-from tcod.event import wait
 
 from py_roguelike_tutorial import exceptions, setup_game
 from py_roguelike_tutorial.colors import Theme
@@ -42,6 +42,7 @@ def main():
     screen_width = 80
     screen_height = 50
     window_x = monitor_width // 2 - 10
+    max_frame_time: float = 1 / 60  # 60 FPS
 
     random.seed(RNG_SEED)
 
@@ -69,13 +70,20 @@ def main():
         y=0,
     ) as context:
         root_console = tcod.console.Console(screen_width, screen_height, order="F")
+
+        previous_timestamp: float = time.time()
         try:
             while True:
                 root_console.clear()
-                handler.on_render(console=root_console)
+
+                current_timestamp = time.time()
+                delta = current_timestamp - previous_timestamp
+                previous_timestamp = current_timestamp
+
+                handler.on_render(console=root_console, delta_time=delta)
                 context.present(root_console)
                 try:
-                    for event in wait():
+                    for event in tcod.event.wait(max_frame_time):
                         converted_event = context.convert_event(event)
                         handler = handler.handle_events(converted_event)
                 except exceptions.QuitWithoutSaving:

@@ -5,3 +5,4 @@
 - [ ] Animation for ranged attacks
 - [ ] Arrows needed
 - [ ] Shopkeeper
+- [ ] try attrs

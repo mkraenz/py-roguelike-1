@@ -117,15 +117,16 @@ def generate_dungeon(
             for coord in tunnel_between_room_centers(room, rooms[-1]):
                 dungeon.tiles[coord] = tile_types.floor
 
-        place_entities(room, dungeon, current_floor, factions)
+        # place_entities(room, dungeon, current_floor, factions)
 
         rooms.append(room)
 
     player.place(*rooms[0].center, dungeon)
     # leaving here since useful for debugging
-    # loc = (player.x + 5, player.y + 7)
-    # EntityPrefabs.npcs["orc_archer"].spawn(dungeon, loc[0], loc[1])
-    # EntityPrefabs.items["dagger"].spawn(dungeon, loc[0], loc[1])
+    loc = (player.x + 5, player.y + 7)
+    loc2 = (player.x + 1, player.y)
+    EntityPrefabs.npcs["orc_archer"].spawn(dungeon, loc[0], loc[1])
+    EntityPrefabs.items["dagger"].spawn(dungeon, loc2[0], loc2[1])
 
     room_with_stairs = rooms[-1] if not DEBUG_STAIRS_AT_START else rooms[0]
     place_down_stairs(dungeon, room_with_stairs)

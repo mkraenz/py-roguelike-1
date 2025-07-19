@@ -65,7 +65,7 @@ def load_game(filepath: str):
 class MainMenu(input_handlers.BaseEventHandler):
     """Handle the main menu rendering and input."""
 
-    def on_render(self, console: Console) -> None:
+    def on_render(self, console: Console, delta_time: float) -> None:
         TITLE = "TSTT's PYTYFYL Roguelike"
         SUBTITLE = "By TypeScriptTeatime"
         MENU_ITEMS = ("[N] New Game", "[C] Continue", "[Q] Quit")
