@@ -58,5 +58,12 @@ class Inventory(BaseComponent):
         kinds = (item.kind for item in self.items)
         return kind in kinds
 
+    def has_by_tag(self, tag: str) -> bool:
+        item = self.get_first_by_tag(tag)
+        return item is not None
+
     def get_by_kind(self, kind: str) -> Item | None:
         return next((item for item in self.items if item.kind == kind), None)
+
+    def get_first_by_tag(self, tag: str) -> Item | None:
+        return next((item for item in self.items if tag in item.tags), None)

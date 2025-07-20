@@ -35,6 +35,12 @@ class BtResult(StrEnum):
 INF = 999999  # for our purposes this is unreachably high
 
 
+class BlackboardSpecialKey(StrEnum):
+    Engine = "ENGINE"
+    Agent = "AGENT"
+    Player = "PLAYER"
+
+
 class Blackboard(dict[str, Any]):
     def set(self, key: str, val: Any) -> None:
         self[key] = val
@@ -45,6 +51,15 @@ class Blackboard(dict[str, Any]):
     def remove(self, key: str) -> None:
         if key in self:
             del self[key]
+
+    def clear_most(self):
+        for key in list(self.keys()):
+            if key not in [
+                BlackboardSpecialKey.Engine,
+                BlackboardSpecialKey.Agent,
+                BlackboardSpecialKey.Player,
+            ]:
+                del self[key]
 
 
 T = TypeVar("T")
@@ -89,15 +104,18 @@ class BtNode(abc.ABC):
 
     @property
     def agent(self) -> Actor:
-        return self.blackboard.get("agent")  # type: ignore[reportReturnType]
+        key = BlackboardSpecialKey.Agent
+        return self.blackboard.get(key)  # type: ignore[reportReturnType]
 
     @property
     def player(self) -> Actor:
-        return self.blackboard.get("player")  # type: ignore[reportReturnType]
+        key = BlackboardSpecialKey.Player
+        return self.blackboard.get(key)  # type: ignore[reportReturnType]
 
     @property
     def engine(self) -> Engine:
-        return self.blackboard.get("engine")  # type: ignore[reportReturnType]
+        key = BlackboardSpecialKey.Engine
+        return self.blackboard.get(key)  # type: ignore[reportReturnType]
 
     @abc.abstractmethod
     def tick(self) -> BtResult:

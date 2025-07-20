@@ -41,6 +41,7 @@ class Entity:
         parent: GameMap | None = None,
         render_order: RenderOrder = RenderOrder.CORPSE,
         move_stepsize: int = 1,
+        tags: set[str],
     ) -> None:
         self.id: uuid.UUID = uuid.UUID("{00000000-0000-0000-0000-000000000000}")
         self.x = x
@@ -51,6 +52,7 @@ class Entity:
         self.blocks_movement = blocks_movement
         self.render_order = render_order
         self.move_stepsize = move_stepsize
+        self.tags = tags
         if parent:
             self.parent = parent
             parent.entities.add(self)
@@ -147,6 +149,7 @@ class Actor(Entity):
         level: Level,
         equipment: Equipment,
         move_stepsize: int = 1,
+        tags: set[str],
         ranged: Ranged | None = None,
     ):
         super().__init__(
@@ -158,6 +161,7 @@ class Actor(Entity):
             blocks_movement=True,
             render_order=RenderOrder.ACTOR,
             move_stepsize=move_stepsize,
+            tags=tags,
         )
         self.ranged = ranged
         if self.ranged:
@@ -211,6 +215,7 @@ class Item(Entity):
         kind: str = "",
         consumable: Consumable | None = None,
         equippable: Equippable | None = None,
+        tags: set[str],
     ):
         super().__init__(
             x=x,
@@ -220,6 +225,7 @@ class Item(Entity):
             name=name,
             blocks_movement=False,
             render_order=RenderOrder.ITEM,
+            tags=tags,
         )
         self.kind = kind
         self.equippable = equippable

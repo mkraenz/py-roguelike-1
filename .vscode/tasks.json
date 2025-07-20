@@ -1,0 +1,37 @@
+{
+  // See https://go.microsoft.com/fwlink/?LinkId=733558
+  // for the documentation about the tasks.json format
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "start game",
+      "type": "shell",
+      "command": "uv run python ${workspaceFolder}/src/tstt_rl.py",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    },
+    {
+      "label": "type-check",
+      "type": "shell",
+      "command": "uv run pyright src",
+      "problemMatcher": {
+        "owner": "custom",
+        "fileLocation": "absolute",
+        "pattern": [
+          {
+            // Todo This does not work yet
+            "regexp": "(.*):(\\d+),(\\d+)\\ (- error)(.*)",
+            "severity": 4,
+            "file": 1,
+            "line": 2,
+            "column": 3,
+            "message": 5
+          }
+        ]
+      }
+    }
+  ]
+}

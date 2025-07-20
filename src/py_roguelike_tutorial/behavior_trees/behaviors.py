@@ -158,10 +158,10 @@ class RangedAttackBehavior(bt.BtAction):
 class HasItemCondition(bt.BtCondition):
     def __init__(self, args: bt.BtConstructorArgs[bt_val.HasItemDataParams]):
         super().__init__(args)
-        self.item_kind = args.params.item_kind
+        self.tag = args.params.tag
 
     def tick(self) -> bt.BtResult:
-        return self.success_else_fail(self.agent.inventory.has(self.item_kind))
+        return self.success_else_fail(self.agent.inventory.has_by_tag(self.tag))
 
 
 class UseItemBehavior(bt.BtAction):
@@ -169,11 +169,11 @@ class UseItemBehavior(bt.BtAction):
 
     def __init__(self, args: bt.BtConstructorArgs[bt_val.UseItemDataParams]):
         super().__init__(args)
-        self.item_kind = args.params.item_kind
+        self.tag = args.params.tag
 
     def tick(self) -> bt.BtResult:
-        item = self.agent.inventory.get_by_kind(self.item_kind)
-        assert item, f"{self.agent.name} does not have item of kind: {self.item_kind}."
+        item = self.agent.inventory.get_first_by_tag(self.tag)
+        assert item, f"{self.agent.name} does not have item with tag: {self.tag}."
         ItemAction(self.agent, item).perform()
         return bt.BtResult.Success
 
@@ -239,16 +239,6 @@ class RandomMoveBehavior(bt.BtAction):
         return bt.BtResult.Success
 
 
-class HasItemAtPosition(bt.BtCondition):
-
-    def tick(self) -> BtResult:
-        item = self.engine.game_map.get_item_at_location(*self.agent.pos)
-        if item is not None:
-            if item.kind == "dagger":
-                return bt.BtResult.Success
-        return bt.BtResult.Failure
-
-
 class MoveToEntityBehavior(bt.BtAction):
     def __init__(self, args: bt.BtConstructorArgs[bt_val.MoveToEntityDataParams]):
         super().__init__(args)
@@ -301,7 +291,6 @@ BT_NODE_NAME_TO_CLASS = {
     "UseItem": UseItemBehavior,
     "Subtree": Subtree,
     "RandomMove": RandomMoveBehavior,
-    "HasItemAtPosition": HasItemAtPosition,
     "PickUpItem": PickUpItemBehavior,
     "MoveToEntity": MoveToEntityBehavior,
     "EquipItem": EquipItemBehavior,

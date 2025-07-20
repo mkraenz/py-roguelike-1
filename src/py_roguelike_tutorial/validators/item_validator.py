@@ -69,6 +69,7 @@ class ItemData(BaseModel):
     char: str
     color: str
     name: str
+    tags: list[str]
     consumable: (
         LightningDamageConsumableData
         | HealingConsumableData

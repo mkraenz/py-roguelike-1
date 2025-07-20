@@ -13,6 +13,8 @@ orc:
     level_up_base: 0
     xp_given: 35
   equipment: {}
+  tags:
+    - orc
 
 orc_archer:
   char: "a"
@@ -26,7 +28,7 @@ orc_archer:
     vision:
       range: 10
     interests:
-      - Player
+      - player
       - dagger
   ranged:
     power: 0
@@ -38,13 +40,15 @@ orc_archer:
   inventory:
     capacity: 3
     items:
-      - health_potion
+      - health_potion_2
       - teleport_scroll
   level:
     level_up_base: 0
     xp_given: 35
   equipment:
     weapon: bow
+  tags:
+    - orc
 
 bijumper:
   char: "b"
@@ -62,6 +66,8 @@ bijumper:
     xp_given: 20
   equipment: {}
   move_stepsize: 2
+  tags:
+    - jumper
 
 trijumper:
   char: "t"
@@ -79,6 +85,8 @@ trijumper:
     xp_given: 20
   equipment: {}
   move_stepsize: 3
+  tags:
+    - jumper
 
 goblin:
   char: "g"
@@ -95,6 +103,8 @@ goblin:
     level_up_base: 0
     xp_given: 15
   equipment: {}
+  tags:
+    - goblin
 
 troll:
   char: "T"
@@ -111,3 +121,5 @@ troll:
     level_up_base: 0
     xp_given: 35
   equipment: {}
+  tags:
+    - troll

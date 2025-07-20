@@ -61,3 +61,4 @@ class ActorData(BaseModel):
     equipment: EquipmentData
     ranged: RangedData | None = None
     move_stepsize: int = 1
+    tags: list[str]

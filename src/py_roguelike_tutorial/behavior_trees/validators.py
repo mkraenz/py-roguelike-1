@@ -60,7 +60,6 @@ class SimpleBehaviorData(BtBehaviorData):
         "SeesPlayer",
         "Wait",
         "RandomMove",
-        "HasItemAtPosition",
     ]
 
 
@@ -107,7 +106,7 @@ class BlackboardConditionDataParams(BaseModel):
 
 
 class HasItemDataParams(BaseModel):
-    item_kind: str
+    tag: str
 
 
 class HasItemData(BtBehaviorData):
@@ -116,7 +115,7 @@ class HasItemData(BtBehaviorData):
 
 
 class UseItemDataParams(BaseModel):
-    item_kind: str
+    tag: str
 
 
 class UseItemData(BtBehaviorData):

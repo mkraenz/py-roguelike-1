@@ -75,6 +75,7 @@ def item_from_dict(data: ItemData) -> Item:
         kind=data.kind,
         consumable=consumable,
         equippable=equippable,
+        tags=set(data.tags),
     )
     if consumable:
         consumable.parent = item
@@ -90,7 +91,7 @@ def actor_from_dict(data: ActorData, item_prefabs: dict[str, Item]) -> Actor:
         ai = ai_cls()
     elif ai_cls == BehaviorTreeAI and isinstance(data.ai, BehaviorTreeAIData):
         behavior_tree = EntityPrefabs.behavior_trees[data.ai.behavior_tree_id]
-        interests = data.ai.interests
+        interests = set(data.ai.interests)
         vision = VisualSense(
             behavior_tree.blackboard, interests=interests, range=data.ai.vision.range
         )
@@ -135,6 +136,7 @@ def actor_from_dict(data: ActorData, item_prefabs: dict[str, Item]) -> Actor:
         equipment=equipment,
         level=level,
         ranged=ranged,
+        tags=set(data.tags),
     )
     return actor
 

@@ -6,6 +6,9 @@ dagger:
   equippable:
     slot: weapon
     power: 2
+  tags:
+    - weapon
+    - dagger
 
 sword:
   kind: sword
@@ -15,6 +18,9 @@ sword:
   equippable:
     slot: weapon
     power: 4
+  tags:
+    - weapon
+    - sword
 
 bow:
   kind: bow
@@ -25,6 +31,9 @@ bow:
     slot: weapon
     ranged_power: 2
     range: 5
+  tags:
+    - ranged_weapon
+    - bow
 
 leather_armor:
   kind: leather_armor
@@ -34,6 +43,10 @@ leather_armor:
   equippable:
     slot: armor
     defense: 1
+  tags:
+    - armor
+    - leather_armor
+    - light_armor
 
 chain_mail:
   kind: chain_mail
@@ -43,6 +56,10 @@ chain_mail:
   equippable:
     slot: armor
     defense: 3
+  tags:
+    - armor
+    - chain_mail
+    - heavy_armor
 
 health_potion:
   kind: health_potion
@@ -53,6 +70,25 @@ health_potion:
     class_type: HealingConsumable
     constructor_args:
       amount: 4
+  tags:
+    - consumable
+    - health_potion
+    - potion
+    - healing
+health_potion_2:
+  kind: health_potion_2
+  char: "!"
+  color: "#8000FF"
+  name: "Health Potion 2"
+  consumable:
+    class_type: HealingConsumable
+    constructor_args:
+      amount: 20
+  tags:
+    - consumable
+    - health_potion
+    - potion
+    - healing
 
 lightning_scroll:
   kind: lightning_scroll
@@ -64,6 +100,12 @@ lightning_scroll:
     constructor_args:
       damage: 20
       max_range: 5
+  tags:
+    - consumable
+    - lightning_scroll
+    - scroll
+    - lightning
+    - damage
 
 confusion_scroll:
   kind: confusion_scroll
@@ -74,6 +116,11 @@ confusion_scroll:
     class_type: ConfusionConsumable
     constructor_args:
       turns: 10
+  tags:
+    - consumable
+    - confusing_scroll
+    - scroll
+    - status_effect
 
 fireball_scroll:
   kind: fireball_scroll
@@ -85,6 +132,13 @@ fireball_scroll:
     constructor_args:
       damage: 12
       radius: 3
+  tags:
+    - consumable
+    - fireball_scroll
+    - scroll
+    - fire
+    - aoe
+    - damage
 
 teleport_scroll:
   kind: teleport_scroll
@@ -96,3 +150,8 @@ teleport_scroll:
     constructor_args:
       radius: 10
       charges: 1
+  tags:
+    - consumable
+    - teleport_scroll
+    - scroll
+    - utility

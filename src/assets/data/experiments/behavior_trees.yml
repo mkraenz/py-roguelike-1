@@ -11,10 +11,10 @@ emergency_teleport:
               value_percent: 30
           - type: HasItem
             params:
-              item_kind: teleport_scroll
+              tag: teleport_scroll
           - type: UseItem
             params:
-              item_kind: teleport_scroll
+              tag: teleport_scroll
 
 use_heal_potion:
   root:
@@ -30,10 +30,10 @@ use_heal_potion:
               value_percent: 80
           - type: HasItem
             params:
-              item_kind: health_potion
+              tag: health_potion
           - type: UseItem
             params:
-              item_kind: health_potion
+              tag: health_potion
 
 flee:
   root:
@@ -66,7 +66,7 @@ equip_item:
                 children:
                   - type: HasItem
                     params:
-                      item_kind: dagger
+                      tag: dagger
               - type: BlackboardCondition
                 params:
                   comparator: has

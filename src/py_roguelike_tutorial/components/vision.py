@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 class VisualSense:
     agent: Actor
 
-    def __init__(self, blackboard: Blackboard, interests: list[str], range: int):
+    def __init__(self, blackboard: Blackboard, interests: set[str], range: int):
         self.blackboard = blackboard
         self.interests = interests
         self.range = range
@@ -22,19 +22,19 @@ class VisualSense:
         return self.agent.parent.engine
 
     def sense(self):
+        self.blackboard.clear_most()
         items = self.engine.game_map.items
         for item in items:
-            if item.kind in self.interests and self.can_see(item):
-                self.blackboard.set(item.kind, item)
-            else:
-                self.blackboard.remove(item.kind)
+            common_tags = item.tags & self.interests
+            if common_tags and self.can_see(item):
+                for tag in common_tags:
+                    self.blackboard.set(tag, item)
 
         for actor in self.engine.game_map.actors:
-            # TODO give npcs and players a 'category', 'archetype', 'type', or 'kind' attribute
-            if actor.is_alive and actor.name in self.interests and self.can_see(actor):
-                self.blackboard.set(actor.name, actor)
-            else:
-                self.blackboard.remove(actor.name)
+            common_tags = set(actor.tags) & self.interests
+            if actor.is_alive and common_tags and self.can_see(actor):
+                for tag in common_tags:
+                    self.blackboard.set(tag, actor)
 
         if hasattr(self.agent, "inventory"):
             inventory_full = self.agent.inventory.is_full()

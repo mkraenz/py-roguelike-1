@@ -7,6 +7,7 @@ import tcod
 from tcod.console import Console
 
 from py_roguelike_tutorial import tile_types
+from py_roguelike_tutorial.behavior_trees.behavior_trees import BlackboardSpecialKey
 from py_roguelike_tutorial.components.ai import BehaviorTreeAI
 from py_roguelike_tutorial.entity import Actor, Item
 from py_roguelike_tutorial.types import Coord
@@ -37,9 +38,9 @@ class GameMap:
         for actor in self.actors:
             ai = actor.ai
             if isinstance(ai, BehaviorTreeAI):
-                ai.tree.blackboard["agent"] = actor
-                ai.tree.blackboard["player"] = self.engine.player
-                ai.tree.blackboard["engine"] = self.engine
+                ai.tree.blackboard[BlackboardSpecialKey.Agent] = actor
+                ai.tree.blackboard[BlackboardSpecialKey.Player] = self.engine.player
+                ai.tree.blackboard[BlackboardSpecialKey.Engine] = self.engine
 
         self.update_dijkstra_map()
 
