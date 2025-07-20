@@ -70,6 +70,8 @@ class ItemData(BaseModel):
     color: str
     name: str
     tags: list[str]
+    stacking: bool = False
+    quantity: int = 1
     consumable: (
         LightningDamageConsumableData
         | HealingConsumableData

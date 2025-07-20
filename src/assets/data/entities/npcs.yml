@@ -41,6 +41,7 @@ orc_archer:
     capacity: 3
     items:
       - health_potion_2
+      - arrow
       - teleport_scroll
   level:
     level_up_base: 0

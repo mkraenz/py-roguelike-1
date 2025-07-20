@@ -141,6 +141,9 @@ melee_attacker:
                           max_dist: 7
                           min_dist: 3
                       - type: SeesPlayer
+                      - type: HasItem
+                        params:
+                          tag: arrow
                       - type: RangedAttack
                   - comment: "Melee if in close range"
                     type: Sequence

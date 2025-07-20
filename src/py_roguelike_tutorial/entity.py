@@ -216,6 +216,8 @@ class Item(Entity):
         consumable: Consumable | None = None,
         equippable: Equippable | None = None,
         tags: set[str],
+        stacking: bool = False,
+        quantity: int = 1,
     ):
         super().__init__(
             x=x,
@@ -228,6 +230,8 @@ class Item(Entity):
             tags=tags,
         )
         self.kind = kind
+        self.stacking = stacking
+        self.quantity = quantity
         self.equippable = equippable
         self.consumable = consumable
         if self.consumable:

@@ -41,6 +41,11 @@ class Inventory(BaseComponent):
         return self._capacity == self.len
 
     def add(self, item: Item):
+        if item.stacking:
+            existing_item = self.get_by_kind(item.kind)
+            if existing_item:
+                existing_item.quantity += item.quantity
+                return
         self.items.append(item)
         item.parent = self
 
@@ -67,3 +72,14 @@ class Inventory(BaseComponent):
 
     def get_first_by_tag(self, tag: str) -> Item | None:
         return next((item for item in self.items if tag in item.tags), None)
+
+    def consume_one_by_tag(self, tag: str) -> None:
+        item = self.get_first_by_tag(tag)
+        if not item:
+            raise ValueError(f"No item with tag '{tag}' found in inventory.")
+
+        item.quantity -= 1
+        if item.quantity <= 0:
+            self.remove(item)
+            txt = f"{self.parent.name} used up all {item.name}s."
+            self.engine.message_log.add(text=txt)

@@ -73,6 +73,8 @@ def item_from_dict(data: ItemData) -> Item:
         color=hex_to_rgb(data.color),
         name=data.name,
         kind=data.kind,
+        stacking=data.stacking,
+        quantity=data.quantity,
         consumable=consumable,
         equippable=equippable,
         tags=set(data.tags),
