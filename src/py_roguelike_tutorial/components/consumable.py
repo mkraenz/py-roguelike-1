@@ -14,7 +14,7 @@ from py_roguelike_tutorial.handlers.single_ranged_attack_handler import (
 import py_roguelike_tutorial.validators.item_validator as validators
 from py_roguelike_tutorial import tile_types
 from py_roguelike_tutorial.actions import Action, ItemAction
-from py_roguelike_tutorial.colors import Theme
+from py_roguelike_tutorial.constants import Theme
 from py_roguelike_tutorial.components.ai import ConfusedEnemy
 from py_roguelike_tutorial.components.base_components import BaseComponent
 from py_roguelike_tutorial.components.inventory import Inventory

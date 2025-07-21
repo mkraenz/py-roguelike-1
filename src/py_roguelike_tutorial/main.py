@@ -5,7 +5,7 @@ import traceback
 import tcod
 
 from py_roguelike_tutorial import exceptions, setup_game
-from py_roguelike_tutorial.colors import Theme
+from py_roguelike_tutorial.constants import Theme
 from py_roguelike_tutorial.components.procgen_config import (
     ProcgenConfig,
 )

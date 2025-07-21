@@ -3,7 +3,7 @@ from typing import Reversible, Iterable
 
 import tcod
 
-from py_roguelike_tutorial.colors import Theme
+from py_roguelike_tutorial.constants import Theme
 from py_roguelike_tutorial.types import Rgb
 
 

@@ -1,6 +1,6 @@
 import numpy as np
 
-from py_roguelike_tutorial.colors import Color
+from py_roguelike_tutorial.constants import Color
 from py_roguelike_tutorial.types import Rgb
 
 _Graphic = tuple[int, Rgb, Rgb]

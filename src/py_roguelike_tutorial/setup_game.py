@@ -11,12 +11,12 @@ from tcod.constants import CENTER
 from tcod.event import KeySym as Key
 from tcod.libtcodpy import BKGND_ALPHA
 
-from py_roguelike_tutorial.colors import Theme
+from py_roguelike_tutorial.constants import Theme
 from py_roguelike_tutorial.components.factions_manager import FactionsManager
 from py_roguelike_tutorial.constants import AUTOSAVE_FILENAME, RNG_SEED
 from py_roguelike_tutorial.engine import Engine
 from py_roguelike_tutorial.entity_factory import EntityPrefabs
-from py_roguelike_tutorial.event_bus import EventBus
+from py_roguelike_tutorial.events.event_bus import EventBus
 from py_roguelike_tutorial.game_world import GameWorld
 from py_roguelike_tutorial.handlers.base_event_handler import BaseEventHandler
 from py_roguelike_tutorial.handlers.confirmation_popup import ConfirmationPopup
@@ -24,7 +24,7 @@ from py_roguelike_tutorial.handlers.main_game_event_handler import MainGameEvent
 from py_roguelike_tutorial.handlers.popup_message import PopupMessage
 from py_roguelike_tutorial.procgen import MapGenerationParams
 from py_roguelike_tutorial.screen_stack import ScreenStack
-from py_roguelike_tutorial.subscribers import EventBusSubscribers
+from py_roguelike_tutorial.events.subscribers import EventBusSubscribers
 from py_roguelike_tutorial.utils import assets_filepath
 
 filepath = assets_filepath("assets/menu_background.png")

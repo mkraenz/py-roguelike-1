@@ -9,7 +9,7 @@ from py_roguelike_tutorial.behavior_trees.behavior_trees import (
     BtConstructorArgs,
 )
 from py_roguelike_tutorial.behavior_trees.behaviors import BT_NODE_NAME_TO_CLASS
-from py_roguelike_tutorial.colors import hex_to_rgb
+from py_roguelike_tutorial.constants import hex_to_rgb
 from py_roguelike_tutorial.components.ai import (
     HostileEnemy,
     BehaviorTreeAI,

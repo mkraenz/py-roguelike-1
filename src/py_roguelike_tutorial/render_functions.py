@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from tcod.console import Console
 from tcod.constants import CENTER
 
-from py_roguelike_tutorial.colors import Theme
+from py_roguelike_tutorial.constants import Theme
 from py_roguelike_tutorial.types import Rgb
 
 if TYPE_CHECKING:

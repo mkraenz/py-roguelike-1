@@ -1,15 +1,15 @@
 from __future__ import annotations
 
 import copy
-from dataclasses import dataclass, field
 import math
 import uuid
+from dataclasses import dataclass, field
+from enum import Enum, auto
 from typing import TYPE_CHECKING
 
-from py_roguelike_tutorial.colors import Color
 from py_roguelike_tutorial.components.faction import Faction
 from py_roguelike_tutorial.components.ranged import Ranged
-from py_roguelike_tutorial.render_order import RenderOrder
+from py_roguelike_tutorial.constants import Color
 from py_roguelike_tutorial.types import Coord, Rgb
 
 if TYPE_CHECKING:
@@ -21,6 +21,12 @@ if TYPE_CHECKING:
     from py_roguelike_tutorial.components.fighter import Fighter
     from py_roguelike_tutorial.components.inventory import Inventory
     from py_roguelike_tutorial.components.consumable import Consumable
+
+
+class RenderOrder(Enum):
+    CORPSE = auto()
+    ITEM = auto()
+    ACTOR = auto()
 
 
 @dataclass

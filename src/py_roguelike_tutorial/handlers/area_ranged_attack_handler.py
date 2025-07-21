@@ -7,7 +7,7 @@ from tcod.console import Console
 from py_roguelike_tutorial.actions import (
     Action,
 )
-from py_roguelike_tutorial.colors import Theme
+from py_roguelike_tutorial.constants import Theme
 from py_roguelike_tutorial.handlers.select_index_handler import SelectIndexHandler
 from py_roguelike_tutorial.types import Coord
 

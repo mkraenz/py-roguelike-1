@@ -7,7 +7,9 @@ from py_roguelike_tutorial.procgen import (
     MapGenerationParams,
     generate_dungeon as generate_dungeon_default,
 )
-from py_roguelike_tutorial.procgen_wang import generate_dungeon as generate_dungeon_wang
+from py_roguelike_tutorial.experiments.procgen_wang import (
+    generate_dungeon as generate_dungeon_wang,
+)
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.engine import Engine

@@ -10,7 +10,7 @@ from py_roguelike_tutorial import exceptions
 from py_roguelike_tutorial.actions import (
     Action,
 )
-from py_roguelike_tutorial.colors import Theme
+from py_roguelike_tutorial.constants import Theme
 from py_roguelike_tutorial.handlers.base_event_handler import (
     BaseEventHandler,
 )

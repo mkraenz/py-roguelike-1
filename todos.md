@@ -1,6 +1,6 @@
 # Todos
 
-- [ ] give npcs and players a 'category', 'archetype', 'type', or 'kind' attribute
+- [x] give npcs and players a 'category', 'archetype', 'type', or 'kind' attribute => solved this using a tag system
 - [x] add tags
 - [x] use the tag system for behaviors
 - [x] Fix id
@@ -9,7 +9,7 @@
 - [ ] Shopkeeper
 - [x] try attrs
 - [x] Dijkstra map for flee behavior
-- [ ] localization
+- [x] ~~localization~~
 - [x] Event driven animation for ranged attack
 - [x] Description and flavor text
 - [x] Data classes for entities

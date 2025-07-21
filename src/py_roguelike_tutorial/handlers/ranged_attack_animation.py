@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 import tcod
 from tcod.console import Console
 
-from py_roguelike_tutorial.colors import Color
+from py_roguelike_tutorial.constants import Color
 from py_roguelike_tutorial.handlers.base_event_handler import (
     ActionOrHandler,
 )

@@ -1,4 +1,5 @@
 from py_roguelike_tutorial.engine import Engine
+import py_roguelike_tutorial.events.events as events
 from py_roguelike_tutorial.handlers.ranged_attack_animation import RangedAttackAnimation
 
 
@@ -7,7 +8,7 @@ class EventBusSubscribers:
         self.engine = engine
 
     def ranged_attack_animation(self):
-        def callback(event_type: str, data: dict) -> None:
+        def callback(data: events.RangedAttackEvent) -> None:
             self.engine.stack.push(
                 RangedAttackAnimation(
                     self.engine, data["attacker_pos"], data["target_pos"], 0.05

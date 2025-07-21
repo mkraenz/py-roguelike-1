@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING
 
-from py_roguelike_tutorial.colors import Theme
+from py_roguelike_tutorial.constants import Theme
 from py_roguelike_tutorial.components.base_components import BaseComponent
 
 if TYPE_CHECKING:
@@ -16,7 +16,7 @@ class Fighter(BaseComponent):
         self._hp = hp if hp else max_hp
         self.base_defense = defense
         self.base_power = power
-        
+
     @property
     def hp_percent(self) -> float:
         return float(self.hp) / self.max_hp
@@ -71,4 +71,3 @@ class Fighter(BaseComponent):
     def increase_max_hp(self, amount: int) -> None:
         self.parent.fighter.max_hp += amount
         self.parent.fighter.hp += amount
-

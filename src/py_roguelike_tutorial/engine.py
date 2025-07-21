@@ -22,7 +22,7 @@ from py_roguelike_tutorial.screen_stack import ScreenStack
 from py_roguelike_tutorial.types import Coord
 
 if TYPE_CHECKING:
-    from py_roguelike_tutorial.event_bus import EventBus
+    from py_roguelike_tutorial.events.event_bus import EventBus
 
 _FOV_RADIUS = 8
 

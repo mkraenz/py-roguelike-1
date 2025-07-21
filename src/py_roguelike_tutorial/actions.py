@@ -4,7 +4,7 @@ import sys
 from typing import TYPE_CHECKING, Callable
 
 from py_roguelike_tutorial import exceptions
-from py_roguelike_tutorial.colors import Theme
+from py_roguelike_tutorial.constants import Theme
 from py_roguelike_tutorial.exceptions import Impossible
 from py_roguelike_tutorial.types import Coord
 
@@ -105,8 +105,8 @@ class RangedAttackAction(Action):
         txt = f"{attack_desc} for {damage} HP damage."
         self.engine.message_log.add(txt, fg=Theme.enemy_attacks)
         self.engine.event_bus.publish(
-            "ranged_attack",
             {
+                "type": "ranged_attack",
                 "attacker": self.entity,
                 "target": target,
                 "damage": damage,

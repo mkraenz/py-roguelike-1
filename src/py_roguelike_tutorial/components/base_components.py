@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from py_roguelike_tutorial.colors import Theme
+from py_roguelike_tutorial.constants import Theme
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.engine import Engine

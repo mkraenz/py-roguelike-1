@@ -6,7 +6,7 @@ import tcod
 from tcod.console import Console
 from tcod.event import KeySym as Key
 
-from py_roguelike_tutorial.colors import Theme, Color
+from py_roguelike_tutorial.constants import Theme, Color
 from py_roguelike_tutorial.handlers.ask_user_event_handler import AskUserEventHandler
 from py_roguelike_tutorial.handlers.base_event_handler import (
     ActionOrHandler,
