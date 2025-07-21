@@ -16,8 +16,7 @@ dependencies = [
 [tool.poetry]
 packages = [{include = "py_roguelike_tutorial", from = "src"}]
 
-[too.pyright]
-typeCheckingMode = "strict"
+[tool.pyright]
 
 
 [build-system]
