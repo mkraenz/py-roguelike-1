@@ -59,6 +59,7 @@ class SimpleBehaviorData(BtBehaviorData):
         "MoveTowardsPlayer",
         "SeesPlayer",
         "Wait",
+        "Flee",
         "RandomMove",
     ]
 

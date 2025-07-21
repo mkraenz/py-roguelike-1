@@ -45,8 +45,8 @@ flee:
           - type: HealthCondition
             params:
               comparator: leq
-              value_percent: 20
-          - type: RandomMove
+              value_percent: 50
+          - type: Flee
 
 equip_item:
   root:
@@ -98,12 +98,12 @@ melee_attacker:
     children:
       - type: Selector
         children:
-          - type: Subtree
-            params:
-              id: emergency_teleport
-          - type: Subtree
-            params:
-              id: use_heal_potion
+          # - type: Subtree
+          #   params:
+          #     id: emergency_teleport
+          # - type: Subtree
+          #   params:
+          #     id: use_heal_potion
           - type: Subtree
             params:
               id: flee

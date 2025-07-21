@@ -135,6 +135,36 @@ class WaitBehavior(bt.BtAction):
         return bt.BtResult.Success
 
 
+class FleeBehavior(bt.BtAction):
+    def get_path_to(self, dest_x: int, dest_y: int) -> list[Coord]:
+        """Returns the list of coordinates to the destination, or an empty list if there is no such path."""
+        cost = np.array(self.agent.parent.tiles["walkable"], dtype=np.int8)
+
+        for entity in self.agent.parent.entities:
+            if entity.blocks_movement and cost[entity.x, entity.y]:
+                # we add to the cost of a blocked position. A lower number means more enemies will crowd behind
+                # each other in hallways. Higher number means they will take longer paths towards the destination.
+                cost[entity.x, entity.y] += 10
+        graph = tcod.path.SimpleGraph(cost=cost, cardinal=2, diagonal=3)
+        pathfinder = tcod.path.Pathfinder(graph)
+        pathfinder.add_root(self.agent.pos)
+        # path_to includes the start and ending points. we strip away the start point
+        path: list[list[int]] = pathfinder.path_to((dest_x, dest_y))[1:].tolist()
+        return [(index[0], index[1]) for index in path]
+
+    def tick(self) -> BtResult:
+        # TODO the problem is that we do not exclude the int/float max value
+        target = self.engine.game_map.min_position_of_flight_map()
+        print(target)
+        path = self.get_path_to(target[0], target[1])
+        if len(path) == 0:
+            return bt.BtResult.Failure
+        dest_x, dest_y = path.pop(0)
+        step_dx, step_dy = dest_x - self.agent.x, dest_y - self.agent.y
+        MoveAction(self.agent, step_dx, step_dy).perform()
+        return bt.BtResult.Success
+
+
 class MeleeAttackBehavior(bt.BtAction):
     def tick(self) -> bt.BtResult:
         (dx, dy) = self.player.diff_from(self.agent)
@@ -294,4 +324,5 @@ BT_NODE_NAME_TO_CLASS = {
     "PickUpItem": PickUpItemBehavior,
     "MoveToEntity": MoveToEntityBehavior,
     "EquipItem": EquipItemBehavior,
+    "Flee": FleeBehavior,
 }

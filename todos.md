@@ -8,4 +8,8 @@
 - [x] Arrows needed
 - [ ] Shopkeeper
 - [x] try attrs
-- [ ] Dijkstra map for flee behavior
+- [x] Dijkstra map for flee behavior
+- [ ] localization
+- [ ] Event driven animation for ranged attack
+- [ ] Description and flavor text
+- [ ] Data driven proc gen parameters
