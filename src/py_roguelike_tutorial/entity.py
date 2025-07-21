@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+from dataclasses import dataclass, field
 import math
 import uuid
 from typing import TYPE_CHECKING
@@ -22,40 +23,29 @@ if TYPE_CHECKING:
     from py_roguelike_tutorial.components.consumable import Consumable
 
 
+@dataclass
 class Entity:
     """
     Generic object to represent players, enemies, items, etc
     """
 
-    parent: GameMap
+    parent: GameMap = field(init=False)
 
-    def __init__(
-        self,
-        *,
-        x: int = 0,
-        y: int = 0,
-        char: str,
-        color: Rgb = Color.BLACK,
-        name: str,
-        blocks_movement: bool = False,
-        parent: GameMap | None = None,
-        render_order: RenderOrder = RenderOrder.CORPSE,
-        move_stepsize: int = 1,
-        tags: set[str],
-    ) -> None:
-        self.id: uuid.UUID = uuid.UUID("{00000000-0000-0000-0000-000000000000}")
-        self.x = x
-        self.y = y
-        self.char = char
-        self.color = color
-        self.name = name
-        self.blocks_movement = blocks_movement
-        self.render_order = render_order
-        self.move_stepsize = move_stepsize
-        self.tags = tags
-        if parent:
-            self.parent = parent
-            parent.entities.add(self)
+    name: str
+    char: str
+    tags: set[str]
+    id: uuid.UUID = uuid.UUID("{00000000-0000-0000-0000-000000000000}")
+    x: int = 0
+    y: int = 0
+    color: Rgb = Color.BLACK
+    blocks_movement: bool = False
+    render_order: RenderOrder = RenderOrder.CORPSE
+    move_stepsize: int = 1
+
+    def __post_init__(self):
+        if self.parent:
+            self.parent = self.parent
+            self.parent.entities.add(self)
 
     @property
     def game_map(self) -> GameMap:
@@ -128,52 +118,41 @@ class Entity:
     def dist_euclidean_pos(self, x: int, y: int) -> float:
         return math.sqrt((x - self.x) ** 2 + (y - self.y) ** 2)
 
+    def __hash__(self):
+        """Make the entity hashable based on its unique ID."""
+        return hash(self.id)
 
+    def __eq__(self, other):
+        """Equality check based on unique ID."""
+        if isinstance(other, Entity):
+            return self.id == other.id
+        return False
+
+
+@dataclass
 class Actor(Entity):
     """An actor needs two things to function:
     ai: to move around and make decisions
     fighter: the ability to take (and deal) damage
     """
 
-    def __init__(
-        self,
-        *,
-        x: int = 0,
-        y: int = 0,
-        char: str,
-        color: Rgb = Color.WHITE,
-        name: str,
-        ai: BaseAI,
-        fighter: Fighter,
-        inventory: Inventory,
-        level: Level,
-        equipment: Equipment,
-        move_stepsize: int = 1,
-        tags: set[str],
-        ranged: Ranged | None = None,
-    ):
-        super().__init__(
-            x=x,
-            y=y,
-            char=char,
-            color=color,
-            name=name,
-            blocks_movement=True,
-            render_order=RenderOrder.ACTOR,
-            move_stepsize=move_stepsize,
-            tags=tags,
-        )
-        self.ranged = ranged
+    # ai: BaseAI
+    fighter: Fighter = None  # type: ignore
+    inventory: Inventory = None  # type: ignore
+    level: Level = None  # type: ignore
+    equipment: Equipment = None  # type: ignore
+    color: Rgb = Color.WHITE
+    move_stepsize: int = 1
+    blocks_movement: bool = True
+    render_order: RenderOrder = RenderOrder.ACTOR
+    ranged: Ranged | None = None
+
+    def __post_init__(self):
         if self.ranged:
             self.ranged.parent = self
-        self.level = level
         self.level.parent = self
-        self.ai = ai
-        self.fighter = fighter
         self.fighter.parent = self
-        self.inventory = inventory
         self.inventory.parent = self
-        self.equipment = equipment
         self.equipment.parent = self
         self.faction: Faction
 
@@ -200,45 +179,40 @@ class Actor(Entity):
         self.name = f"remains of {self.name}"
         self.render_order = RenderOrder.CORPSE
 
+    def __hash__(self):
+        """Make the entity hashable based on its unique ID."""
+        return hash(self.id)
 
+    def __eq__(self, other):
+        """Equality check based on unique ID."""
+        if isinstance(other, Entity):
+            return self.id == other.id
+        return False
+
+
+@dataclass
 class Item(Entity):
-    parent: GameMap | Inventory  # type: ignore [reportIncompatibleVariableOverride]
+    description: str = ""
+    flavor_text: str = ""
+    kind: str = ""
+    quantity: int = 1
+    parent: GameMap | Inventory = field(init=False)  # type: ignore [reportIncompatibleVariableOverride]
+    stacking: bool = False
+    consumable: Consumable | None = None
+    equippable: Equippable | None = None
 
-    def __init__(
-        self,
-        *,
-        x: int = 0,
-        y: int = 0,
-        char: str,
-        color: Rgb,
-        name: str,
-        description: str,
-        flavor_text: str,
-        kind: str,
-        consumable: Consumable | None = None,
-        equippable: Equippable | None = None,
-        tags: set[str],
-        stacking: bool = False,
-        quantity: int,
-    ):
-        super().__init__(
-            x=x,
-            y=y,
-            char=char,
-            color=color,
-            name=name,
-            blocks_movement=False,
-            render_order=RenderOrder.ITEM,
-            tags=tags,
-        )
-        self.description = description
-        self.flavor_text = flavor_text
-        self.kind = kind
-        self.stacking = stacking
-        self.quantity = quantity
-        self.equippable = equippable
-        self.consumable = consumable
+    def __post_init__(self):
         if self.consumable:
             self.consumable.parent = self
         if self.equippable:
             self.equippable.parent = self
+
+    def __hash__(self):
+        """Make the entity hashable based on its unique ID."""
+        return hash(self.id)
+
+    def __eq__(self, other):
+        """Equality check based on unique ID."""
+        if isinstance(other, Entity):
+            return self.id == other.id
+        return False

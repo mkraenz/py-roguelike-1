@@ -11,6 +11,7 @@
 - [x] Dijkstra map for flee behavior
 - [ ] localization
 - [x] Event driven animation for ranged attack
-- [ ] Description and flavor text
+- [x] Description and flavor text
+- [x] Data classes for entities
 - [x] Data driven proc gen parameters
 - [ ] Testing

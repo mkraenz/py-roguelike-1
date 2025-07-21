@@ -81,10 +81,6 @@ def item_from_dict(data: ItemData) -> Item:
         equippable=equippable,
         tags=set(data.tags),
     )
-    if consumable:
-        consumable.parent = item
-    if equippable:
-        equippable.parent = item
     return item
 
 
@@ -134,7 +130,6 @@ def actor_from_dict(data: ActorData, item_prefabs: dict[str, Item]) -> Actor:
         color=hex_to_rgb(data.color),
         name=data.name,
         move_stepsize=data.move_stepsize,
-        ai=ai,
         fighter=fighter,
         inventory=inventory,
         equipment=equipment,
@@ -142,6 +137,7 @@ def actor_from_dict(data: ActorData, item_prefabs: dict[str, Item]) -> Actor:
         ranged=ranged,
         tags=set(data.tags),
     )
+    actor.ai = ai
     return actor
 
 

@@ -148,7 +148,6 @@ class MainMenu(BaseEventHandler):
             self.stack.pop()
             return MainGameEventHandler(engine)
         except FileNotFoundError:
-            # todo make this work
             return PopupMessage(
                 self.stack, f"No save file named {AUTOSAVE_FILENAME} found."
             )

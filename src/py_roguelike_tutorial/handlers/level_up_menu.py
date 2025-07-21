@@ -48,7 +48,6 @@ class LevelUpMenu(IngameEventHandler):
                 if self.player.level.requires_level_up:
                     return self
                 self.engine.stack.pop()
-                # Todo This needs some more
                 return MainGameEventHandler(self.engine)
 
             return inner
