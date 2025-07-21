@@ -16,6 +16,7 @@ from py_roguelike_tutorial.components.factions_manager import FactionsManager
 from py_roguelike_tutorial.constants import AUTOSAVE_FILENAME, RNG_SEED
 from py_roguelike_tutorial.engine import Engine
 from py_roguelike_tutorial.entity_factory import EntityPrefabs
+from py_roguelike_tutorial.event_bus import EventBus
 from py_roguelike_tutorial.game_world import GameWorld
 from py_roguelike_tutorial.handlers.base_event_handler import BaseEventHandler
 from py_roguelike_tutorial.handlers.confirmation_popup import ConfirmationPopup
@@ -23,6 +24,7 @@ from py_roguelike_tutorial.handlers.main_game_event_handler import MainGameEvent
 from py_roguelike_tutorial.handlers.popup_message import PopupMessage
 from py_roguelike_tutorial.procgen import MapGenerationParams
 from py_roguelike_tutorial.screen_stack import ScreenStack
+from py_roguelike_tutorial.subscribers import EventBusSubscribers
 from py_roguelike_tutorial.utils import assets_filepath
 
 filepath = assets_filepath("assets/menu_background.png")
@@ -40,8 +42,8 @@ def new_game(stack: ScreenStack) -> Engine:
     player = EntityPrefabs.player.duplicate()
 
     np_rng = np.random.default_rng(RNG_SEED)
-    engine = Engine(player=player, np_rng=np_rng, stack=stack)
-
+    engine = Engine(player=player, np_rng=np_rng, stack=stack, event_bus=EventBus())
+    EventBusSubscribers(engine).add_subscribers()
     factions = FactionsManager(EntityPrefabs.factions)
 
     engine.game_world = GameWorld(
@@ -61,6 +63,7 @@ def load_game(filepath: str):
     with open(filepath, "rb") as f:
         engine = pickle.loads(lzma.decompress(f.read()))
     assert isinstance(engine, Engine)
+    EventBusSubscribers(engine).add_subscribers()
     return engine
 
 

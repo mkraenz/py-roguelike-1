@@ -89,10 +89,6 @@ class MeleeAction(DirectedAction):
 
 
 class RangedAttackAction(Action):
-    def __init__(self, entity: Actor, on_complete: Callable[[Coord, Coord], None]):
-        super().__init__(entity)
-        self.on_complete = on_complete
-
     def perform(self) -> None:
         if self.entity.ranged is None:
             raise Impossible(
@@ -108,8 +104,16 @@ class RangedAttackAction(Action):
         attack_desc = f"{self.entity.name} hits {target.name}"
         txt = f"{attack_desc} for {damage} HP damage."
         self.engine.message_log.add(txt, fg=Theme.enemy_attacks)
-
-        self.on_complete(self.entity.pos, target.pos)
+        self.engine.event_bus.publish(
+            "ranged_attack",
+            {
+                "attacker": self.entity,
+                "target": target,
+                "damage": damage,
+                "target_pos": target.pos,
+                "attacker_pos": self.entity.pos,
+            },
+        )
 
 
 class MoveAction(DirectedAction):

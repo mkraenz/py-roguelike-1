@@ -1,5 +1,7 @@
+from __future__ import annotations
 import lzma
 import pickle
+from typing import TYPE_CHECKING
 
 import numpy as np
 from tcod.console import Console
@@ -19,6 +21,9 @@ from py_roguelike_tutorial.render_functions import (
 from py_roguelike_tutorial.screen_stack import ScreenStack
 from py_roguelike_tutorial.types import Coord
 
+if TYPE_CHECKING:
+    from py_roguelike_tutorial.event_bus import EventBus
+
 _FOV_RADIUS = 8
 
 
@@ -28,13 +33,19 @@ class Engine:
     np_rng: np.random.Generator
 
     def __init__(
-        self, *, player: Actor, np_rng: np.random.Generator, stack: ScreenStack
+        self,
+        *,
+        player: Actor,
+        np_rng: np.random.Generator,
+        stack: ScreenStack,
+        event_bus: EventBus,
     ) -> None:
         self.message_log = MessageLog()
         self.mouse_location: Coord = (0, 0)
         self.player = player
         self.np_rng = np_rng
         self.stack = stack
+        self.event_bus = event_bus
 
     def render(self, console: Console) -> None:
         self.game_map.render(console)
@@ -75,6 +86,11 @@ class Engine:
         """Save this instance as compressed file.
         WARNING: Pickle may be used as an attack vector for arbitrary code execution,
         so never load other peoples' save files"""
+        subscribers = self.event_bus._subscribers
+        # pickle does not like stringifying callables inside of fields
+        self.event_bus._subscribers = {}
         save_data = lzma.compress(pickle.dumps(self))
+        # restoring subscribers in case the game continues
+        self.event_bus._subscribers = subscribers
         with open(filename, "wb") as f:
             f.write(save_data)

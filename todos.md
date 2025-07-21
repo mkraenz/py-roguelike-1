@@ -10,6 +10,6 @@
 - [x] try attrs
 - [x] Dijkstra map for flee behavior
 - [ ] localization
-- [ ] Event driven animation for ranged attack
+- [x] Event driven animation for ranged attack
 - [ ] Description and flavor text
 - [x] Data driven proc gen parameters

@@ -114,7 +114,6 @@ class GameMap:
         masked_flight_map: np.ndarray = np.ma.masked_equal(map, excluded_value)
         minimum: float = masked_flight_map.min()
         positions = np.argwhere(map == minimum)
-        print(positions)
         if positions.size == 0:
             raise AssertionError(
                 "Flight dijkstra map has no minimum value, which is unexpected."
