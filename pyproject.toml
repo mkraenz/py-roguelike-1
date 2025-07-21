@@ -27,4 +27,5 @@ build-backend = "poetry.core.masonry.api"
 dev = [
     "black>=25.1.0",
     "cx-freeze>=8.3.0",
+    "pytest>=8.4.1",
 ]

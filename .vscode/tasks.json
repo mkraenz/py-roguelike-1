@@ -14,6 +14,15 @@
       }
     },
     {
+      "label": "test",
+      "type": "shell",
+      "command": "uv run pytest",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      }
+    },
+    {
       "label": "type-check",
       "type": "shell",
       "command": "uv run pyright src",
