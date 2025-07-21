@@ -13,3 +13,4 @@
 - [x] Event driven animation for ranged attack
 - [ ] Description and flavor text
 - [x] Data driven proc gen parameters
+- [ ] Testing

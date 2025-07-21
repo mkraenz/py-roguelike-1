@@ -209,15 +209,17 @@ class Item(Entity):
         *,
         x: int = 0,
         y: int = 0,
-        char: str = "?",
-        color: Rgb = Color.WHITE,
-        name: str = "<Unnamed Item>",
-        kind: str = "",
+        char: str,
+        color: Rgb,
+        name: str,
+        description: str,
+        flavor_text: str,
+        kind: str,
         consumable: Consumable | None = None,
         equippable: Equippable | None = None,
         tags: set[str],
         stacking: bool = False,
-        quantity: int = 1,
+        quantity: int,
     ):
         super().__init__(
             x=x,
@@ -229,6 +231,8 @@ class Item(Entity):
             render_order=RenderOrder.ITEM,
             tags=tags,
         )
+        self.description = description
+        self.flavor_text = flavor_text
         self.kind = kind
         self.stacking = stacking
         self.quantity = quantity

@@ -3,6 +3,8 @@ dagger:
   char: "/"
   color: "#00bfff"
   name: "Dagger"
+  description: "A sharp dagger, perfect for quick strikes."
+  flavor_text: "A trusty companion for any rogue."
   equippable:
     slot: weapon
     power: 2
@@ -15,6 +17,8 @@ sword:
   char: "/"
   color: "#00bfff"
   name: "Sword"
+  description: "A sturdy sword, balanced for combat."
+  flavor_text: "A classic weapon for any adventurer."
   equippable:
     slot: weapon
     power: 4
@@ -27,6 +31,8 @@ bow:
   char: "("
   color: "#00bfff"
   name: "Bow"
+  description: "A reliable bow, ideal for ranged attacks."
+  flavor_text: "Silent and deadly, the bow is a hunter's best friend."
   equippable:
     slot: weapon
     ranged_power: 2
@@ -40,6 +46,8 @@ leather_armor:
   char: "["
   color: "#8b4513"
   name: "Leather Armor"
+  description: "Light armor made from toughened leather."
+  flavor_text: "Provides basic protection without hindering movement."
   equippable:
     slot: armor
     defense: 1
@@ -53,6 +61,8 @@ chain_mail:
   char: "["
   color: "#8b4513"
   name: "Chain Mail"
+  description: "A suit of chain mail, offering good protection."
+  flavor_text: "A balance between mobility and defense."
   equippable:
     slot: armor
     defense: 3
@@ -66,6 +76,8 @@ health_potion:
   char: "!"
   color: "#8000FF"
   name: "Health Potion"
+  description: "A potion that restores health."
+  flavor_text: "A soothing elixir that heals wounds."
   consumable:
     class_type: HealingConsumable
     constructor_args:
@@ -75,11 +87,14 @@ health_potion:
     - health_potion
     - potion
     - healing
+
 health_potion_2:
   kind: health_potion_2
   char: "!"
   color: "#8000FF"
   name: "Health Potion 2"
+  description: "A stronger potion that restores more health."
+  flavor_text: "A potent elixir that heals even the gravest of wounds."
   consumable:
     class_type: HealingConsumable
     constructor_args:
@@ -95,6 +110,8 @@ lightning_scroll:
   char: "~"
   color: "#0000ff"
   name: "Lightning Scroll"
+  description: "A scroll that unleashes a bolt of lightning."
+  flavor_text: "Harness the power of the storm with this scroll."
   consumable:
     class_type: LightningDamageConsumable
     constructor_args:
@@ -112,6 +129,8 @@ confusion_scroll:
   char: "~"
   color: "#cf3fff"
   name: "Confusion Scroll"
+  description: "A scroll that confuses enemies."
+  flavor_text: "Bewilder your foes with this magical scroll."
   consumable:
     class_type: ConfusionConsumable
     constructor_args:
@@ -127,6 +146,8 @@ fireball_scroll:
   char: "~"
   color: "#ff0000"
   name: "Fireball Scroll"
+  description: "A scroll that conjures a fiery explosion."
+  flavor_text: "Unleash the fury of fire with this powerful scroll."
   consumable:
     class_type: FireballDamageConsumable
     constructor_args:
@@ -145,6 +166,8 @@ teleport_scroll:
   char: "~"
   color: "#ff0000"
   name: Teleport Scroll
+  description: "A scroll that teleports you to a random location."
+  flavor_text: "Escape danger or explore new areas with this scroll."
   consumable:
     class_type: TeleportSelfConsumable
     constructor_args:
@@ -161,6 +184,8 @@ arrow:
   char: "-"
   color: "#ff0000"
   name: Arrow
+  description: "A sharp arrow, perfect for bows."
+  flavor_text: "A quiver full of arrows is a hunter's best friend."
   stacking: True
   quantity: 12
   tags:

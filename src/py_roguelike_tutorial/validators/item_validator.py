@@ -69,6 +69,8 @@ class ItemData(BaseModel):
     char: str
     color: str
     name: str
+    description: str
+    flavor_text: str
     tags: list[str]
     stacking: bool = False
     quantity: int = 1
