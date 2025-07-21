@@ -21,6 +21,7 @@ from py_roguelike_tutorial.handlers.base_event_handler import BaseEventHandler
 from py_roguelike_tutorial.handlers.confirmation_popup import ConfirmationPopup
 from py_roguelike_tutorial.handlers.main_game_event_handler import MainGameEventHandler
 from py_roguelike_tutorial.handlers.popup_message import PopupMessage
+from py_roguelike_tutorial.procgen import MapGenerationParams
 from py_roguelike_tutorial.screen_stack import ScreenStack
 from py_roguelike_tutorial.utils import assets_filepath
 
@@ -29,26 +30,24 @@ background_image = tcod.image.load(filepath)[:, :, :3]  # type: ignore [reportDe
 
 
 def new_game(stack: ScreenStack) -> Engine:
-    map_width = 80
-    map_height = 43
-    room_max_size = 10
-    room_min_size = 6
-    max_rooms = 30
-
+    generation_params = MapGenerationParams(
+        max_rooms=30,
+        room_min_size=6,
+        room_max_size=10,
+        map_width=80,
+        map_height=43,
+    )
     player = EntityPrefabs.player.duplicate()
 
     np_rng = np.random.default_rng(RNG_SEED)
     engine = Engine(player=player, np_rng=np_rng, stack=stack)
 
     factions = FactionsManager(EntityPrefabs.factions)
+
     engine.game_world = GameWorld(
         factions=factions,
         engine=engine,
-        map_width=map_width,
-        map_height=map_height,
-        max_rooms=max_rooms,
-        room_max_size=room_max_size,
-        room_min_size=room_min_size,
+        params=generation_params,
     )
     engine.game_world.generate_floor()
     engine.game_map.finalize_init()

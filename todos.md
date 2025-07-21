@@ -12,4 +12,4 @@
 - [ ] localization
 - [ ] Event driven animation for ranged attack
 - [ ] Description and flavor text
-- [ ] Data driven proc gen parameters
+- [x] Data driven proc gen parameters

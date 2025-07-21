@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 import random
 from typing import Iterator, Protocol, TYPE_CHECKING
 
@@ -83,27 +84,35 @@ class RectangularRoom:
         )
 
 
+@dataclass(frozen=True)
+class MapGenerationParams:
+    max_rooms: int
+    room_min_size: int
+    room_max_size: int
+    map_width: int
+    map_height: int
+
+
 def generate_dungeon(
     *,
-    max_rooms: int,
-    room_min_size: int,
-    room_max_size: int,
-    map_width: int,
-    map_height: int,
+    params: MapGenerationParams,
     current_floor: int,
     engine: Engine,
     factions: FactionsManager,
 ) -> GameMap:
     player = engine.player
     dungeon = GameMap(
-        width=map_width, height=map_height, entities=[player], engine=engine
+        width=params.map_width,
+        height=params.map_height,
+        entities=[player],
+        engine=engine,
     )
 
     rooms: list[RectangularRoom] = []
 
-    for _ in range(max_rooms):
-        room_w = random.randint(room_min_size, room_max_size)
-        room_h = random.randint(room_min_size, room_max_size)
+    for _ in range(params.max_rooms):
+        room_w = random.randint(params.room_min_size, params.room_max_size)
+        room_h = random.randint(params.room_min_size, params.room_max_size)
         x = random.randint(0, dungeon.width - room_w - 1)
         y = random.randint(0, dungeon.height - room_h - 1)
         room = RectangularRoom(x=x, y=y, height=room_h, width=room_w)

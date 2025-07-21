@@ -153,9 +153,7 @@ class FleeBehavior(bt.BtAction):
         return [(index[0], index[1]) for index in path]
 
     def tick(self) -> BtResult:
-        # TODO the problem is that we do not exclude the int/float max value
         target = self.engine.game_map.min_position_of_flight_map()
-        print(target)
         path = self.get_path_to(target[0], target[1])
         if len(path) == 0:
             return bt.BtResult.Failure
