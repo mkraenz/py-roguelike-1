@@ -14,6 +14,7 @@ from py_roguelike_tutorial.actions import (
 )
 from py_roguelike_tutorial.components.vision import VisualSense
 from py_roguelike_tutorial.constants import INTERCARDINAL_DIRECTIONS
+from py_roguelike_tutorial.pathfinding import find_path
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.behavior_trees.behavior_trees import BtNode
@@ -41,22 +42,6 @@ class BaseAI:
     def perform(self) -> None:
         raise NotImplementedError("subclasses must implement perform")
 
-    def get_path_to(self, dest_x: int, dest_y: int) -> list[Coord]:
-        """Returns the list of coordinates to the destination, or an empty list if there is no such path."""
-        cost = np.array(self.agent.parent.tiles["walkable"], dtype=np.int8)
-
-        for entity in self.agent.parent.entities:
-            if entity.blocks_movement and cost[entity.x, entity.y]:
-                # we add to the cost of a blocked position. A lower number means more enemies will crowd behind
-                # each other in hallways. Higher number means they will take longer paths towards the destination.
-                cost[entity.x, entity.y] += 10
-        graph = tcod.path.SimpleGraph(cost=cost, cardinal=2, diagonal=3)
-        pathfinder = tcod.path.Pathfinder(graph)
-        pathfinder.add_root(self.agent.pos)
-        # path_to includes the start and ending points. we strip away the start point
-        path: list[list[int]] = pathfinder.path_to((dest_x, dest_y))[1:].tolist()
-        return [(index[0], index[1]) for index in path]
-
 
 class HostileEnemy(BaseAI):
     def __init__(self):
@@ -78,7 +63,7 @@ class HostileEnemy(BaseAI):
                 return MeleeAction(self.agent, dx, dy).perform()
 
             else:
-                self.path = self.get_path_to(target.x, target.y)
+                self.path = find_path(self.agent.pos, target.pos, self.engine)
 
         if self.path:
             dest_x, dest_y = self.path.pop(0)

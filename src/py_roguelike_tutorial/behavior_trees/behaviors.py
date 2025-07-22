@@ -22,6 +22,7 @@ from py_roguelike_tutorial.constants import INTERCARDINAL_DIRECTIONS
 from py_roguelike_tutorial.entity import Entity
 from py_roguelike_tutorial.entity_factory import EntityPrefabs
 from py_roguelike_tutorial.exceptions import Impossible
+from py_roguelike_tutorial.pathfinding import find_path
 from py_roguelike_tutorial.types import Coord
 
 if TYPE_CHECKING:
@@ -42,25 +43,9 @@ class MoveTowardsPlayerBehavior(bt.BtAction):
         super().__init__(args)
         self.path: list[Coord] = []
 
-    def get_path_to(self, dest_x: int, dest_y: int) -> list[Coord]:
-        """Returns the list of coordinates to the destination, or an empty list if there is no such path."""
-        cost = np.array(self.agent.parent.tiles["walkable"], dtype=np.int8)
-
-        for entity in self.agent.parent.entities:
-            if entity.blocks_movement and cost[entity.x, entity.y]:
-                # we add to the cost of a blocked position. A lower number means more enemies will crowd behind
-                # each other in hallways. Higher number means they will take longer paths towards the destination.
-                cost[entity.x, entity.y] += 10
-        graph = tcod.path.SimpleGraph(cost=cost, cardinal=2, diagonal=3)
-        pathfinder = tcod.path.Pathfinder(graph)
-        pathfinder.add_root(self.agent.pos)
-        # path_to includes the start and ending points. we strip away the start point
-        path: list[list[int]] = pathfinder.path_to((dest_x, dest_y))[1:].tolist()
-        return [(index[0], index[1]) for index in path]
-
     def tick(self) -> bt.BtResult:
         target = self.player
-        self.path = self.get_path_to(target.x, target.y)
+        self.path = find_path(self.agent.pos, target.pos, self.engine)
         dest_x, dest_y = self.path.pop(0)
         step_dx, step_dy = dest_x - self.agent.x, dest_y - self.agent.y
         MoveAction(self.agent, step_dx, step_dy).perform()
@@ -136,25 +121,9 @@ class WaitBehavior(bt.BtAction):
 
 
 class FleeBehavior(bt.BtAction):
-    def get_path_to(self, dest_x: int, dest_y: int) -> list[Coord]:
-        """Returns the list of coordinates to the destination, or an empty list if there is no such path."""
-        cost = np.array(self.agent.parent.tiles["walkable"], dtype=np.int8)
-
-        for entity in self.agent.parent.entities:
-            if entity.blocks_movement and cost[entity.x, entity.y]:
-                # we add to the cost of a blocked position. A lower number means more enemies will crowd behind
-                # each other in hallways. Higher number means they will take longer paths towards the destination.
-                cost[entity.x, entity.y] += 10
-        graph = tcod.path.SimpleGraph(cost=cost, cardinal=2, diagonal=3)
-        pathfinder = tcod.path.Pathfinder(graph)
-        pathfinder.add_root(self.agent.pos)
-        # path_to includes the start and ending points. we strip away the start point
-        path: list[list[int]] = pathfinder.path_to((dest_x, dest_y))[1:].tolist()
-        return [(index[0], index[1]) for index in path]
-
     def tick(self) -> BtResult:
         target = self.engine.game_map.min_position_of_flight_map()
-        path = self.get_path_to(target[0], target[1])
+        path = find_path(self.agent.pos, target, self.engine)
         if len(path) == 0:
             return bt.BtResult.Failure
         dest_x, dest_y = path.pop(0)
@@ -265,27 +234,11 @@ class MoveToEntityBehavior(bt.BtAction):
         super().__init__(args)
         self.to_raw = args.params.to
 
-    def get_path_to(self, dest_x: int, dest_y: int) -> list[Coord]:
-        """Returns the list of coordinates to the destination, or an empty list if there is no such path."""
-        cost = np.array(self.agent.parent.tiles["walkable"], dtype=np.int8)
-
-        for entity in self.agent.parent.entities:
-            if entity.blocks_movement and cost[entity.x, entity.y]:
-                # we add to the cost of a blocked position. A lower number means more enemies will crowd behind
-                # each other in hallways. Higher number means they will take longer paths towards the destination.
-                cost[entity.x, entity.y] += 10
-        graph = tcod.path.SimpleGraph(cost=cost, cardinal=2, diagonal=3)
-        pathfinder = tcod.path.Pathfinder(graph)
-        pathfinder.add_root(self.agent.pos)
-        # path_to includes the start and ending points. we strip away the start point
-        path: list[list[int]] = pathfinder.path_to((dest_x, dest_y))[1:].tolist()
-        return [(index[0], index[1]) for index in path]
-
     def tick(self) -> BtResult:
         target, _ = self.maybe_read_blackboard(self.to_raw)
         if not isinstance(target, Entity):
             raise AssertionError("Expected target to be an Entity.")
-        path = self.get_path_to(target.x, target.y)
+        path = find_path(self.agent.pos, target.pos, self.engine)
         if len(path) == 0:
             return bt.BtResult.Failure
         dest_x, dest_y = path.pop(0)

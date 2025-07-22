@@ -15,3 +15,4 @@
 - [x] Data classes for entities
 - [x] Data driven proc gen parameters
 - [ ] Testing
+- [x] Refactor pathfinding
