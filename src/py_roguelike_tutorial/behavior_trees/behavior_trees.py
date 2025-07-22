@@ -36,9 +36,10 @@ INF = 999999  # for our purposes this is unreachably high
 
 
 class BlackboardSpecialKey(StrEnum):
-    Engine = "ENGINE"
-    Agent = "AGENT"
-    Player = "PLAYER"
+    Engine = "__engine__"
+    Agent = "__agent__"
+    Player = "__player__"
+    SpawnLocation = "__spawn_location__"
 
 
 class Blackboard(dict[str, Any]):
@@ -54,11 +55,7 @@ class Blackboard(dict[str, Any]):
 
     def clear_most(self):
         for key in list(self.keys()):
-            if key not in [
-                BlackboardSpecialKey.Engine,
-                BlackboardSpecialKey.Agent,
-                BlackboardSpecialKey.Player,
-            ]:
+            if key not in [key.value for key in BlackboardSpecialKey]:
                 del self[key]
 
 

@@ -7,6 +7,10 @@
 - [x] Animation for ranged attacks
 - [x] Arrows needed
 - [ ] Shopkeeper
+  - [x] Friendly npcs
+  - [ ] Bump into npc to trigger dialog
+  - [ ] Money or some form of monetary value
+  - [ ] Shopkeeper inventory
 - [x] try attrs
 - [x] Dijkstra map for flee behavior
 - [x] ~~localization~~

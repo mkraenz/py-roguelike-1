@@ -22,6 +22,7 @@ from py_roguelike_tutorial.constants import INTERCARDINAL_DIRECTIONS
 from py_roguelike_tutorial.entity import Entity
 from py_roguelike_tutorial.entity_factory import EntityPrefabs
 from py_roguelike_tutorial.exceptions import Impossible
+from py_roguelike_tutorial.math import Math
 from py_roguelike_tutorial.pathfinding import find_path
 from py_roguelike_tutorial.types import Coord
 
@@ -221,12 +222,12 @@ class Subtree(bt.BtNode):
 
 class RandomMoveBehavior(bt.BtAction):
     def tick(self) -> BtResult:
-        dir_x, dir_y = random.choice(INTERCARDINAL_DIRECTIONS)
         try:
+            dir_x, dir_y = random.choice(INTERCARDINAL_DIRECTIONS)
             MoveAction(self.agent, dir_x, dir_y).perform()
+            return bt.BtResult.Success
         except Impossible:
-            pass  # ignore
-        return bt.BtResult.Success
+            return bt.BtResult.Failure
 
 
 class MoveToEntityBehavior(bt.BtAction):
@@ -247,6 +248,28 @@ class MoveToEntityBehavior(bt.BtAction):
         return bt.BtResult.Success
 
 
+class LeashedRandomMoveBehavior(bt.BtAction):
+    """This behavior moves the agent randomly on the grid within a specified radius around a center point."""
+
+    def __init__(self, args: bt.BtConstructorArgs[bt_val.LeashedRandomMoveDataParams]):
+        super().__init__(args)
+        self.radius = args.params.radius
+        self.center: str = args.params.center
+
+    def tick(self) -> BtResult:
+        try:
+            center, loaded = self.maybe_read_blackboard(self.center)
+            step_dx, step_dy = random.choice(INTERCARDINAL_DIRECTIONS)
+            action = MoveAction(self.agent, step_dx, step_dy)
+            target = action.dest_xy
+            if Math.dist_chebyshev(center, target) > self.radius:
+                return bt.BtResult.Failure
+            action.perform()
+            return bt.BtResult.Success
+        except Impossible:
+            return bt.BtResult.Failure
+
+
 BT_NODE_NAME_TO_CLASS = {
     "Root": bt.BtRoot,
     "Selector": bt.BtSelector,
@@ -265,6 +288,7 @@ BT_NODE_NAME_TO_CLASS = {
     "UseItem": UseItemBehavior,
     "Subtree": Subtree,
     "RandomMove": RandomMoveBehavior,
+    "LeashedRandomMove": LeashedRandomMoveBehavior,
     "PickUpItem": PickUpItemBehavior,
     "MoveToEntity": MoveToEntityBehavior,
     "EquipItem": EquipItemBehavior,

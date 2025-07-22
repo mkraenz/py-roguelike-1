@@ -21,8 +21,6 @@ orc_archer:
   color: "#00ff00"
   name: "Orc Archer"
   ai:
-    # these should check Line of sight, check if arrows and bow equipped, check distance, then attack or move into range`, else run away.
-    # If player too close, try to gain some distance.
     class_type: BehaviorTreeAI
     behavior_tree_id: melee_attacker
     vision:
@@ -124,3 +122,37 @@ troll:
   equipment: {}
   tags:
     - troll
+
+shopkeeper:
+  char: "S"
+  color: "#00ff00"
+  name: Shopkeeper
+  ai:
+    # If player too close, try to gain some distance.
+    class_type: BehaviorTreeAI
+    behavior_tree_id: shopkeeper
+    vision:
+      range: 10
+    interests:
+      - player
+  fighter:
+    max_hp: 10
+    defense: 0
+    power: 3
+  inventory:
+    capacity: 5
+    items:
+      - health_potion_2
+      - teleport_scroll
+      - arrow
+      - bow
+      - dagger
+  level:
+    level_up_base: 0
+    xp_given: 35
+  equipment:
+    weapon: dagger
+  tags:
+    - shopkeeper
+    - shop
+    - friendly

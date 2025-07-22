@@ -45,9 +45,12 @@ class GameMap:
         for actor in self.actors:
             ai = actor.ai
             if isinstance(ai, BehaviorTreeAI):
-                ai.tree.blackboard[BlackboardSpecialKey.Agent] = actor
-                ai.tree.blackboard[BlackboardSpecialKey.Player] = self.engine.player
-                ai.tree.blackboard[BlackboardSpecialKey.Engine] = self.engine
+                ai.tree.blackboard[BlackboardSpecialKey.Agent.value] = actor
+                ai.tree.blackboard[BlackboardSpecialKey.Player.value] = (
+                    self.engine.player
+                )
+                ai.tree.blackboard[BlackboardSpecialKey.Engine.value] = self.engine
+                ai.tree.blackboard[BlackboardSpecialKey.SpawnLocation.value] = actor.pos
 
         self.update_dijkstra_map()
 

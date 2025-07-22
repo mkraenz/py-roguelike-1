@@ -155,47 +155,15 @@ melee_attacker:
                   - type: MoveTowardsPlayer
           - comment: "Else its calm"
             type: RandomMove
-## naive design
-#example0:
-#  type: Selector
-#  children:
-#    - type: Sequence
-#      children:
-#        - type: Condition
-#          condition: blackboard.get('actor').is_alarmed
-#        - type: Selector
-#          children:
-#            - type: Sequence
-#              children:
-#                - type: Condition
-#                  condition: max_distance(blackboard.get('player'), blackboard.get('actor')) <= 1
-#                - type: Action
-#                  action: MeleeAttack
-#                  params:
-#                    target: blackboard.get('player')
-#            - type: Sequence
-#              children:
-#                - type: Condition
-#                  condition: blackboard.get('actor').inventory.has_ranged_weapon()
-#                - type: Sequence
-#                  children:
-#                    - type: Condition
-#                      condition: blackboard.get('actor').inventory.ranged_weapon_equipped()
-#                    - type: Action
-#                      action: SetBlackboard
-#                      params:
-#                        key: ranged_weapon_range
-#                        value: actor.equipment.ranged_weapon_range
-#                    - type: Condition
-#                      condition: max_distance(player, actor) <= blackboard.get('ranged_weapon_range')
-#                    - type: Action
-#                      action: RangedAttack
-#                      params:
-#                        target: blackboard.get('player')
-#            - type: Action
-#              data:
-#                action: move
-#                params:
-#                  towards: blackboard.get('player')
-#    - type: Action
-#      action: wait
+
+shopkeeper:
+  root:
+    comment: "Friendly shopkeeper"
+    type: Root
+    children:
+      - type: Sequence
+        children:
+          - type: LeashedRandomMove
+            params:
+              radius: 1
+              center: $__spawn_location__

@@ -22,6 +22,7 @@ type BtChildren = list[
     | MoveToEntityData
     | PickUpItemData
     | EquipItemData
+    | LeashedRandomMoveData
 ]
 
 
@@ -188,6 +189,16 @@ class MoveToEntityDataParams(BaseModel):
 class MoveToEntityData(BtBehaviorData):
     type: Literal["MoveToEntity"]
     params: MoveToEntityDataParams
+
+
+class LeashedRandomMoveDataParams(BaseModel):
+    radius: int
+    center: str
+
+
+class LeashedRandomMoveData(BtBehaviorData):
+    type: Literal["LeashedRandomMove"]
+    params: LeashedRandomMoveDataParams
 
 
 class BehaviorTreeData(BaseModel):
