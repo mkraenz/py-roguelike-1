@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 
 class Inventory(BaseComponent):
-    parent: Actor  # type: ignore [reportIncompatibleVariableOverride]
+    parent: Actor
 
     def __init__(self, data: InventoryData):
         self._capacity = data.capacity

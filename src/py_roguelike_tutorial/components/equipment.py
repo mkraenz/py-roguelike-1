@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Literal
 
 from py_roguelike_tutorial.components.base_components import BaseComponent
-from py_roguelike_tutorial.entity import Item
+from py_roguelike_tutorial.entity import Actor, Item
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.engine import Engine
@@ -21,7 +21,7 @@ def get_attribute(attribute_name: str):
 
 
 class Equipment(BaseComponent):
-    parent: Actor  # type: ignore [reportIncompatibleVariableOverride]
+    parent: Actor
 
     def __init__(self, weapon: Item | None = None, armor: Item | None = None):
         self.armor = armor

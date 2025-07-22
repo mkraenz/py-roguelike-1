@@ -202,7 +202,7 @@ class Item(Entity):
     flavor_text: str = ""
     kind: str = ""
     quantity: int = 1
-    parent: GameMap | Inventory = field(init=False)  # type: ignore [reportIncompatibleVariableOverride]
+    parent: GameMap | Inventory = field(init=False)
     stacking: bool = False
     consumable: Consumable | None = None
     equippable: Equippable | None = None

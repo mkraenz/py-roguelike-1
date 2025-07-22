@@ -10,7 +10,7 @@ if TYPE_CHECKING:
 
 
 class Level(BaseComponent):
-    parent: Actor  # type: ignore [reportIncompatibleVariableOverride]
+    parent: Actor
 
     def __init__(self, data: LevelData):
         self.current_level = data.current_level

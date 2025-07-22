@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 
 class Fighter(BaseComponent):
-    parent: Actor  # type: ignore [reportIncompatibleVariableOverride]
+    parent: Actor
 
     def __init__(self, max_hp: int, defense: int, power: int, hp: int | None = None):
         self.max_hp = max_hp

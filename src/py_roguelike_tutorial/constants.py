@@ -97,3 +97,4 @@ class Theme:
     menu_text = Color.WHITE
     menu_background = Color.BLACK
     descend = Color.MAGENTA_LIGHT
+    dialogue = Color.WHITE

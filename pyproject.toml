@@ -17,6 +17,7 @@ dependencies = [
 packages = [{include = "py_roguelike_tutorial", from = "src"}]
 
 [tool.pyright]
+reportIncompatibleVariableOverride = "none"
 
 
 [build-system]

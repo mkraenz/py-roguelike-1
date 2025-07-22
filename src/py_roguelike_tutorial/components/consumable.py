@@ -25,7 +25,7 @@ if TYPE_CHECKING:
 
 
 class Consumable(BaseComponent):
-    parent: Item  # type: ignore [reportIncompatibleVariableOverride]
+    parent: Item
     charges: int = 1
 
     def get_action(self, consumer: Actor) -> ActionOrHandler | None:

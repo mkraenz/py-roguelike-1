@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 
 class Ranged(BaseComponent):
-    parent: Actor  # type: ignore [reportIncompatibleVariableOverride]
+    parent: Actor
 
     def __init__(self, power: int, range: int):
         self.base_power = power

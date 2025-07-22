@@ -5,7 +5,7 @@ from py_roguelike_tutorial.entity import Item
 
 
 class Equippable(BaseComponent):
-    parent: Item  # type: ignore [reportIncompatibleVariableOverride]
+    parent: Item
 
     def __init__(
         self,

@@ -1,12 +1,19 @@
-from typing import Callable, Literal, TypedDict
+from dataclasses import dataclass
+from typing import Callable, Literal, Protocol, TypedDict
 
 from py_roguelike_tutorial.entity import Actor
 from py_roguelike_tutorial.types import Coord
 
-type EventType = Literal["ranged_attack"]
+type EventType = Literal["ranged_attack", "talk"]
 
 
-class RangedAttackEvent(TypedDict):
+# Base protocol for all events
+class GameEvent(Protocol):
+    type: str
+
+
+@dataclass
+class RangedAttackEvent(GameEvent):
     type: Literal["ranged_attack"]
     attacker: Actor
     target: Actor
@@ -15,5 +22,8 @@ class RangedAttackEvent(TypedDict):
     attacker_pos: Coord
 
 
-type GameEvent = RangedAttackEvent
-type EventCallback = Callable[[RangedAttackEvent], None]
+@dataclass
+class TalkEvent(GameEvent):
+    type: Literal["talk"]
+    actor: Actor
+    target: Actor

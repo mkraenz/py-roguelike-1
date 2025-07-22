@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Callable
 
 from py_roguelike_tutorial import exceptions
 from py_roguelike_tutorial.constants import Theme
+from py_roguelike_tutorial.events.events import RangedAttackEvent, TalkEvent
 from py_roguelike_tutorial.exceptions import Impossible
 from py_roguelike_tutorial.types import Coord
 
@@ -105,14 +106,14 @@ class RangedAttackAction(Action):
         txt = f"{attack_desc} for {damage} HP damage."
         self.engine.message_log.add(txt, fg=Theme.enemy_attacks)
         self.engine.event_bus.publish(
-            {
-                "type": "ranged_attack",
-                "attacker": self.entity,
-                "target": target,
-                "damage": damage,
-                "target_pos": target.pos,
-                "attacker_pos": self.entity.pos,
-            },
+            RangedAttackEvent(
+                type="ranged_attack",
+                attacker=self.entity,
+                target=target,
+                damage=damage,
+                target_pos=target.pos,
+                attacker_pos=self.entity.pos,
+            )
         )
 
 
@@ -133,9 +134,30 @@ class MoveAction(DirectedAction):
         self.entity.move(self.dx, self.dy)
 
 
+class TalkAction(Action):
+    def __init__(self, entity: Actor, target: Actor):
+        super().__init__(entity)
+        self.target = target
+
+    def perform(self) -> None:
+        if "friendly" not in self.target.tags:
+            raise exceptions.Impossible(
+                f"{self.target.name} doesn't seem interested in talking."
+            )
+        self.engine.event_bus.publish(
+            TalkEvent(
+                type="talk",
+                actor=self.entity,
+                target=self.target,
+            ),
+        )
+
+
 class BumpAction(DirectedAction):
     def perform(self) -> None:
         if self.target_actor:
+            if "friendly" in self.target_actor.tags:
+                return TalkAction(self.entity, self.target_actor).perform()
             return MeleeAction(self.entity, self.dx, self.dy).perform()
         return MoveAction(self.entity, self.dx, self.dy).perform()
 
