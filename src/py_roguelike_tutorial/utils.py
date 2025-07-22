@@ -10,9 +10,17 @@ def assets_filepath(filename: str):
         # The application is not frozen
         # Change this bit to match where you store your data files:
         main_filepath = sys.modules["__main__"].__file__
+
         if main_filepath is None:
             raise SystemExit("TSTT: Entry point not found.")
+
+        if main_filepath.endswith("pytest"):
+            # If running tests, use the current working directory
+            cwd = os.getcwd()
+            result = os.path.join(cwd, "src", filename)
+            return result
+
         dirname = os.path.dirname(main_filepath)
-        filename = os.path.join(dirname, filename)
-        return filename
+        result = os.path.join(dirname, filename)
+        return result
     return os.path.join(datadir, filename)

@@ -34,7 +34,7 @@ def load_data_files():
     ProcgenConfig.enemy_chances = loader.load_enemy_spawn_rates(EntityPrefabs.npcs)
 
 
-def main():
+def main(*, max_iterations: int | None = None):
     monitor_width = 1920
     window_width = monitor_width // 2
     window_height = 1080
@@ -72,8 +72,14 @@ def main():
         root_console = tcod.console.Console(screen_width, screen_height, order="F")
 
         previous_timestamp: float = time.time()
+        iterations = 0
         try:
-            while True:
+            while True and (
+                iterations < max_iterations if max_iterations is not None else True
+            ):
+                if max_iterations is not None:
+                    iterations += 1
+
                 root_console.clear()
 
                 current_timestamp = time.time()
