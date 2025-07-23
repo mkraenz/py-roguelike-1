@@ -134,6 +134,18 @@ def print_text_center(
     console.print(x=x, y=y, text=txt, alignment=CENTER, fg=fg, bg=bg, width=width)
 
 
+def print_text(
+    console: Console,
+    text: str,
+    x: int,
+    y: int,
+    width: int,
+    fg: Rgb = Theme.menu_text,
+    bg: Rgb = Theme.menu_background,
+) -> None:
+    console.print(x=x, y=y, text=text, alignment=CENTER, fg=fg, bg=bg, width=width)
+
+
 def print_aligned_texts_center(
     console: Console,
     lines: list[str],
@@ -144,6 +156,19 @@ def print_aligned_texts_center(
     for i, text in enumerate(lines):
         y = start_y + i
         print_text_center(console, ljust_width=width, y=y, text=text)
+
+
+def print_texts(
+    console: Console,
+    lines: list[str],
+    *,
+    x: int,
+    start_y: int,
+    width: int,
+):
+    for i, text in enumerate(lines):
+        y = start_y + i
+        print_text(console, x=x, y=y, text=text, width=width)
 
 
 def render_border(console: Console) -> None:

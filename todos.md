@@ -8,9 +8,11 @@
 - [x] Arrows needed
 - [ ] Shopkeeper
   - [x] Friendly npcs
-  - [ ] Bump into npc to trigger dialog
+  - [x] Bump into npc to trigger dialog
+  - [x] Actual dialog
   - [ ] Money or some form of monetary value
-  - [ ] Shopkeeper inventory
+  - [ ] Items cost actual money
+  - [x] Shopkeeper inventory hardcoded
 - [x] try attrs
 - [x] Dijkstra map for flee behavior
 - [x] ~~localization~~
@@ -20,3 +22,4 @@
 - [x] Data driven proc gen parameters
 - [ ] Testing
 - [x] Refactor pathfinding
+- [ ] Keyboard controls help screen

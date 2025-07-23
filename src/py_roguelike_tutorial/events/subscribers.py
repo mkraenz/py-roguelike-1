@@ -1,6 +1,7 @@
 from py_roguelike_tutorial.constants import Theme
 from py_roguelike_tutorial.engine import Engine
 import py_roguelike_tutorial.events.events as events
+from py_roguelike_tutorial.handlers.dialogue_event_handler import DialogueEventHandler
 from py_roguelike_tutorial.handlers.ranged_attack_animation import RangedAttackAnimation
 
 
@@ -24,19 +25,16 @@ class EventBusSubscribers:
         )
 
     def talk(self):
-
         def callback(event: events.TalkEvent) -> None:
             self.engine.message_log.add(
                 f'{event.target.name}: "Hi, would you like to buy something? We\'ve got the best prices."',
                 fg=Theme.dialogue,
             )
             self.engine.stack.push(
-                # TODO Replace with a proper dialogue
-                RangedAttackAnimation(
+                DialogueEventHandler(
                     engine=self.engine,
-                    from_pos=event.actor.pos,
-                    to=(20, 20),
-                    animation_tick_time_sec=0.05,
+                    speaker=event.actor,
+                    other=event.target,
                 )
             )
 

@@ -98,12 +98,12 @@ melee_attacker:
     children:
       - type: Selector
         children:
-          # - type: Subtree
-          #   params:
-          #     id: emergency_teleport
-          # - type: Subtree
-          #   params:
-          #     id: use_heal_potion
+          - type: Subtree
+            params:
+              id: emergency_teleport
+          - type: Subtree
+            params:
+              id: use_heal_potion
           - type: Subtree
             params:
               id: flee
