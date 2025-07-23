@@ -202,10 +202,15 @@ class Item(Entity):
     flavor_text: str = ""
     kind: str = ""
     quantity: int = 1
+    base_value: int = 1
     parent: GameMap | Inventory = field(init=False)
     stacking: bool = False
     consumable: Consumable | None = None
     equippable: Equippable | None = None
+
+    @property
+    def value(self):
+        return self.base_value * self.quantity
 
     def __post_init__(self):
         if self.consumable:

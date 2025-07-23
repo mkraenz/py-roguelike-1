@@ -139,11 +139,10 @@ def print_text(
     text: str,
     x: int,
     y: int,
-    width: int,
     fg: Rgb = Theme.menu_text,
     bg: Rgb = Theme.menu_background,
 ) -> None:
-    console.print(x=x, y=y, text=text, alignment=CENTER, fg=fg, bg=bg, width=width)
+    console.print(x=x, y=y, text=text, fg=fg, bg=bg)
 
 
 def print_aligned_texts_center(
@@ -164,11 +163,10 @@ def print_texts(
     *,
     x: int,
     start_y: int,
-    width: int,
 ):
     for i, text in enumerate(lines):
         y = start_y + i
-        print_text(console, x=x, y=y, text=text, width=width)
+        print_text(console, x=x, y=y, text=text)
 
 
 def render_border(console: Console) -> None:

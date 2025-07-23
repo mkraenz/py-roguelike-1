@@ -85,5 +85,10 @@ class Inventory(BaseComponent):
             self.engine.message_log.add(text=txt)
 
     @property
-    def gold(self):
+    def gold(self) -> Item | None:
         return self.get_first_by_tag("gold")
+
+    @property
+    def gold_quantity(self) -> int:
+        gold_item = self.gold
+        return gold_item.quantity if gold_item else 0

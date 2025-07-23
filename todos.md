@@ -6,12 +6,13 @@
 - [x] Fix id
 - [x] Animation for ranged attacks
 - [x] Arrows needed
-- [ ] Shopkeeper
+- [x] Shopkeeper
   - [x] Friendly npcs
   - [x] Bump into npc to trigger dialog
   - [x] Actual dialog
-  - [ ] Money or some form of monetary value
-  - [ ] Items cost actual money
+  - [x] Money or some form of monetary value
+  - [x] Items cost actual money
+  - [x] Items have differing monetary value
   - [x] Shopkeeper inventory hardcoded
 - [x] try attrs
 - [x] Dijkstra map for flee behavior

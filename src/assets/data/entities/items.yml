@@ -5,6 +5,7 @@ dagger:
   name: "Dagger"
   description: "A sharp dagger, perfect for quick strikes."
   flavor_text: "A trusty companion for any rogue."
+  value: 150
   equippable:
     slot: weapon
     power: 2
@@ -19,6 +20,7 @@ sword:
   name: "Sword"
   description: "A sturdy sword, balanced for combat."
   flavor_text: "A classic weapon for any adventurer."
+  value: 370
   equippable:
     slot: weapon
     power: 4
@@ -33,6 +35,7 @@ bow:
   name: "Bow"
   description: "A reliable bow, ideal for ranged attacks."
   flavor_text: "Silent and deadly, the bow is a hunter's best friend."
+  value: 180
   equippable:
     slot: weapon
     ranged_power: 2
@@ -48,6 +51,7 @@ leather_armor:
   name: "Leather Armor"
   description: "Light armor made from toughened leather."
   flavor_text: "Provides basic protection without hindering movement."
+  value: 200
   equippable:
     slot: armor
     defense: 1
@@ -63,6 +67,7 @@ chain_mail:
   name: "Chain Mail"
   description: "A suit of chain mail, offering good protection."
   flavor_text: "A balance between mobility and defense."
+  value: 480
   equippable:
     slot: armor
     defense: 3
@@ -78,6 +83,7 @@ health_potion:
   name: "Health Potion"
   description: "A potion that restores health."
   flavor_text: "A soothing elixir that heals wounds."
+  value: 40
   consumable:
     class_type: HealingConsumable
     constructor_args:
@@ -95,6 +101,7 @@ health_potion_2:
   name: "Health Potion 2"
   description: "A stronger potion that restores more health."
   flavor_text: "A potent elixir that heals even the gravest of wounds."
+  value: 75
   consumable:
     class_type: HealingConsumable
     constructor_args:
@@ -112,6 +119,7 @@ lightning_scroll:
   name: "Lightning Scroll"
   description: "A scroll that unleashes a bolt of lightning."
   flavor_text: "Harness the power of the storm with this scroll."
+  value: 80
   consumable:
     class_type: LightningDamageConsumable
     constructor_args:
@@ -131,6 +139,7 @@ confusion_scroll:
   name: "Confusion Scroll"
   description: "A scroll that confuses enemies."
   flavor_text: "Bewilder your foes with this magical scroll."
+  value: 70
   consumable:
     class_type: ConfusionConsumable
     constructor_args:
@@ -148,6 +157,7 @@ fireball_scroll:
   name: "Fireball Scroll"
   description: "A scroll that conjures a fiery explosion."
   flavor_text: "Unleash the fury of fire with this powerful scroll."
+  value: 70
   consumable:
     class_type: FireballDamageConsumable
     constructor_args:
@@ -168,6 +178,7 @@ teleport_scroll:
   name: Teleport Scroll
   description: "A scroll that teleports you to a random location."
   flavor_text: "Escape danger or explore new areas with this scroll."
+  value: 70
   consumable:
     class_type: TeleportSelfConsumable
     constructor_args:
@@ -186,6 +197,7 @@ arrow:
   name: Arrow
   description: "A sharp arrow, perfect for bows."
   flavor_text: "A quiver full of arrows is a hunter's best friend."
+  value: 2
   stacking: True
   quantity: 12
   tags:
@@ -198,6 +210,7 @@ gold:
   name: Gold
   description: "Shiny gold coins, used for trading."
   flavor_text: "The universal currency of adventurers."
+  value: 1
   stacking: True
   quantity: 50
   tags:

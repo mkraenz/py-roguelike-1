@@ -36,26 +36,27 @@ class DialogueEventHandler(IngameEventHandler):
 
     def on_render(self, console: Console, delta_time: float) -> None:
         super().on_render(console, delta_time)
-        child_console, blit = IngameMenuConsole(console, f"{self.other.name}")
-        texts = ["Hello, adventurer. How can i help you?"]
+        child_console, blit = IngameMenuConsole(console, self.other.name)
+
+        texts = [
+            "Hello, adventurer. How can i help you?",
+        ]
         width = child_console.width - 2
         x = 1
         y = 2
-        print_texts(child_console, texts, x=x, start_y=y, width=width)
-
-        buyers_gold_item = self.speaker.inventory.gold
-        gold = buyers_gold_item.quantity if buyers_gold_item is not None else 0
+        print_texts(child_console, texts, x=x, start_y=y)
 
         y += len(texts) + 1
         shopkeeper = self.other
+        gold = self.speaker.inventory.gold_quantity
         carried_items = shopkeeper.inventory.len
         height = max(carried_items + 2, 3)
         if carried_items > 0:
             for i, item in enumerate(shopkeeper.inventory.items):
                 item_key = chr(ord("a") + i)
                 quantity = f" x{item.quantity}" if item.quantity > 1 else ""
-                price = 70  #  TODO for now fixed price 70
-                price_tag = f"({price}G)"
+                price = item.value
+                price_tag = f"({price} G)"
                 item_charges = (
                     f" ({item.consumable.charges}Chg)"
                     if item.consumable is not None and item.consumable.charges > 1
@@ -80,6 +81,11 @@ class DialogueEventHandler(IngameEventHandler):
             child_console.print(
                 x=x, y=y, width=width, height=height, text=self.error, fg=Theme.error
             )
+        child_console.print(
+            x=x,
+            y=child_console.height - 3,
+            text=f"You have {gold} gold.",
+        )
         blit()
 
     def ev_keydown(self, event: tcod.event.KeyDown, /) -> ActionOrHandler | None:
@@ -100,7 +106,7 @@ class DialogueEventHandler(IngameEventHandler):
 
     def on_item_selected(self, selected_item: Item) -> ActionOrHandler | None:
         """Called when the user selects an item."""
-        price = 70
+        price = selected_item.value
 
         buyers_gold = self.speaker.inventory.gold
         if buyers_gold is None:

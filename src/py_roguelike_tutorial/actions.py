@@ -196,7 +196,9 @@ class PickupAction(Action):
         self.entity.inventory.add(item)
         self.engine.game_map.entities.remove(item)
 
-        txt = f"{self.entity.name} picked up the {item.name}."
+        quantity = f" x{item.quantity}" if item.quantity > 1 else ""
+
+        txt = f"{self.entity.name} picked up the {item.name}{quantity}."
         self.engine.message_log.add(txt)
 
 
