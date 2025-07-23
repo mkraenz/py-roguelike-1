@@ -190,3 +190,16 @@ arrow:
   quantity: 12
   tags:
     - arrow
+
+gold:
+  kind: gold
+  char: "$"
+  color: "#FFD700"
+  name: Gold
+  description: "Shiny gold coins, used for trading."
+  flavor_text: "The universal currency of adventurers."
+  stacking: True
+  quantity: 50
+  tags:
+    - gold
+    - currency

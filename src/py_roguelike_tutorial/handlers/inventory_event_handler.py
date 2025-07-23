@@ -55,6 +55,7 @@ class InventoryEventHandler(AskUserEventHandler):
             for i, item in enumerate(player.inventory.items):
                 item_key = chr(ord("a") + i)
                 item_equipped = " (E)" if player.equipment.is_equipped(item) else ""
+                quantity = f" x{item.quantity}" if item.quantity > 1 else ""
                 item_charges = (
                     f" ({item.consumable.charges}Chg)"
                     if item.consumable is not None and item.consumable.charges > 1
@@ -65,7 +66,7 @@ class InventoryEventHandler(AskUserEventHandler):
                     y=y + i + 1,
                     width=width,
                     height=height,
-                    text=f"[{item_key}] {item.name}{item_equipped}{item_charges}",
+                    text=f"[{item_key}] {item.name}{quantity}{item_equipped}{item_charges}",
                 )
         else:
             console.print(x=x + 1, y=y + 1, width=width, height=height, text="(Empty)")

@@ -135,9 +135,12 @@ def generate_dungeon(
     loc = (player.x + 5, player.y + 7)
     loc2 = (player.x + 1, player.y)
     loc3 = (player.x + 1, player.y + 1)
+    loc4 = (player.x + 2, player.y + 1)
     EntityPrefabs.npcs["orc_archer"].spawn(dungeon, *loc)
     EntityPrefabs.items["dagger"].spawn(dungeon, *loc2)
     EntityPrefabs.npcs["shopkeeper"].spawn(dungeon, *loc3)
+    EntityPrefabs.items["gold"].spawn(dungeon, *loc3)
+    EntityPrefabs.items["gold"].spawn(dungeon, *loc4)
 
     room_with_stairs = rooms[-1] if not DEBUG_STAIRS_AT_START else rooms[0]
     place_down_stairs(dungeon, room_with_stairs)

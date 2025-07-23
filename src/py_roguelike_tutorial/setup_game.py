@@ -31,6 +31,9 @@ filepath = assets_filepath("assets/menu_background.png")
 background_image = tcod.image.load(filepath)[:, :, :3]  # type: ignore [reportDeprecated]
 
 
+DEBUG = True
+
+
 def new_game(stack: ScreenStack) -> Engine:
     generation_params = MapGenerationParams(
         max_rooms=30,
@@ -121,17 +124,15 @@ class MainMenu(BaseEventHandler):
             case Key.C:
                 return self.try_load_game()
             case Key.N:
-                if not os.path.exists(AUTOSAVE_FILENAME):
-                    self.stack.pop()
-                    return MainGameEventHandler(
-                        new_game(self.stack),
-                    )
 
                 def _new_game_callback():
                     self.stack.pop()
                     return MainGameEventHandler(
                         new_game(self.stack),
                     )
+
+                if not os.path.exists(AUTOSAVE_FILENAME) or DEBUG:
+                    return _new_game_callback()
 
                 return ConfirmationPopup(
                     stack=self.stack,
