@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from py_roguelike_tutorial.entity import Entity
 
 FLIGHT_FACTOR = -1.2  # Factor to multiply the dijkstra map for fleeing entities
-DEBUG = True
+DEBUG = False
 
 
 class GameMap:
@@ -41,7 +41,7 @@ class GameMap:
     def update_flight_map(self):
         self.flight_dijkstra_map = self.dijkstra_map * FLIGHT_FACTOR
 
-    def finalize_init(self):
+    def finalize_floor(self):
         for actor in self.actors:
             ai = actor.ai
             if isinstance(ai, BehaviorTreeAI):

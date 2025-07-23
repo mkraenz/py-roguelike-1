@@ -27,6 +27,7 @@ INTERCARDINAL_DIRECTIONS = (
 
 AUTOSAVE_FILENAME = "autosave.sav"
 RNG_SEED = 98127391
+SHOP_MAX_FLOORS_AHEAD = 4
 
 
 from py_roguelike_tutorial.types import Rgb

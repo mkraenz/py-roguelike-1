@@ -92,3 +92,7 @@ class Inventory(BaseComponent):
     def gold_quantity(self) -> int:
         gold_item = self.gold
         return gold_item.quantity if gold_item else 0
+
+    def replace_all(self, with_items: list[Item]):
+        self.items.clear()
+        self.items.extend(with_items)

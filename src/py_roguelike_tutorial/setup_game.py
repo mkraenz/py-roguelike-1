@@ -22,7 +22,7 @@ from py_roguelike_tutorial.handlers.base_event_handler import BaseEventHandler
 from py_roguelike_tutorial.handlers.confirmation_popup import ConfirmationPopup
 from py_roguelike_tutorial.handlers.main_game_event_handler import MainGameEventHandler
 from py_roguelike_tutorial.handlers.popup_message import PopupMessage
-from py_roguelike_tutorial.procgen import MapGenerationParams
+from py_roguelike_tutorial.procgen.map_gen import MapGenerationParams
 from py_roguelike_tutorial.screen_stack import ScreenStack
 from py_roguelike_tutorial.events.subscribers import EventBusSubscribers
 from py_roguelike_tutorial.utils import assets_filepath
@@ -55,7 +55,6 @@ def new_game(stack: ScreenStack) -> Engine:
         params=generation_params,
     )
     engine.game_world.generate_floor()
-    engine.game_map.finalize_init()
     engine.update_fov()
     engine.message_log.add(text="Welcome, adventurer.", fg=Theme.welcome_text)
     return engine

@@ -8,7 +8,7 @@ from pydantic import ValidationError
 
 from py_roguelike_tutorial.behavior_trees.behavior_trees import BtNode
 from py_roguelike_tutorial.components.faction import Faction
-from py_roguelike_tutorial.components.procgen_config import DungeonTable, EntityTableRow
+from py_roguelike_tutorial.procgen.procgen_config import DungeonTable, EntityTableRow
 from py_roguelike_tutorial.entity_deserializers import (
     item_from_dict,
     actor_from_dict,

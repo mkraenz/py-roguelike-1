@@ -6,48 +6,28 @@ from typing import Iterator, Protocol, TYPE_CHECKING
 
 from tcod.los import bresenham
 
-from py_roguelike_tutorial import tile_types
-from py_roguelike_tutorial.components import procgen_config
+from py_roguelike_tutorial import constants, tile_types
 from py_roguelike_tutorial.components.faction import Faction
 from py_roguelike_tutorial.components.factions_manager import FactionsManager
-from py_roguelike_tutorial.components.procgen_config import (
+from py_roguelike_tutorial.procgen.procgen_config import (
     ProcgenConfig as data,
 )
 from py_roguelike_tutorial.entity_factory import EntityPrefabs
 from py_roguelike_tutorial.game_map import GameMap
+from py_roguelike_tutorial.procgen.gen_helpers import (
+    get_max_row_for_floor,
+    get_prefabs_at_random,
+)
+from py_roguelike_tutorial.procgen.shop_gen import (
+    ShopGenerationParams,
+    generate_shop_inventory,
+)
 from py_roguelike_tutorial.types import Coord, CoordN
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.engine import Engine
 
-DEBUG_STAIRS_AT_START = False
-
-
-def get_prefabs_at_random[T](
-    weighted_chances_by_floor: procgen_config.DungeonTable[T],
-    num_of_entities: int,
-    current_floor: int,
-) -> list[T]:
-    entity_weighted_chances = {}
-    for floor, entity_table in weighted_chances_by_floor.items():
-        if floor > current_floor:
-            break
-        for row in entity_table:
-            entity_weighted_chances[row.entity] = row.weight
-    entities = list(entity_weighted_chances.keys())
-    weights = list(entity_weighted_chances.values())
-    chosen_entities = random.choices(entities, weights=weights, k=num_of_entities)
-    return chosen_entities
-
-
-def get_max_row_for_floor(
-    table: list[procgen_config.FloorTableRow], current_floor: int
-) -> procgen_config.FloorTableRow:
-    max_row: procgen_config.FloorTableRow = procgen_config.FloorTableRow(0, 0)
-    for row in table:
-        if current_floor >= row.floor > max_row.floor:
-            max_row = row
-    return max_row
+DEBUG_STAIRS_AT_START = True
 
 
 class Room(Protocol):
@@ -131,21 +111,30 @@ def generate_dungeon(
         rooms.append(room)
 
     player.place(*rooms[0].center, dungeon)
-    # leaving here since useful for debugging
-    loc = (player.x + 5, player.y + 7)
-    loc2 = (player.x + 1, player.y)
-    loc3 = (player.x + 1, player.y + 1)
-    loc4 = (player.x + 2, player.y + 1)
-    EntityPrefabs.npcs["orc_archer"].spawn(dungeon, *loc)
-    EntityPrefabs.items["dagger"].spawn(dungeon, *loc2)
-    EntityPrefabs.npcs["shopkeeper"].spawn(dungeon, *loc3)
-    EntityPrefabs.items["gold"].spawn(dungeon, *loc3)
-    EntityPrefabs.items["gold"].spawn(dungeon, *loc4)
+    debug_place_entities(current_floor, player, dungeon)
 
     room_with_stairs = rooms[-1] if not DEBUG_STAIRS_AT_START else rooms[0]
     place_down_stairs(dungeon, room_with_stairs)
 
     return dungeon
+
+
+def debug_place_entities(current_floor, player, dungeon):
+    loc = (player.x + 5, player.y + 7)
+    loc2 = (player.x + 1, player.y)
+    loc3 = (player.x + 1, player.y + 1)
+    loc4 = (player.x + 2, player.y + 1)
+    # EntityPrefabs.npcs["orc_archer"].spawn(dungeon, *loc)
+    EntityPrefabs.items["dagger"].spawn(dungeon, *loc2)
+    shopkeeper = EntityPrefabs.npcs["shopkeeper"].spawn(dungeon, *loc3)
+    shopkeeper.inventory.replace_all(
+        generate_shop_inventory(
+            ShopGenerationParams(max_floors_ahead=constants.SHOP_MAX_FLOORS_AHEAD),
+            current_floor,
+        )
+    )
+    EntityPrefabs.items["gold"].spawn(dungeon, *loc3)
+    EntityPrefabs.items["gold"].spawn(dungeon, *loc4)
 
 
 def place_down_stairs(dungeon: GameMap, final_room: Room):

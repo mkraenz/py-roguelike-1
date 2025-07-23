@@ -225,5 +225,5 @@ class Item(Entity):
     def __eq__(self, other):
         """Equality check based on unique ID."""
         if isinstance(other, Entity):
-            return self.id == other.id
+            return self.id == other.id and self.name == other.name
         return False

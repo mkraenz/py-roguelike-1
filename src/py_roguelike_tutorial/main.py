@@ -6,7 +6,7 @@ import tcod
 
 from py_roguelike_tutorial import exceptions, setup_game
 from py_roguelike_tutorial.constants import Theme
-from py_roguelike_tutorial.components.procgen_config import (
+from py_roguelike_tutorial.procgen.procgen_config import (
     ProcgenConfig,
 )
 from py_roguelike_tutorial.constants import AUTOSAVE_FILENAME, RNG_SEED

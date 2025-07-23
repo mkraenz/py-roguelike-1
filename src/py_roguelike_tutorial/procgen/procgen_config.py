@@ -33,6 +33,12 @@ class ProcgenConfig:
         FloorTableRow(6, 5),
         FloorTableRow(9, 10),
     ]
+    MAX_SHOP_ITEMS_BY_FLOOR = [
+        FloorTableRow(1, 4),
+        FloorTableRow(4, 5),
+        FloorTableRow(6, 7),
+        FloorTableRow(9, 9),
+    ]
 
     # The spawn chances are in some sense 'additive', so for floor 5, the actual roll table includes everything
     # from floor 0 to 5. Each row for a higher floor may override the weights/lottery tickets of an entity from a

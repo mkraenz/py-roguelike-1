@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Literal
 
 from py_roguelike_tutorial.components.factions_manager import FactionsManager
-from py_roguelike_tutorial.procgen import (
+from py_roguelike_tutorial.procgen.map_gen import (
     MapGenerationParams,
     generate_dungeon as generate_dungeon_default,
 )
@@ -50,3 +50,4 @@ class GameWorld:
             raise NotImplementedError(
                 f"procgen algorithm not implemented. Found: {self._algorithm}"
             )
+        self.engine.game_map.finalize_floor()

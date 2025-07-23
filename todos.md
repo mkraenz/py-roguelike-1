@@ -14,6 +14,8 @@
   - [x] Items cost actual money
   - [x] Items have differing monetary value
   - [x] Shopkeeper inventory hardcoded
+  - [x] Randomized inventory
+  - [ ] Some way to earn gold
 - [x] try attrs
 - [x] Dijkstra map for flee behavior
 - [x] ~~localization~~
