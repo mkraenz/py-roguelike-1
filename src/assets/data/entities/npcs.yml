@@ -8,7 +8,11 @@ orc:
     max_hp: 10
     defense: 0
     power: 3
-  inventory: {}
+  inventory:
+    capacity: 2
+    items:
+      - id: gold
+        quantity: 25
   level:
     level_up_base: 0
     xp_given: 35
@@ -33,16 +37,18 @@ orc_archer:
     power: 0
     range: 0
   fighter:
-    max_hp: 10
+    max_hp: 2
     defense: 0
     power: 3
   inventory:
     capacity: 10
     items:
       - id: health_potion_2
-      - id: arrow
-        quantity: 5
+      # - id: arrow
+      # quantity: 5
       - id: teleport_scroll
+      - id: gold
+        quantity: 20
   level:
     level_up_base: 0
     xp_given: 35
@@ -106,7 +112,7 @@ goblin:
     capacity: 2
     items:
       - id: gold
-        quantity: 75
+        quantity: 10
   level:
     level_up_base: 0
     xp_given: 15

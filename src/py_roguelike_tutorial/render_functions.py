@@ -7,9 +7,11 @@ from tcod.console import Console
 from tcod.constants import CENTER
 
 from py_roguelike_tutorial.constants import Theme
+from py_roguelike_tutorial.entity import Item
 from py_roguelike_tutorial.types import Rgb
 
 if TYPE_CHECKING:
+    from py_roguelike_tutorial.entity import Entity
     from py_roguelike_tutorial.game_map import GameMap
     from py_roguelike_tutorial.engine import Engine
 
@@ -31,6 +33,12 @@ def render_hp_bar(
     console.print(x=x + 1, y=y, text=hp, fg=Theme.hp_bar_text)
 
 
+def format_entity_name(entity: Entity) -> str:
+    name = entity.name
+    quantity = f" x{entity.quantity}" if isinstance(entity, Item) else ""
+    return f"{name}{quantity}"
+
+
 def _get_names_at(world_x: int, world_y: int, game_map: GameMap) -> str:
     if (
         not game_map.in_bounds(world_x, world_y)
@@ -39,7 +47,7 @@ def _get_names_at(world_x: int, world_y: int, game_map: GameMap) -> str:
         return ""
     tile_name = game_map.tiles["name"][world_x, world_y]
     entity_names = [
-        entity.name
+        format_entity_name(entity)
         for entity in game_map.visible_entities
         if entity.x == world_x and entity.y == world_y
     ]

@@ -156,7 +156,6 @@ melee_attacker:
                         params:
                           max_dist: 1
                       - type: MeleeAttack
-                  - type: DebugFailure
                   - type: MoveTowardsPlayer
           - comment: "Else its calm"
             type: RandomMove

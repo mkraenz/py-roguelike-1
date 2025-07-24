@@ -209,7 +209,7 @@ gold:
   name: Gold
   description: "Shiny gold coins, used for trading."
   flavor_text: "The universal currency of adventurers."
-  value: 1
+  value: 1 # TODO  re-name to unit value
   stacking: True
   quantity: 50
   tags:

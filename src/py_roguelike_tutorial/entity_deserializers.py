@@ -79,6 +79,7 @@ def item_from_dict(data: ItemData) -> Item:
         flavor_text=data.flavor_text,
         base_value=data.value,
         quantity=data.quantity,
+        stacking=data.stacking,
         consumable=consumable,
         equippable=equippable,
         tags=set(data.tags),

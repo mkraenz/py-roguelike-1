@@ -185,13 +185,18 @@ class Actor(Entity):
         self.name = f"remains of {self.name}"
         self.render_order = RenderOrder.CORPSE
 
+        gold = self.inventory.gold
+        if gold is not None:
+            gold.place(self.x, self.y, self.game_map)
+            self.inventory.remove(gold)
+
     def __hash__(self):
         """Make the entity hashable based on its unique ID."""
         return hash(self.id)
 
     def __eq__(self, other):
         """Equality check based on unique ID."""
-        if isinstance(other, Entity):
+        if isinstance(other, Actor):
             return self.id == other.id
         return False
 
@@ -206,6 +211,7 @@ class Item(Entity):
     stacking: bool = False
     consumable: Consumable | None = None
     equippable: Equippable | None = None
+    render_order: RenderOrder = RenderOrder.ITEM
 
     @property
     def value(self):
@@ -227,6 +233,10 @@ class Item(Entity):
 
     def __eq__(self, other):
         """Equality check based on unique ID."""
-        if isinstance(other, Entity):
-            return self.id == other.id and self.name == other.name
+        if isinstance(other, Item):
+            return (
+                self.id == other.id
+                and self.name == other.name
+                and self.quantity == other.quantity
+            )
         return False

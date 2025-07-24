@@ -15,7 +15,8 @@
   - [x] Items have differing monetary value
   - [x] Shopkeeper inventory hardcoded
   - [x] Randomized inventory
-  - [ ] Some way to earn gold
+  - [x] Some way to earn gold
+  - [ ] spawn a shop in the dungeon
 - [x] try attrs
 - [x] Dijkstra map for flee behavior
 - [x] ~~localization~~

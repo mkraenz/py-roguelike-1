@@ -83,8 +83,6 @@ class BlackboardCondition(bt.BtCondition):
     def tick(self) -> bt.BtResult:
         match self.comparator:
             case "eq":
-                if self.key == "alarmed":
-                    x = 5
                 return self.success_else_fail(
                     self.blackboard.get(self.key) == self.value
                 )
