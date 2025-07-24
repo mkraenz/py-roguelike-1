@@ -4,6 +4,11 @@ import abc
 from enum import StrEnum
 from typing import TYPE_CHECKING, Any, Generic, NamedTuple, TypeVar
 
+from py_roguelike_tutorial.behavior_trees.blackboard import (
+    Blackboard,
+    BlackboardSpecialKey,
+)
+
 if TYPE_CHECKING:
     from py_roguelike_tutorial.engine import Engine
     from py_roguelike_tutorial.entity import Actor
@@ -22,6 +27,7 @@ __all__ = [
     "BtInverter",
     "BtDecorator",
     "BtForceFailure",
+    "BtForceSuccess",
     "BtSuccessIsFailure",
 ]
 
@@ -33,30 +39,6 @@ class BtResult(StrEnum):
 
 
 INF = 999999  # for our purposes this is unreachably high
-
-
-class BlackboardSpecialKey(StrEnum):
-    Engine = "__engine__"
-    Agent = "__agent__"
-    Player = "__player__"
-    SpawnLocation = "__spawn_location__"
-
-
-class Blackboard(dict[str, Any]):
-    def set(self, key: str, val: Any) -> None:
-        self[key] = val
-
-    def has(self, key: str) -> bool:
-        return key in self
-
-    def remove(self, key: str) -> None:
-        if key in self:
-            del self[key]
-
-    def clear_most(self):
-        for key in list(self.keys()):
-            if key not in [key.value for key in BlackboardSpecialKey]:
-                del self[key]
 
 
 T = TypeVar("T")
@@ -232,6 +214,12 @@ class BtForceFailure(BtDecorator):
     def tick(self) -> BtResult:
         self.child.tick()
         return BtResult.Failure
+
+
+class BtForceSuccess(BtDecorator):
+    def tick(self) -> BtResult:
+        self.child.tick()
+        return BtResult.Success
 
 
 class BtSuccessIsFailure(BtDecorator):

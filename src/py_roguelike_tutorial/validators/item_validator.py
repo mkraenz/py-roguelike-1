@@ -65,7 +65,6 @@ class EquippableData(BaseModel):
 
 
 class ItemData(BaseModel):
-    kind: str
     char: str
     color: str
     name: str

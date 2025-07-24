@@ -22,19 +22,22 @@ class VisualSense:
         return self.agent.parent.engine
 
     def sense(self):
-        self.blackboard.clear_most()
+        self.blackboard.clear_vision()
         items = self.engine.game_map.items
-        for item in items:
+        items_ordered_by_most_distant_first = sorted(
+            items, key=lambda item: self.agent.dist_chebyshev(item), reverse=True
+        )
+        for item in items_ordered_by_most_distant_first:
             common_tags = item.tags & self.interests
             if common_tags and self.can_see(item):
                 for tag in common_tags:
-                    self.blackboard.set(tag, item)
+                    self.blackboard.set_from_version(tag, item)
 
         for actor in self.engine.game_map.actors:
             common_tags = set(actor.tags) & self.interests
             if actor.is_alive and common_tags and self.can_see(actor):
                 for tag in common_tags:
-                    self.blackboard.set(tag, actor)
+                    self.blackboard.set_from_version(tag, actor)
 
         if hasattr(self.agent, "inventory"):
             inventory_full = self.agent.inventory.is_full()

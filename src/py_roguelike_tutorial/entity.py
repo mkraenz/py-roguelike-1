@@ -200,7 +200,6 @@ class Actor(Entity):
 class Item(Entity):
     description: str = ""
     flavor_text: str = ""
-    kind: str = ""
     quantity: int = 1
     base_value: int = 1
     parent: GameMap | Inventory = field(init=False)
@@ -211,6 +210,10 @@ class Item(Entity):
     @property
     def value(self):
         return self.base_value * self.quantity
+
+    @property
+    def kind(self) -> str:
+        return next(tag for tag in self.tags if tag.startswith("kind:"))
 
     def __post_init__(self):
         if self.consumable:

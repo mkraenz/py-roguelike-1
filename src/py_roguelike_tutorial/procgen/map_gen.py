@@ -124,8 +124,8 @@ def debug_place_entities(current_floor, player, dungeon):
     loc2 = (player.x + 1, player.y)
     loc3 = (player.x + 1, player.y + 1)
     loc4 = (player.x + 2, player.y + 1)
-    # EntityPrefabs.npcs["orc_archer"].spawn(dungeon, *loc)
-    EntityPrefabs.items["dagger"].spawn(dungeon, *loc2)
+    EntityPrefabs.npcs["orc_archer"].spawn(dungeon, *loc)
+    # EntityPrefabs.items["dagger"].spawn(dungeon, *loc2)
     shopkeeper = EntityPrefabs.npcs["shopkeeper"].spawn(dungeon, *loc3)
     shopkeeper.inventory.replace_all(
         generate_shop_inventory(

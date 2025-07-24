@@ -11,10 +11,11 @@ emergency_teleport:
               value_percent: 30
           - type: HasItem
             params:
-              tag: teleport_scroll
+              tag: kind:teleport_scroll
+              #  TODO say that you are fleeing
           - type: UseItem
             params:
-              tag: teleport_scroll
+              tag: kind:teleport_scroll
 
 use_heal_potion:
   root:
@@ -30,10 +31,10 @@ use_heal_potion:
               value_percent: 80
           - type: HasItem
             params:
-              tag: health_potion
+              tag: kind:health_potion
           - type: UseItem
             params:
-              tag: health_potion
+              tag: kind:health_potion
 
 flee:
   root:
@@ -45,7 +46,7 @@ flee:
           - type: HealthCondition
             params:
               comparator: leq
-              value_percent: 50
+              value_percent: 30
           - type: Flee
 
 equip_item:
@@ -66,17 +67,17 @@ equip_item:
                 children:
                   - type: HasItem
                     params:
-                      tag: dagger
+                      tag: kind:dagger
               - type: BlackboardCondition
                 params:
                   comparator: has
-                  key: dagger
+                  key: kind:dagger
                   value: irrelevant
               - type: Selector
                 children:
                   - type: MoveToEntity
                     params:
-                      to: $dagger
+                      to: $kind:dagger
                   - type: PickUpItem
                     params:
                       key: picked_up_equipment_id
@@ -114,16 +115,18 @@ melee_attacker:
             children:
               # once alarmed the agent never calms down
               - comment: "Maybe set alarmed"
-                type: Sequence
+                type: ForceSuccess
                 children:
-                  - type: DistanceToPlayer
-                    params:
-                      max_dist: 10
-                  - type: SeesPlayer
-                  - type: WriteToBlackboard
-                    params:
-                      key: alarmed
-                      value: True
+                  - type: Sequence
+                    children:
+                      - type: DistanceToPlayer
+                        params:
+                          max_dist: 10
+                      - type: SeesPlayer
+                      - type: WriteToBlackboard
+                        params:
+                          key: alarmed
+                          value: True
               - comment: "If alarmed"
                 type: BlackboardCondition
                 params:
@@ -143,7 +146,8 @@ melee_attacker:
                       - type: SeesPlayer
                       - type: HasItem
                         params:
-                          tag: arrow
+                          tag: kind:arrow
+                          # TODO check that we have the bow equipped and if we don't than do so
                       - type: RangedAttack
                   - comment: "Melee if in close range"
                     type: Sequence
@@ -152,6 +156,7 @@ melee_attacker:
                         params:
                           max_dist: 1
                       - type: MeleeAttack
+                  - type: DebugFailure
                   - type: MoveTowardsPlayer
           - comment: "Else its calm"
             type: RandomMove

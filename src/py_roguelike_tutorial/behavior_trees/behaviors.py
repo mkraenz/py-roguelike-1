@@ -83,6 +83,8 @@ class BlackboardCondition(bt.BtCondition):
     def tick(self) -> bt.BtResult:
         match self.comparator:
             case "eq":
+                if self.key == "alarmed":
+                    x = 5
                 return self.success_else_fail(
                     self.blackboard.get(self.key) == self.value
                 )
@@ -167,6 +169,38 @@ class UseItemBehavior(bt.BtAction):
         assert item, f"{self.agent.name} does not have item with tag: {self.tag}."
         ItemAction(self.agent, item).perform()
         return bt.BtResult.Success
+
+
+class DebugSuccessBehavior(bt.BtAction):
+    """
+    A behavior class used for debugging purposes in a behavior tree.
+    The `tick` method serves as a placeholder for debugging, allowing developers
+    to inspect and test behavior tree functionality. It always returns a success
+    result.
+    Methods:
+        tick() -> bt.BtResult:
+            Executes the behavior and returns a success result. This method can
+            be used as a starting point for debugging.
+    """
+
+    def tick(self) -> bt.BtResult:
+        return bt.BtResult.Success
+
+
+class DebugFailureBehavior(bt.BtAction):
+    """
+    A behavior class used for debugging purposes in a behavior tree.
+    The `tick` method serves as a placeholder for debugging, allowing developers
+    to inspect and test behavior tree functionality. It always returns a failure
+    result.
+    Methods:
+        tick() -> bt.BtResult:
+            Executes the behavior and returns a failure result. This method can
+            be used as a starting point for debugging.
+    """
+
+    def tick(self) -> bt.BtResult:
+        return bt.BtResult.Failure
 
 
 class EquipItemBehavior(bt.BtAction):
@@ -275,6 +309,7 @@ BT_NODE_NAME_TO_CLASS = {
     "Selector": bt.BtSelector,
     "Sequence": bt.BtSequence,
     "Inverter": bt.BtInverter,
+    "ForceSuccess": bt.BtForceSuccess,
     "DistanceToPlayer": DistanceToPlayerCondition,
     "MeleeAttack": MeleeAttackBehavior,
     "MoveTowardsPlayer": MoveTowardsPlayerBehavior,
@@ -293,4 +328,6 @@ BT_NODE_NAME_TO_CLASS = {
     "MoveToEntity": MoveToEntityBehavior,
     "EquipItem": EquipItemBehavior,
     "Flee": FleeBehavior,
+    "DebugSuccess": DebugSuccessBehavior,
+    "DebugFailure": DebugFailureBehavior,
 }

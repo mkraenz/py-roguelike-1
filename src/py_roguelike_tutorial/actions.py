@@ -95,13 +95,13 @@ class RangedAttackAction(Action):
             raise Impossible(
                 f"{self.entity.name} does not have know how to use a bow and arrows."
             )
-        if not self.entity.inventory.has_by_tag("arrow"):
+        if not self.entity.inventory.has_by_tag("kind:arrow"):
             raise Impossible(f"{self.entity.name} does not have any arrows to shoot.")
 
         target = self.engine.player
         damage = self.entity.ranged.power - target.fighter.defense
         target.fighter.take_damage(damage)
-        self.entity.inventory.consume_by_tag("arrow")
+        self.entity.inventory.consume_by_tag("kind:arrow")
         attack_desc = f"{self.entity.name} hits {target.name}"
         txt = f"{attack_desc} for {damage} HP damage."
         self.engine.message_log.add(txt, fg=Theme.enemy_attacks)

@@ -15,6 +15,7 @@ type BtChildren = list[
     | BlackboardConditionData
     | WriteToBlackboardData
     | InverterData
+    | ForceSuccessData
     | HasItemData
     | UseItemData
     | HealthConditionData
@@ -62,6 +63,8 @@ class SimpleBehaviorData(BtBehaviorData):
         "Wait",
         "Flee",
         "RandomMove",
+        "DebugSuccess",
+        "DebugFailure",
     ]
 
 
@@ -179,6 +182,11 @@ class SubtreeData(BtNodeData):
 
 class InverterData(BtNodeData):
     type: Literal["Inverter"]
+    children: BtChildren = Field(max_length=1, min_length=1)
+
+
+class ForceSuccessData(BtNodeData):
+    type: Literal["ForceSuccess"]
     children: BtChildren = Field(max_length=1, min_length=1)
 
 

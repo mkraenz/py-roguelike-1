@@ -14,9 +14,8 @@ orc:
     xp_given: 35
   equipment: {}
   tags:
+    - id:orc
     - species:orc
-    # TODO turn the orc into id:orc
-    - orc
 
 orc_archer:
   char: "a"
@@ -29,7 +28,7 @@ orc_archer:
       range: 10
     interests:
       - player
-      - dagger
+      - kind:dagger
   ranged:
     power: 0
     range: 0
@@ -38,7 +37,7 @@ orc_archer:
     defense: 0
     power: 3
   inventory:
-    capacity: 3
+    capacity: 10
     items:
       - id: health_potion_2
       - id: arrow
@@ -50,8 +49,8 @@ orc_archer:
   equipment:
     weapon: bow
   tags:
+    - id:orc_archer
     - species:orc
-    - orc_archer
 
 bijumper:
   char: "b"
@@ -70,7 +69,7 @@ bijumper:
   equipment: {}
   move_stepsize: 2
   tags:
-    - bijumper
+    - id:bijumper
     - species:jumper
 
 trijumper:
@@ -90,7 +89,7 @@ trijumper:
   equipment: {}
   move_stepsize: 3
   tags:
-    - trijumper
+    - id:trijumper
     - species:jumper
 
 goblin:
@@ -113,7 +112,7 @@ goblin:
     xp_given: 15
   equipment: {}
   tags:
-    - goblin
+    - id:goblin
     - species:goblin
 
 troll:
@@ -132,7 +131,7 @@ troll:
     xp_given: 35
   equipment: {}
   tags:
-    - troll
+    - id:troll
     - species:troll
 
 shopkeeper:
@@ -159,6 +158,6 @@ shopkeeper:
   equipment:
     weapon: dagger
   tags:
-    - shopkeeper
+    - id:shopkeeper
     - shop
     - attitude:friendly

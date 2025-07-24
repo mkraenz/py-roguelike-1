@@ -38,7 +38,7 @@ class Inventory(BaseComponent):
         return self._capacity - self.len >= items_to_add
 
     def is_full(self) -> bool:
-        return self._capacity == self.len
+        return self._capacity <= self.len
 
     def add(self, item: Item):
         if item.stacking:
@@ -58,10 +58,6 @@ class Inventory(BaseComponent):
 
     def remove(self, item: Item) -> None:
         self.items.remove(item)
-
-    def has(self, kind: str) -> bool:
-        kinds = (item.kind for item in self.items)
-        return kind in kinds
 
     def has_by_tag(self, tag: str) -> bool:
         item = self.get_first_by_tag(tag)
