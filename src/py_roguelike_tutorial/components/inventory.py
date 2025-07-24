@@ -12,8 +12,8 @@ if TYPE_CHECKING:
 class Inventory(BaseComponent):
     parent: Actor
 
-    def __init__(self, data: InventoryData):
-        self._capacity = data.capacity
+    def __init__(self, capacity: int):
+        self._capacity = capacity
         self.items: list[Item] = []
 
     def get_by_id(self, item_id: str) -> Item | None:

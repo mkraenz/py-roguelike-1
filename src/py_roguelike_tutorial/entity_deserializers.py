@@ -30,7 +30,10 @@ from py_roguelike_tutorial.components.ranged import Ranged
 from py_roguelike_tutorial.components.vision import VisualSense
 from py_roguelike_tutorial.entity import Item, Actor
 from py_roguelike_tutorial.entity_factory import EntityPrefabs
-from py_roguelike_tutorial.validators.actor_validator import BehaviorTreeAIData
+from py_roguelike_tutorial.validators.actor_validator import (
+    BehaviorTreeAIData,
+    InventoryItem,
+)
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.validators.actor_validator import (
@@ -109,9 +112,17 @@ def actor_from_dict(data: ActorData, item_prefabs: dict[str, Item]) -> Actor:
 
     ranged = Ranged(data.ranged.power, data.ranged.range) if data.ranged else None
 
-    inventory = Inventory(data.inventory)
     new_item = lambda key: item_prefabs[key].duplicate()
-    inventory_items = [new_item(item_key) for item_key in data.inventory.items or []]
+
+    def make_inventory_item(data: InventoryItem) -> Item:
+        item = new_item(data.id)
+        item.quantity = data.quantity
+        return item
+
+    inventory = Inventory(data.inventory.capacity)
+    inventory_items = [
+        make_inventory_item(item_key) for item_key in data.inventory.items or []
+    ]
     inventory.add_many(inventory_items)
 
     equipment_data = data.equipment

@@ -32,9 +32,15 @@ class RangedData(BaseModel):
     range: int
 
 
+class InventoryItem(BaseModel):
+    id: str
+    quantity: int = 1
+    """Quantity can only be specified for stacking items."""
+
+
 class InventoryData(BaseModel):
     capacity: int = 0
-    items: list[str] = []
+    items: list[InventoryItem] = []
 
 
 class LevelData(BaseModel):

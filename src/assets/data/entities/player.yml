@@ -11,7 +11,10 @@ player:
   inventory:
     capacity: 26 # 26 bc of English alphabet
     items:
-      - teleport_scroll
+      - id: teleport_scroll
+      - id: health_potion
+      - id: gold
+        quantity: 37
   level:
     level_up_base: 200
     level_up_factor: 150

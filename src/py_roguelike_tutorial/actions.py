@@ -140,7 +140,7 @@ class TalkAction(Action):
         self.target = target
 
     def perform(self) -> None:
-        if "friendly" not in self.target.tags:
+        if "attitude:friendly" not in self.target.tags:
             raise exceptions.Impossible(
                 f"{self.target.name} doesn't seem interested in talking."
             )
@@ -156,7 +156,7 @@ class TalkAction(Action):
 class BumpAction(DirectedAction):
     def perform(self) -> None:
         if self.target_actor:
-            if "friendly" in self.target_actor.tags:
+            if "attitude:friendly" in self.target_actor.tags:
                 return TalkAction(self.entity, self.target_actor).perform()
             return MeleeAction(self.entity, self.dx, self.dy).perform()
         return MoveAction(self.entity, self.dx, self.dy).perform()
