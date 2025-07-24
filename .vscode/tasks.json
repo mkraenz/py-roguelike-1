@@ -14,6 +14,15 @@
       }
     },
     {
+      "label": "hot-swap game",
+      "type": "shell",
+      "command": "uv run jurigged -v ${workspaceFolder}/src/tstt_rl.py",
+      "problemMatcher": [],
+      "group": {
+        "kind": "build"
+      }
+    },
+    {
       "label": "test",
       "type": "shell",
       "command": "uv run pytest -v",

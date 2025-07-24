@@ -13,7 +13,7 @@ Restart your terminal to make sure the virtual env gets activated.
 Make sure your vscode instance is using the virtual env. (Command palette -> Python: Select Interpreter -> Select the virtual env in `.venv/...`)
 
 ```sh
-python ./src/tstt_rl.py
+uv run python ./src/tstt_rl.py
 ```
 
 ### Type checking
@@ -21,6 +21,13 @@ python ./src/tstt_rl.py
 ```sh
 pyright src
 ```
+
+or more easily, run the vs code task `type-check`.
+
+### Hot module reload
+
+To some degree hot module reload is possible. Some parts do not allow hot modular reload unfortunately so be aware of that.
+To enable hot module reload, run the vs code task: `hot-swap game`
 
 ## Package and Deploy
 
