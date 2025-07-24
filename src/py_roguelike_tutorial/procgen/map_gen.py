@@ -2,9 +2,10 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import random
-from typing import Iterator, Protocol, TYPE_CHECKING
+from typing import Iterator, Literal, Protocol, TYPE_CHECKING
 
 from tcod.los import bresenham
+import networkx as nx
 
 from py_roguelike_tutorial import constants, tile_types
 from py_roguelike_tutorial.components.faction import Faction
@@ -30,18 +31,47 @@ if TYPE_CHECKING:
 DEBUG_STAIRS_AT_START = True
 
 
+@dataclass
+class LoadedDie:
+    one_in: int
+    at_most_once: bool = False
+    _roll_count: int = 0
+    _has_rolled_true: bool = False
+
+    def roll(self) -> bool:
+        if self.at_most_once and self._has_rolled_true:
+            return False
+
+        self._roll_count += 1
+        if self._roll_count >= self.one_in:
+            self._roll_count = 0
+            self._has_rolled_true = True
+            return True
+
+        return False
+
+
 class Room(Protocol):
     @property
     def center(self) -> Coord:
         raise NotImplementedError()
 
 
+@dataclass(frozen=True)
 class RectangularRoom:
-    def __init__(self, *, x: int, y: int, width: int, height: int) -> None:
-        self.x1 = x
-        self.y1 = y
-        self.x2 = x + width
-        self.y2 = y + height
+    type: Literal["shop", "encounter", "treasury"]
+    x1: int
+    y1: int
+    height: int
+    width: int
+
+    @property
+    def x2(self):
+        return self.x1 + self.width
+
+    @property
+    def y2(self):
+        return self.y1 + self.height
 
     @property
     def center(self) -> Coord:
@@ -87,36 +117,61 @@ def generate_dungeon(
         entities=[player],
         engine=engine,
     )
+    graph = nx.Graph()
 
     rooms: list[RectangularRoom] = []
+    loaded_shop_die = LoadedDie(at_most_once=True, one_in=10)
 
     for _ in range(params.max_rooms):
         room_w = random.randint(params.room_min_size, params.room_max_size)
         room_h = random.randint(params.room_min_size, params.room_max_size)
         x = random.randint(0, dungeon.width - room_w - 1)
         y = random.randint(0, dungeon.height - room_h - 1)
-        room = RectangularRoom(x=x, y=y, height=room_h, width=room_w)
+        shop = loaded_shop_die.roll()
+        type = "shop" if shop else "encounter"
+        room = RectangularRoom(x1=x, y1=y, height=room_h, width=room_w, type=type)
 
         if any(room.intersects(other_room) for other_room in rooms):
             continue
 
+        graph.add_node(room)
         dungeon.tiles[room.inner] = tile_types.floor
 
         if len(rooms) != 0:
             for coord in tunnel_between_room_centers(room, rooms[-1]):
                 dungeon.tiles[coord] = tile_types.floor
-
-        # place_entities(room, dungeon, current_floor, factions)
+                graph.add_edge(room, rooms[-1])
 
         rooms.append(room)
 
     player.place(*rooms[0].center, dungeon)
-    debug_place_entities(current_floor, player, dungeon)
+    # debug_place_entities(current_floor, player, dungeon)
+
+    # for the time being we will place the player in rooms0. Overtime we should consider adding a start room type
+    for room in rooms[1:]:
+        match room.type:
+            case "shop":
+                make_shop_room(current_floor, dungeon, room)
+            case "encounter":
+                place_entities(room, dungeon, current_floor, factions)
+            case "treasury":
+                # Place entities in treasury room if needed
+                pass
 
     room_with_stairs = rooms[-1] if not DEBUG_STAIRS_AT_START else rooms[0]
     place_down_stairs(dungeon, room_with_stairs)
 
     return dungeon
+
+
+def make_shop_room(current_floor: int, dungeon: GameMap, room: Room) -> None:
+    shopkeeper = EntityPrefabs.npcs["shopkeeper"].spawn(dungeon, *room.center)
+    shopkeeper.inventory.replace_all(
+        generate_shop_inventory(
+            ShopGenerationParams(max_floors_ahead=constants.SHOP_MAX_FLOORS_AHEAD),
+            current_floor,
+        )
+    )
 
 
 def debug_place_entities(current_floor, player, dungeon):
@@ -125,7 +180,7 @@ def debug_place_entities(current_floor, player, dungeon):
     loc3 = (player.x + 1, player.y + 1)
     loc4 = (player.x + 2, player.y + 1)
     EntityPrefabs.npcs["orc_archer"].spawn(dungeon, *loc)
-    # EntityPrefabs.items["dagger"].spawn(dungeon, *loc2)
+    EntityPrefabs.items["dagger"].spawn(dungeon, *loc2)
     shopkeeper = EntityPrefabs.npcs["shopkeeper"].spawn(dungeon, *loc3)
     shopkeeper.inventory.replace_all(
         generate_shop_inventory(

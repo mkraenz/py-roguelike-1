@@ -17,7 +17,7 @@ if TYPE_CHECKING:
     from py_roguelike_tutorial.entity import Entity
 
 FLIGHT_FACTOR = -1.2  # Factor to multiply the dijkstra map for fleeing entities
-DEBUG = False
+DEBUG = True
 
 
 class GameMap:
@@ -132,11 +132,6 @@ class GameMap:
 
     def debug_render(self, console: Console):
         console.rgb[0 : self.width, 0 : self.height] = self.tiles["light"]
-        # np.select(
-        #     condlist=[self.visible, self.explored],
-        #     choicelist=[self.tiles["light"], self.tiles["light"]],
-        #     default=tile_types.SHROUD,
-        # )
 
     def debug_render_distance_map(
         self, console: Console, map: np.ndarray, use_min: bool

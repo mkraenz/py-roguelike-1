@@ -44,8 +44,8 @@ orc_archer:
     capacity: 10
     items:
       - id: health_potion_2
-      # - id: arrow
-      # quantity: 5
+      - id: arrow
+        quantity: 5
       - id: teleport_scroll
       - id: gold
         quantity: 20

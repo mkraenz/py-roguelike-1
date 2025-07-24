@@ -40,7 +40,7 @@ class Entity:
     name: str
     char: str
     tags: set[str]
-    id: uuid.UUID = uuid.UUID("{00000000-0000-0000-0000-000000000000}")
+    id: uuid.UUID = uuid.uuid4()
     x: int = 0
     y: int = 0
     color: Rgb = Color.BLACK
@@ -131,7 +131,7 @@ class Entity:
     def __eq__(self, other):
         """Equality check based on unique ID."""
         if isinstance(other, Entity):
-            return self.id == other.id
+            return self.id == other.id and self.name == other.name
         return False
 
 
@@ -197,7 +197,7 @@ class Actor(Entity):
     def __eq__(self, other):
         """Equality check based on unique ID."""
         if isinstance(other, Actor):
-            return self.id == other.id
+            return self.id == other.id and self.name == other.name
         return False
 
 
