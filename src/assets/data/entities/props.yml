@@ -1,0 +1,14 @@
+treasure_chest:
+  char: "C"
+  color: "#826e32" # Brown color
+  name: "Treasure chest"
+  inventory:
+    capacity: 2
+    items:
+      - id: gold
+        quantity: 25
+  health:
+    max_hp: 10
+  tags:
+    - id:treasure_chest
+    - type:prop

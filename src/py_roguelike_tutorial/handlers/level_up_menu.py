@@ -27,13 +27,14 @@ class LevelUpMenu(IngameEventHandler):
         super().on_render(console, delta_time)
         child_console, blit = IngameMenuConsole(console, title)
 
-        stats = self.player.fighter
+        fighter_stats = self.player.fighter
+        health_stats = self.player.health
         texts = [
             "Select an attribute to increase.",
             "",
-            f"[S] Strength (+1 attack, from {stats.power}",
-            f"[A] Agility (+1 defense, from {stats.defense})",
-            f"[C] Constitution (+20 HP, from {stats.max_hp})",
+            f"[S] Strength (+1 attack, from {fighter_stats.power}",
+            f"[A] Agility (+1 defense, from {fighter_stats.defense})",
+            f"[C] Constitution (+20 HP, from {health_stats.max_hp})",
         ]
         print_aligned_texts_center(child_console, texts, child_console.height // 2 - 6)
         blit()

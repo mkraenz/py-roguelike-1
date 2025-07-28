@@ -4,8 +4,9 @@ orc:
   name: "Orc"
   ai:
     class_type: HostileEnemy
-  fighter:
+  health:
     max_hp: 10
+  fighter:
     defense: 0
     power: 3
   inventory:
@@ -36,8 +37,9 @@ orc_archer:
   ranged:
     power: 0
     range: 0
-  fighter:
+  health:
     max_hp: 2
+  fighter:
     defense: 0
     power: 3
   inventory:
@@ -64,8 +66,9 @@ bijumper:
   name: "Bijumper"
   ai:
     class_type: HostileEnemy
-  fighter:
+  health:
     max_hp: 7
+  fighter:
     defense: 1
     power: 2
   inventory: {}
@@ -84,8 +87,9 @@ trijumper:
   name: "Trijumper"
   ai:
     class_type: HostileEnemy
-  fighter:
+  health:
     max_hp: 7
+  fighter:
     defense: 1
     power: 2
   inventory: {}
@@ -104,8 +108,9 @@ goblin:
   name: "Goblin"
   ai:
     class_type: HostileEnemy
-  fighter:
+  health:
     max_hp: 6
+  fighter:
     defense: 0
     power: 2
   inventory:
@@ -127,8 +132,9 @@ troll:
   name: "Troll"
   ai:
     class_type: HostileEnemy
-  fighter:
+  health:
     max_hp: 16
+  fighter:
     defense: 1
     power: 4
   inventory: {}
@@ -152,8 +158,9 @@ shopkeeper:
       range: 10
     interests:
       - player
-  fighter:
+  health:
     max_hp: 10
+  fighter:
     defense: 0
     power: 3
   inventory:

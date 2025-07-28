@@ -3,14 +3,13 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Iterable
 
 from py_roguelike_tutorial.components.base_components import BaseComponent
-from py_roguelike_tutorial.validators.actor_validator import InventoryData
 
 if TYPE_CHECKING:
-    from py_roguelike_tutorial.entity import Actor, Item
+    from py_roguelike_tutorial.entity import Actor, Item, Prop
 
 
 class Inventory(BaseComponent):
-    parent: Actor
+    parent: Actor | Prop
 
     def __init__(self, capacity: int):
         self._capacity = capacity

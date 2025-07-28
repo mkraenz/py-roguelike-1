@@ -21,8 +21,11 @@ class HostileEnemyData(BaseModel):
 AiData = BehaviorTreeAIData | HostileEnemyData
 
 
-class FighterData(BaseModel):
+class HealthData(BaseModel):
     max_hp: int
+
+
+class FighterData(BaseModel):
     defense: int
     power: int
 
@@ -61,6 +64,7 @@ class ActorData(BaseModel):
     color: str
     name: str
     ai: AiData
+    health: HealthData
     fighter: FighterData
     inventory: InventoryData
     level: LevelData

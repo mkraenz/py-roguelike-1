@@ -41,7 +41,7 @@ class Level(BaseComponent):
         self.current_level += 1
 
     def increase_max_hp(self, amount: int = 20) -> None:
-        self.parent.fighter.increase_max_hp(amount)
+        self.parent.health.increase_max_hp(amount)
         self.log("Your health improves!")
         self._increase_level()
 

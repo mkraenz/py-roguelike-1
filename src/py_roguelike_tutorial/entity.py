@@ -26,6 +26,7 @@ if TYPE_CHECKING:
 class RenderOrder(Enum):
     CORPSE = auto()
     ITEM = auto()
+    PROP = auto()
     ACTOR = auto()
 
 
@@ -142,6 +143,7 @@ class Actor(Entity):
     fighter: the ability to take (and deal) damage
     """
 
+    health: Health = None  # type: ignore
     # ai: BaseAI
     fighter: Fighter = None  # type: ignore
     inventory: Inventory = None  # type: ignore
@@ -160,6 +162,7 @@ class Actor(Entity):
         self.fighter.parent = self
         self.inventory.parent = self
         self.equipment.parent = self
+        self.health.parent = self
         self.faction: Faction
 
     @property
@@ -240,3 +243,41 @@ class Item(Entity):
                 and self.quantity == other.quantity
             )
         return False
+
+
+@dataclass
+class Prop(Entity):
+    """A prop is an entity like a door or a chest that does not have
+    any AI component.
+    """
+
+    description: str = ""
+    flavor_text: str = ""
+    blocks_movement: bool = True
+    render_order: RenderOrder = RenderOrder.PROP
+    inventory: Inventory = None  # type: ignore
+    health: Health = None  # type: ignore
+
+    def __post_init__(self):
+        self.inventory.parent = self
+        self.health.parent = self
+
+    def __hash__(self):
+        """Make the entity hashable based on its unique ID."""
+        return hash(self.id)
+
+    def __eq__(self, other):
+        """Equality check based on unique ID."""
+        if isinstance(other, Prop):
+            return self.id == other.id and self.name == other.name
+        return False
+
+    def die(self):
+        self.char = "%"
+        self.color = Color.RED_GUARDMANS
+        self.blocks_movement = False
+        self.name = f"broken {self.name}"
+        self.render_order = RenderOrder.CORPSE
+        for item in self.inventory.items:
+            item.place(self.x, self.y, self.game_map)
+            self.inventory.remove(item)

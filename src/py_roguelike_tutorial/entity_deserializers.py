@@ -25,6 +25,7 @@ from py_roguelike_tutorial.components.equipment import Equipment
 from py_roguelike_tutorial.components.equippable import Equippable
 from py_roguelike_tutorial.components.fighter import Fighter
 from py_roguelike_tutorial.components.inventory import Inventory
+from py_roguelike_tutorial.components.health import Health
 from py_roguelike_tutorial.components.level import Level
 from py_roguelike_tutorial.components.ranged import Ranged
 from py_roguelike_tutorial.components.vision import VisualSense
@@ -101,10 +102,9 @@ def actor_from_dict(data: ActorData, item_prefabs: dict[str, Item]) -> Actor:
         ai = BehaviorTreeAI(behavior_tree, vision)
     else:
         raise Exception("Unhandled actor ai")
-
+    health = Health(max_hp=data.health.max_hp)
     fighter_data = data.fighter
     fighter = Fighter(
-        max_hp=fighter_data.max_hp,
         defense=fighter_data.defense,
         power=fighter_data.power,
     )
@@ -141,6 +141,7 @@ def actor_from_dict(data: ActorData, item_prefabs: dict[str, Item]) -> Actor:
         color=hex_to_rgb(data.color),
         name=data.name,
         move_stepsize=data.move_stepsize,
+        health=health,
         fighter=fighter,
         inventory=inventory,
         equipment=equipment,

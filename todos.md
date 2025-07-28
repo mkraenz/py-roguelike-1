@@ -16,7 +16,7 @@
   - [x] Shopkeeper inventory hardcoded
   - [x] Randomized inventory
   - [x] Some way to earn gold
-  - [ ] spawn a shop in the dungeon
+  - [x] spawn a shop in the dungeon
 - [x] try attrs
 - [x] Dijkstra map for flee behavior
 - [x] ~~localization~~
@@ -29,3 +29,4 @@
 - [ ] Keyboard controls help screen
 - [x] The behavior tree forgets too much. For example it forgets that it was alarmed last round
 - [x] Retest that picking up a dagger still works&&that it can be equipped
+- [ ] Props treasure chest

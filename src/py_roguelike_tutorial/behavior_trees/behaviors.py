@@ -65,7 +65,7 @@ class HealthCondition(bt.BtCondition):
         match self.comparator:
             case "leq":
                 return self.success_else_fail(
-                    self.agent.fighter.hp_percent <= self.value_percent / 100
+                    self.agent.health.hp_percent <= self.value_percent / 100
                 )
             case _:
                 raise ValueError(f"Unsupported comparator: {self.comparator}")

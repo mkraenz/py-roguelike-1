@@ -55,10 +55,10 @@ class HealingConsumable(Consumable):
 
     def activate(self, ctx: Action) -> None:
         consumer = ctx.entity
-        amount_recovered = consumer.fighter.heal(self.amount)
+        amount_recovered = consumer.health.heal(self.amount)
 
         if amount_recovered > 0:
-            txt = f"{ctx.entity.name} consumes the {self.parent.name}, and recovers {amount_recovered} HP (-> {consumer.fighter.hp} HP)."
+            txt = f"{ctx.entity.name} consumes the {self.parent.name}, and recovers {amount_recovered} HP (-> {consumer.health.hp} HP)."
             self.engine.message_log.add(text=txt, fg=Theme.health_recovered)
             self.consume()
         else:
@@ -82,7 +82,7 @@ class LightningDamageConsumable(Consumable):
 
         txt = f"A lightning bolt stikes the {target.name} with a loud thunder for {self.damage} damage."
         self.engine.message_log.add(txt)
-        target.fighter.take_damage(self.damage)
+        target.health.take_damage(self.damage)
         self.consume()
 
     def _closest_enemy_in_range(self, consumer: Actor) -> Actor | None:
@@ -161,7 +161,7 @@ class FireballDamageConsumable(Consumable):
                 self.log(
                     f"The {actor.name} is engulfed in a fiery explosion, taking {self.damage} damage."
                 )
-                actor.fighter.take_damage(self.damage)
+                actor.health.take_damage(self.damage)
                 some_target_hit = True
 
         if not some_target_hit:

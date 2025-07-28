@@ -80,10 +80,10 @@ class MeleeAction(DirectedAction):
             Theme.player_attacks if self.player_is_actor else Theme.enemy_attacks
         )
         if damage > 0:
-            next_hp = target.fighter.hp - damage
+            next_hp = target.health.hp - damage
             txt = f"{attack_desc} for {damage} HP. {next_hp} HP left."
             self.engine.message_log.add(txt, fg=log_color)
-            target.fighter.hp = next_hp
+            target.health.hp = next_hp
         else:
             txt = f"{attack_desc} but does no damage."
             self.engine.message_log.add(txt, fg=log_color)
@@ -100,7 +100,7 @@ class RangedAttackAction(Action):
 
         target = self.engine.player
         damage = self.entity.ranged.power - target.fighter.defense
-        target.fighter.take_damage(damage)
+        target.health.take_damage(damage)
         self.entity.inventory.consume_by_tag("kind:arrow")
         attack_desc = f"{self.entity.name} hits {target.name}"
         txt = f"{attack_desc} for {damage} HP damage."

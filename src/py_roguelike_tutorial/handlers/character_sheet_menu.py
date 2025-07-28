@@ -25,7 +25,7 @@ class CharacterSheetMenu(IngameEventHandler):
 
         p = self.player
         texts = [
-            f"Health:     {p.fighter.hp}/{p.fighter.max_hp} HP",
+            f"Health:     {p.health.hp}/{p.health.max_hp} HP",
             "",
             "" f"Level:      {p.level.current_level}",
             f"Experience: {p.level.current_xp}/{p.level.xp_to_next_level} EXP",
