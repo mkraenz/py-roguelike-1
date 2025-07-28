@@ -1,7 +1,7 @@
 from __future__ import annotations
 from typing import TYPE_CHECKING, Literal
 
-from py_roguelike_tutorial.components.base_components import BaseComponent
+from py_roguelike_tutorial.components.base_component import BaseComponent
 from py_roguelike_tutorial.entity import Actor, Item
 
 if TYPE_CHECKING:

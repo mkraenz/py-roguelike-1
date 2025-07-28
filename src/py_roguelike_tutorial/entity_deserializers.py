@@ -9,6 +9,7 @@ from py_roguelike_tutorial.behavior_trees.behavior_trees import (
     BtConstructorArgs,
 )
 from py_roguelike_tutorial.behavior_trees.behaviors import BT_NODE_NAME_TO_CLASS
+from py_roguelike_tutorial.components.interactable import Chest
 from py_roguelike_tutorial.constants import hex_to_rgb
 from py_roguelike_tutorial.components.ai import (
     HostileEnemy,
@@ -29,12 +30,13 @@ from py_roguelike_tutorial.components.health import Health
 from py_roguelike_tutorial.components.level import Level
 from py_roguelike_tutorial.components.ranged import Ranged
 from py_roguelike_tutorial.components.vision import VisualSense
-from py_roguelike_tutorial.entity import Item, Actor
+from py_roguelike_tutorial.entity import Item, Actor, Prop
 from py_roguelike_tutorial.entity_factory import EntityPrefabs
 from py_roguelike_tutorial.validators.actor_validator import (
     BehaviorTreeAIData,
     InventoryItem,
 )
+from py_roguelike_tutorial.validators.prop_validator import PropData
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.validators.actor_validator import (
@@ -151,6 +153,35 @@ def actor_from_dict(data: ActorData, item_prefabs: dict[str, Item]) -> Actor:
     )
     actor.ai = ai
     return actor
+
+
+def prop_from_dict(data: PropData, item_prefabs: dict[str, Item]) -> Prop:
+    health = Health(max_hp=data.health.max_hp)
+
+    new_item = lambda key: item_prefabs[key].duplicate()
+
+    def make_inventory_item(data: InventoryItem) -> Item:
+        item = new_item(data.id)
+        item.quantity = data.quantity
+        return item
+
+    inventory = Inventory(data.inventory.capacity)
+    inventory_items = [
+        make_inventory_item(item_key) for item_key in data.inventory.items or []
+    ]
+    inventory.add_many(inventory_items)
+
+    interactable = Chest()
+    prop = Prop(
+        char=data.char,
+        color=hex_to_rgb(data.color),
+        name=data.name,
+        health=health,
+        inventory=inventory,
+        interactable=interactable,
+        tags=set(data.tags),
+    )
+    return prop
 
 
 def _to_bt_node(data: bt_val.BtNodeData) -> BtNode:

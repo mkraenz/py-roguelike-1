@@ -145,7 +145,7 @@ def generate_dungeon(
         rooms.append(room)
 
     player.place(*rooms[0].center, dungeon)
-    # debug_place_entities(current_floor, player, dungeon)
+    debug_place_entities(current_floor, player, dungeon)
 
     # for the time being we will place the player in rooms0. Overtime we should consider adding a start room type
     for room in rooms[1:]:
@@ -188,7 +188,8 @@ def debug_place_entities(current_floor, player, dungeon):
             current_floor,
         )
     )
-    EntityPrefabs.items["gold"].spawn(dungeon, *loc3)
+    # EntityPrefabs.items["gold"].spawn(dungeon, *loc3)
+    EntityPrefabs.props["treasure_chest"].spawn(dungeon, *loc3)
     EntityPrefabs.items["gold"].spawn(dungeon, *loc4)
 
 

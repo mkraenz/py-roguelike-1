@@ -30,6 +30,7 @@ def load_data_files():
     loader.load_behavior_trees(EntityPrefabs.behavior_trees)
     EntityPrefabs.player = loader.load_player_entity(EntityPrefabs.items)
     EntityPrefabs.npcs = loader.load_npcs_entities(EntityPrefabs.items)
+    EntityPrefabs.props = loader.load_props_entities(EntityPrefabs.items)
     ProcgenConfig.item_chances = loader.load_item_drops_rates(EntityPrefabs.items)
     ProcgenConfig.enemy_chances = loader.load_enemy_spawn_rates(EntityPrefabs.npcs)
 

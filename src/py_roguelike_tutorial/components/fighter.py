@@ -2,7 +2,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from py_roguelike_tutorial.constants import Theme
-from py_roguelike_tutorial.components.base_components import BaseComponent
+from py_roguelike_tutorial.components.base_component import BaseComponent
 
 if TYPE_CHECKING:
     from py_roguelike_tutorial.entity import Actor

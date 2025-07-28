@@ -1,4 +1,4 @@
-from py_roguelike_tutorial.components.base_components import BaseComponent
+from py_roguelike_tutorial.components.base_component import BaseComponent
 from py_roguelike_tutorial.components.equipment_type import EquipmentType
 import py_roguelike_tutorial.validators.item_validator as validators
 from py_roguelike_tutorial.entity import Item

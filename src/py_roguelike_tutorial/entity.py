@@ -7,8 +7,6 @@ from dataclasses import dataclass, field
 from enum import Enum, auto
 from typing import TYPE_CHECKING
 
-from py_roguelike_tutorial.components.faction import Faction
-from py_roguelike_tutorial.components.ranged import Ranged
 from py_roguelike_tutorial.constants import Color
 from py_roguelike_tutorial.types import Coord, Rgb
 
@@ -21,6 +19,10 @@ if TYPE_CHECKING:
     from py_roguelike_tutorial.components.fighter import Fighter
     from py_roguelike_tutorial.components.inventory import Inventory
     from py_roguelike_tutorial.components.consumable import Consumable
+    from py_roguelike_tutorial.components.interactable import Interactable
+    from py_roguelike_tutorial.components.ranged import Ranged
+    from py_roguelike_tutorial.components.health import Health
+    from py_roguelike_tutorial.components.faction import Faction
 
 
 class RenderOrder(Enum):
@@ -257,10 +259,12 @@ class Prop(Entity):
     render_order: RenderOrder = RenderOrder.PROP
     inventory: Inventory = None  # type: ignore
     health: Health = None  # type: ignore
+    interactable: Interactable = None  # type: ignore [reportAssignmentType]
 
     def __post_init__(self):
         self.inventory.parent = self
         self.health.parent = self
+        self.interactable.parent = self
 
     def __hash__(self):
         """Make the entity hashable based on its unique ID."""

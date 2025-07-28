@@ -9,6 +9,8 @@ treasure_chest:
         quantity: 25
   health:
     max_hp: 10
+  interactable:
+    class_type: Chest
   tags:
     - id:treasure_chest
     - type:prop

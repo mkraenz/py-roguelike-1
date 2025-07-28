@@ -12,9 +12,8 @@ if TYPE_CHECKING:
 
 
 class BaseComponent:
-    """The entity owning the component"""
-
     parent: Entity
+    """The entity owning the component"""
 
     @property
     def game_map(self) -> GameMap:

@@ -1,4 +1,4 @@
-from py_roguelike_tutorial.components.base_components import BaseComponent
+from py_roguelike_tutorial.components.base_component import BaseComponent
 
 
 class Faction(BaseComponent):

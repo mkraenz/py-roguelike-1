@@ -13,15 +13,17 @@ from py_roguelike_tutorial.entity_deserializers import (
     item_from_dict,
     actor_from_dict,
     behavior_tree_from_dict,
+    prop_from_dict,
 )
 from py_roguelike_tutorial.utils import assets_filepath
 from py_roguelike_tutorial.validators.actor_validator import ActorData
 from py_roguelike_tutorial.behavior_trees.validators import BehaviorTreeData
 from py_roguelike_tutorial.validators.faction_validator import FactionsData
 from py_roguelike_tutorial.validators.item_validator import ItemData
+from py_roguelike_tutorial.validators.prop_validator import PropData
 
 if TYPE_CHECKING:
-    from py_roguelike_tutorial.entity import Item, Actor
+    from py_roguelike_tutorial.entity import Item, Actor, Prop
 
 type _SpawnRateTable = dict[int, list[tuple[str, int]]]
 
@@ -106,7 +108,6 @@ def load_behavior_trees(behavior_tree_prefabs: dict) -> dict[str, BtNode]:
         behavior_tree_prefabs[key] = tree
         return tree
 
-    _behavior_tree_from_dict = lambda val: behavior_tree_from_dict(val)
     behavior_trees = _to_entities_or_fail(
         filename,
         data,
@@ -125,6 +126,19 @@ def load_npcs_entities(item_entities: dict[str, Item]) -> dict[str, Actor]:
         data,
         create_entity=partial_actor_from_dict,
         validate=lambda x: ActorData(**x),
+    )
+    return entities
+
+
+def load_props_entities(item_entities: dict[str, Item]) -> dict[str, Prop]:
+    filename = "assets/data/entities/props.yml"
+    data: dict[str, dict] = _load_asset(filename)
+    partial_entity_from_dict = lambda val, key: prop_from_dict(val, item_entities)
+    entities = _to_entities_or_fail(
+        filename,
+        data,
+        create_entity=partial_entity_from_dict,
+        validate=lambda x: PropData(**x),
     )
     return entities
 

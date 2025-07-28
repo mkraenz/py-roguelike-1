@@ -29,4 +29,6 @@
 - [ ] Keyboard controls help screen
 - [x] The behavior tree forgets too much. For example it forgets that it was alarmed last round
 - [x] Retest that picking up a dagger still works&&that it can be equipped
-- [ ] Props treasure chest
+- [x] Props treasure chest
+- [ ] Treasure chest requires key
+- [ ] Double check that dropping gold works properly when there are multiple enemies in a single room

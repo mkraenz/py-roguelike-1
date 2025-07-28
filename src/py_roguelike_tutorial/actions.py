@@ -5,6 +5,7 @@ from typing import TYPE_CHECKING, Callable
 
 from py_roguelike_tutorial import exceptions
 from py_roguelike_tutorial.constants import Theme
+from py_roguelike_tutorial.entity import Prop
 from py_roguelike_tutorial.events.events import RangedAttackEvent, TalkEvent
 from py_roguelike_tutorial.exceptions import Impossible
 from py_roguelike_tutorial.types import Coord
@@ -155,6 +156,8 @@ class TalkAction(Action):
 
 class BumpAction(DirectedAction):
     def perform(self) -> None:
+        if isinstance(self.blocking_entity, Prop):
+            return self.blocking_entity.interactable.interact(self.entity)
         if self.target_actor:
             if "attitude:friendly" in self.target_actor.tags:
                 return TalkAction(self.entity, self.target_actor).perform()
