@@ -80,7 +80,7 @@ def item_from_dict(data: ItemData) -> Item:
         name=data.name,
         description=data.description,
         flavor_text=data.flavor_text,
-        base_value=data.value,
+        unit_value=data.unit_value,
         quantity=data.quantity,
         stacking=data.stacking,
         consumable=consumable,

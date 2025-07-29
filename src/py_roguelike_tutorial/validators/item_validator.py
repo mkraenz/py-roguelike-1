@@ -70,7 +70,7 @@ class ItemData(BaseModel):
     name: str
     description: str
     flavor_text: str
-    value: int
+    unit_value: int
     tags: list[str]
     stacking: bool = False
     quantity: int = 1

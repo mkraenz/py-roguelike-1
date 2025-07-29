@@ -211,7 +211,7 @@ class Item(Entity):
     description: str = ""
     flavor_text: str = ""
     quantity: int = 1
-    base_value: int = 1
+    unit_value: int = 1
     parent: GameMap | Inventory = field(init=False)
     stacking: bool = False
     consumable: Consumable | None = None
@@ -220,7 +220,7 @@ class Item(Entity):
 
     @property
     def value(self):
-        return self.base_value * self.quantity
+        return self.unit_value * self.quantity
 
     @property
     def kind(self) -> str:

@@ -32,5 +32,5 @@
 - [x] Props treasure chest
 - [x] Treasure chest requires key
 - [ ] Double check that dropping gold works properly when there are multiple enemies in a single room
-- [ ] rename item value to unit value
+- [x] rename item value to unit value
 - [ ] If there are multiple items on the single field tile then do the dwarf fortress thing and switch the glyph every few seconds
