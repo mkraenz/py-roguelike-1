@@ -15,6 +15,11 @@ class Inventory(BaseComponent):
         self._capacity = capacity
         self.items: list[Item] = []
 
+    def duplicate(self):
+        cloned_items = [item.duplicate() for item in self.items]
+        self.items.clear()
+        self.add_many(cloned_items)
+
     def get_by_id(self, item_id: str) -> Item | None:
         """Retrieve an item by its ID."""
         for item in self.items:

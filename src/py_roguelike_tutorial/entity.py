@@ -182,6 +182,11 @@ class Actor(Entity):
         """Returns true as long as the actor can perform actions"""
         return bool(self.ai)
 
+    def spawn(self, game_map: GameMap, x: int, y: int):
+        clone = super().spawn(game_map=game_map, x=x, y=y)
+        clone.inventory.duplicate()
+        return clone
+
     def die(self):
         self.char = "%"
         self.color = Color.RED_GUARDMANS
@@ -284,3 +289,8 @@ class Prop(Entity):
         for item in self.inventory.items:
             item.place(self.x, self.y, self.game_map)
             self.inventory.remove(item)
+
+    def spawn(self, game_map: GameMap, x: int, y: int):
+        clone = super().spawn(game_map=game_map, x=x, y=y)
+        clone.inventory.duplicate()
+        return clone
