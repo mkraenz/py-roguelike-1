@@ -26,13 +26,20 @@ class Health(BaseComponent):
             self.die()
 
     def die(self) -> None:
-        player_died = self.engine.player is self.parent
-        death_msg = "You died!" if player_died else f"{self.parent.name} has died!"
-        log_color = Theme.player_dies if player_died else Theme.enemy_dies
+        death_msg, log_color = self.dying_message()
         self.parent.die()
         self.engine.message_log.add(death_msg, fg=log_color)
         if hasattr(self.parent, "level"):
             self.engine.player.level.add_xp(getattr(self.parent, "level").xp_given)
+
+    def dying_message(self):
+        player_died = self.engine.player is self.parent
+        is_prop = isinstance(self.parent, Prop)
+        if is_prop:
+            return f"The {self.parent.name} opened.", Theme.log_message
+        if player_died:
+            return "You died!", Theme.player_dies
+        return f"{self.parent.name} has died!", Theme.enemy_dies
 
     def take_damage(self, amount: int) -> None:
         self.hp -= amount

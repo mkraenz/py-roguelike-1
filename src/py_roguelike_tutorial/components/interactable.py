@@ -17,8 +17,11 @@ class Chest(BaseComponent, Interactable):
     parent: Prop
 
     def interact(self, actor: Actor) -> None:
+        if not actor.inventory.has_by_tag("kind:small_key"):
+            self.log(f"The {self.parent.name} is locked.")
+            return
+        actor.inventory.consume_by_tag("kind:small_key")
         for item in self.parent.inventory.items:
             item.place(self.parent.x, self.parent.y, self.game_map)
             self.parent.inventory.remove(item)
-        self.parent.blocks_movement = False
         self.parent.health.die()

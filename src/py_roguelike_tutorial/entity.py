@@ -277,10 +277,9 @@ class Prop(Entity):
         return False
 
     def die(self):
-        self.char = "%"
-        self.color = Color.RED_GUARDMANS
+        self.char = "u"
         self.blocks_movement = False
-        self.name = f"broken {self.name}"
+        self.name = f"opened {self.name}"
         self.render_order = RenderOrder.CORPSE
         for item in self.inventory.items:
             item.place(self.x, self.y, self.game_map)

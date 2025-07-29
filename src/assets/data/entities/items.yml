@@ -217,3 +217,17 @@ gold:
     - id:gold
     - kind:gold
     - currency
+
+small_key:
+  char: "k"
+  color: "#8B4513"
+  name: Small Key
+  description: "A key that unlocks doors and chests."
+  flavor_text: "Unlock secrets and treasures with this key."
+  value: 10
+  stacking: True
+  quantity: 1
+  tags:
+    - id:small_key
+    - kind:small_key
+    - utility

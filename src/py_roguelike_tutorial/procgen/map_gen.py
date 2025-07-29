@@ -191,6 +191,7 @@ def debug_place_entities(current_floor, player, dungeon):
     # EntityPrefabs.items["gold"].spawn(dungeon, *loc3)
     EntityPrefabs.props["treasure_chest"].spawn(dungeon, *loc3)
     EntityPrefabs.items["gold"].spawn(dungeon, *loc4)
+    EntityPrefabs.items["small_key"].spawn(dungeon, *loc4)
 
 
 def place_down_stairs(dungeon: GameMap, final_room: Room):

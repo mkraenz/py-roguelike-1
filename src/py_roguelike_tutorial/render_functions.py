@@ -35,7 +35,11 @@ def render_hp_bar(
 
 def format_entity_name(entity: Entity) -> str:
     name = entity.name
-    quantity = f" x{entity.quantity}" if isinstance(entity, Item) else ""
+    quantity = (
+        f" x{entity.quantity}"
+        if isinstance(entity, Item) and not entity.quantity <= 1
+        else ""
+    )
     return f"{name}{quantity}"
 
 
