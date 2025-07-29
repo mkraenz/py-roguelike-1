@@ -20,6 +20,17 @@ class Inventory(BaseComponent):
         self.items.clear()
         self.add_many(cloned_items)
 
+    def drop_gold(self, x: int, y: int) -> None:
+        gold = self.gold
+        if gold is not None:
+            gold.place(x, y, self.game_map)
+            self.remove(gold)
+
+    def drop_all_items(self, x: int, y: int) -> None:
+        for item in self.items:
+            item.place(x, y, self.game_map)
+            self.remove(item)
+
     def get_by_id(self, item_id: str) -> Item | None:
         """Retrieve an item by its ID."""
         for item in self.items:

@@ -194,11 +194,7 @@ class Actor(Entity):
         self.ai = None
         self.name = f"remains of {self.name}"
         self.render_order = RenderOrder.CORPSE
-
-        gold = self.inventory.gold
-        if gold is not None:
-            gold.place(self.x, self.y, self.game_map)
-            self.inventory.remove(gold)
+        self.inventory.drop_gold(self.x, self.y)
 
     def __hash__(self):
         """Make the entity hashable based on its unique ID."""
@@ -286,9 +282,7 @@ class Prop(Entity):
         self.blocks_movement = False
         self.name = f"opened {self.name}"
         self.render_order = RenderOrder.CORPSE
-        for item in self.inventory.items:
-            item.place(self.x, self.y, self.game_map)
-            self.inventory.remove(item)
+        self.inventory.drop_all_items(self.x, self.y)
 
     def spawn(self, game_map: GameMap, x: int, y: int):
         clone = super().spawn(game_map=game_map, x=x, y=y)
