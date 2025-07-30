@@ -46,9 +46,17 @@ class Engine:
         self.np_rng = np_rng
         self.stack = stack
         self.event_bus = event_bus
+        self.time_in_sec: float = 0
 
-    def render(self, console: Console) -> None:
-        self.game_map.render(console)
+    @property
+    def tick(self):
+        # handling ticks inside engine to avoid resetting tick state when switching input handlers, e.g. from ingame view to look around handler
+        tick_interval_in_sec = 2
+        return int(self.time_in_sec) // tick_interval_in_sec
+
+    def render(self, console: Console, delta_time: float) -> None:
+        self.time_in_sec += delta_time
+        self.game_map.render(console, self.tick)
         self.message_log.render(console=console, x=21, y=45, width=40, height=5)
         health = self.player.health
         render_hp_bar(console, health.hp, health.max_hp, 20)

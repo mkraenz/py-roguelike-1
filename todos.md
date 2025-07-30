@@ -33,4 +33,4 @@
 - [x] Treasure chest requires key
 - [x] Double check that dropping gold works properly when there are multiple enemies in a single room
 - [x] rename item value to unit value
-- [ ] If there are multiple items on the single field tile then do the dwarf fortress thing and switch the glyph every few seconds
+- [x] If there are multiple items on the single field tile then do the dwarf fortress thing and switch the glyph every few seconds

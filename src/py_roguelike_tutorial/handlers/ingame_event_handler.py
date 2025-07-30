@@ -76,7 +76,7 @@ class IngameEventHandler(BaseEventHandler):
         return True
 
     def on_render(self, console: Console, delta_time: float) -> None:
-        self.engine.render(console)
+        self.engine.render(console, delta_time)
 
     def ev_mousemotion(self, event: tcod.event.MouseMotion, /) -> None:
         if self.engine.game_map.in_bounds(int(event.position.x), int(event.position.y)):

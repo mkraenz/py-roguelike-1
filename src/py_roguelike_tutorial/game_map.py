@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from itertools import groupby
+from operator import attrgetter
 from typing import TYPE_CHECKING, Iterable, Iterator
 
 import numpy as np
@@ -97,19 +99,27 @@ class GameMap:
         """Is the coordinate within the map boundary?"""
         return 0 <= x < self.width and 0 <= y < self.height
 
-    def render(self, console: Console) -> None:
+    def render(self, console: Console, tick: int) -> None:
         if not DEBUG:
             self.render_visibility(console)
         else:
             self.debug_render(console)
         # self.debug_render_distance_map(console, self.flight_dijkstra_map, True)
-        self.render_entities(console)
+        self.render_entities(console, tick)
 
-    def render_entities(self, console: Console) -> None:
+    def render_entities(self, console: Console, tick: int) -> None:
         rendered_entities = self.visible_entities if not DEBUG else self.entities
-        sorted_entities = sorted(rendered_entities, key=lambda x: x.render_order.value)
-        for entity in sorted_entities:
-            console.print(entity.x, entity.y, entity.char, fg=entity.color)
+        sorted_entities = sorted(rendered_entities, key=attrgetter("pos"))
+        for pos, group in groupby(sorted_entities, key=attrgetter("pos")):
+            group_list = list(group)
+            for i, entity in enumerate(group_list):
+                num_entities_on_this_field = len(group_list)
+                if tick % num_entities_on_this_field == i:
+                    console.print(entity.x, entity.y, entity.char, fg=entity.color)
+
+        # actors are more important than any items so they render on top of anything
+        for actor in self.visible_actors:
+            console.print(actor.x, actor.y, actor.char, fg=actor.color)
 
     def min_position_of_flight_map(self) -> Coord:
         map = self.flight_dijkstra_map
