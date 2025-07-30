@@ -120,15 +120,15 @@ def generate_dungeon(
     graph = nx.Graph()
 
     rooms: list[RectangularRoom] = []
-    loaded_shop_die = LoadedDie(at_most_once=True, one_in=10)
+    room_type_gen = RoomTypeGenerator()
 
+    # gen room layout and tunnels
     for _ in range(params.max_rooms):
         room_w = random.randint(params.room_min_size, params.room_max_size)
         room_h = random.randint(params.room_min_size, params.room_max_size)
         x = random.randint(0, dungeon.width - room_w - 1)
         y = random.randint(0, dungeon.height - room_h - 1)
-        shop = loaded_shop_die.roll()
-        type = "shop" if shop else "encounter"
+        type = room_type_gen.roll()
         room = RectangularRoom(x1=x, y1=y, height=room_h, width=room_w, type=type)
 
         if any(room.intersects(other_room) for other_room in rooms):
@@ -144,24 +144,56 @@ def generate_dungeon(
 
         rooms.append(room)
 
-    player.place(*rooms[0].center, dungeon)
-    debug_place_entities(current_floor, player, dungeon)
-
+    # fill rooms
     # for the time being we will place the player in rooms0. Overtime we should consider adding a start room type
     for room in rooms[1:]:
+        print(room.type)
         match room.type:
             case "shop":
                 make_shop_room(current_floor, dungeon, room)
             case "encounter":
                 place_entities(room, dungeon, current_floor, factions)
             case "treasury":
-                # Place entities in treasury room if needed
-                pass
+                make_treasury_room(current_floor, dungeon, room)
+
+    player.place(*rooms[0].center, dungeon)
+    debug_place_entities(current_floor, player, dungeon)
 
     room_with_stairs = rooms[-1] if not DEBUG_STAIRS_AT_START else rooms[0]
     place_down_stairs(dungeon, room_with_stairs)
 
     return dungeon
+
+
+@dataclass
+class RoomTypeGenerator:
+    shop_chance: int = 10
+    treasury_chance: int = 3
+
+    def __post_init__(self):
+        self.loaded_shop_die = LoadedDie(at_most_once=True, one_in=self.shop_chance)
+        self.loaded_treasury_die = LoadedDie(
+            at_most_once=True, one_in=self.treasury_chance
+        )
+
+    def roll(self):
+        shop = self.loaded_shop_die.roll()
+        if shop:
+            return "shop"
+        treasury = self.loaded_treasury_die.roll()
+        if treasury:
+            return "treasury"
+        return "encounter"
+
+
+def make_treasury_room(current_floor: int, dungeon: GameMap, room: Room) -> None:
+    chest = EntityPrefabs.props["treasure_chest"].spawn(dungeon, *room.center)
+    chest.inventory.replace_all(
+        generate_shop_inventory(
+            ShopGenerationParams(max_floors_ahead=constants.SHOP_MAX_FLOORS_AHEAD),
+            current_floor,
+        )
+    )
 
 
 def make_shop_room(current_floor: int, dungeon: GameMap, room: Room) -> None:

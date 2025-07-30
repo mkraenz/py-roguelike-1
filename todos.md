@@ -34,3 +34,5 @@
 - [x] Double check that dropping gold works properly when there are multiple enemies in a single room
 - [x] rename item value to unit value
 - [x] If there are multiple items on the single field tile then do the dwarf fortress thing and switch the glyph every few seconds
+- [x] add room type treasury
+- [ ] add room type starter
